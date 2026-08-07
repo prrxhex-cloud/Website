@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Zap } from 'lucide-react';
+import { Menu, X, Zap, Volume2, VolumeX } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useSound } from '../../context/SoundContext';
 import logoImg from '../../assets/logo.jpeg';
 
 const navLinks = [
@@ -19,6 +20,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { soundEnabled, toggleSound } = useSound();
 
   const handleNav = (item) => {
     setMobileOpen(false);
@@ -117,14 +119,33 @@ export default function Navbar() {
           ⚡ GET NOW
         </motion.button>
 
-        {/* Mobile hamburger */}
+        {/* Sound toggle button */}
         <button
-          className="md:hidden text-primary ml-1"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          style={{ pointerEvents: 'auto' }}
+          id="sound-toggle"
+          onClick={toggleSound}
+          className="hidden md:flex items-center justify-center w-8 h-8 rounded-full ml-2 transition-colors hover:bg-white/10"
+          style={{ color: soundEnabled ? '#00d4ff' : 'rgba(180,210,230,0.5)' }}
         >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
         </button>
+
+        {/* Mobile hamburger */}
+        <div className="md:hidden flex items-center ml-1 gap-2" style={{ pointerEvents: 'auto' }}>
+          <button
+            id="sound-toggle-mobile"
+            onClick={toggleSound}
+            className="flex items-center justify-center w-8 h-8 rounded-full transition-colors"
+            style={{ color: soundEnabled ? '#00d4ff' : 'rgba(180,210,230,0.5)' }}
+          >
+            {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
+          <button
+            className="text-primary"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
