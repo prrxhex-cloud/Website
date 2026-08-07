@@ -146,22 +146,19 @@ export default function DeepDiveSection() {
             
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-5xl mx-auto">
                {[
-                 { name: 'JavaScript', short: 'JS', color: '#f7df1e' },
-                 { name: 'TypeScript', short: 'TS', color: '#3178c6' },
-                 { name: 'React', short: 'Re', color: '#61dafb' },
-                 { name: 'Next.js', short: 'N', color: '#ffffff' },
-                 { name: 'Node.js', short: 'No', color: '#339933' },
-                 { name: 'Python', short: 'Py', color: '#3776ab' },
-                 { name: 'C#', short: 'C#', color: '#9b4993' },
-                 { name: 'C++', short: 'C++', color: '#00599c' },
-                 { name: 'HTML5', short: '5', color: '#e34f26' },
-                 { name: 'CSS3', short: '3', color: '#1572b6' }
+                 { name: 'JavaScript', icon: 'https://cdn.simpleicons.org/javascript/F7DF1E' },
+                 { name: 'TypeScript', icon: 'https://cdn.simpleicons.org/typescript/3178C6' },
+                 { name: 'React', icon: 'https://cdn.simpleicons.org/react/61DAFB' },
+                 { name: 'Next.js', icon: 'https://cdn.simpleicons.org/nextdotjs/ffffff' },
+                 { name: 'Node.js', icon: 'https://cdn.simpleicons.org/nodedotjs/339933' },
+                 { name: 'Python', icon: 'https://cdn.simpleicons.org/python/3776AB' },
+                 { name: 'C#', icon: 'https://cdn.simpleicons.org/csharp/9b4993' },
+                 { name: 'C++', icon: 'https://cdn.simpleicons.org/cplusplus/00599c' },
+                 { name: 'HTML5', icon: 'https://cdn.simpleicons.org/html5/E34F26' },
+                 { name: 'CSS3', icon: 'https://cdn.simpleicons.org/css3/1572B6' }
                ].map((tech) => (
                  <div key={tech.name} className="flex flex-col items-center justify-center p-4 rounded-3xl w-24 h-28 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors shadow-lg">
-                    <div className="w-12 h-12 mb-3 rounded-xl flex items-center justify-center text-lg font-bold font-orbitron shadow-inner" 
-                         style={{ backgroundColor: `${tech.color}15`, color: tech.color, border: `1px solid ${tech.color}30` }}>
-                      {tech.short}
-                    </div>
+                    <img src={tech.icon} alt={tech.name} className="w-10 h-10 mb-3 object-contain" />
                     <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-inter">{tech.name}</span>
                  </div>
                ))}
@@ -185,33 +182,21 @@ export default function DeepDiveSection() {
                  { 
                    name: 'BlueStacks 5', 
                    sub: 'Pie 64-bit / Nougat 32 & 64-bit', 
-                   color: '#ffcc00', 
-                   icon: (
-                     <div className="flex flex-col gap-[2px] transform -skew-y-12 w-6 mx-auto">
-                       <div className="w-6 h-1.5 bg-green-500 rounded-sm" />
-                       <div className="w-6 h-1.5 bg-yellow-400 rounded-sm" />
-                       <div className="w-6 h-1.5 bg-red-500 rounded-sm" />
-                       <div className="w-6 h-1.5 bg-blue-500 rounded-sm" />
-                     </div>
-                   )
+                   icon: "https://upload.wikimedia.org/wikipedia/commons/4/42/BlueStacks_App_Player_Logo_2021.svg"
                  },
                  { 
                    name: 'MSI App Player', 
                    sub: 'High FPS & Low Latency', 
-                   color: '#ff0000', 
-                   icon: <Shield className="w-6 h-6 text-red-500" fill="currentColor" />
+                   icon: "https://upload.wikimedia.org/wikipedia/commons/c/ca/MSI_logo.svg"
                  },
                  { 
                    name: 'Windows 10 / 11', 
                    sub: 'Full 64-bit Kernel Support', 
-                   color: '#00a4ef', 
-                   icon: <LayoutGrid className="w-6 h-6 text-[#00a4ef]" fill="currentColor" />
+                   icon: "https://cdn.simpleicons.org/windows11/0078D4"
                  }
                ].map((plat) => (
                  <div key={plat.name} className="p-6 rounded-2xl flex items-center gap-5 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors shadow-lg">
-                    <div className="w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center shadow-inner" style={{ backgroundColor: `${plat.color}10`, border: `1px solid ${plat.color}20` }}>
-                       {plat.icon}
-                    </div>
+                    <img src={plat.icon} alt={plat.name} className="w-12 h-12 shrink-0 object-contain drop-shadow-md" />
                     <div>
                       <h4 className="text-white font-bold font-inter text-[15px] mb-1">{plat.name}</h4>
                       <p className="text-[11px] text-muted-foreground font-inter tracking-wide">{plat.sub}</p>
