@@ -1,273 +1,241 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Crosshair, Eye, Zap, Shield, Lock, Cpu, Layers, Wind, Map } from 'lucide-react';
-import InteractiveCard from '@/components/effects/InteractiveCard';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Check, Minus, Settings, LayoutGrid, SlidersHorizontal, Image as ImageIcon } from 'lucide-react';
 import ScrollReveal from '@/components/effects/ScrollReveal';
-
-// ─── EXTERNAL PANEL ───────────────────────────────────────────────
-const externalGroups = [
-  {
-    title: 'Aimbot Menu',
-    emoji: '🎯',
-    items: ['Aimbot Head', 'Aimbot Drag', 'Aimbot External', 'Aimbot Neck', 'Aimbot Power Change'],
-  },
-  {
-    title: 'Repair Menu',
-    emoji: '🔧',
-    items: ['Mouse Bot', 'Headshot Boost', 'Mouse Recoil', 'Chams Fix', 'Female Fix (Lobby)', 'Mouse Bot Power Change'],
-  },
-  {
-    title: 'ESP Menu',
-    emoji: '👁️',
-    items: ['Chams Menu v1', 'Chams Menu v2', '3D Location', 'Glow Hack'],
-  },
-];
-
-// ─── INTERNAL PANEL ───────────────────────────────────────────────
-const internalGroups = [
-  {
-    title: '🎯 Combat',
-    emoji: '🔫',
-    color: '#ff4444',
-    items: [
-      { label: 'Silent Aim', emoji: '🔫' },
-      { label: 'Aimbot Range', emoji: '📏' },
-      { label: 'ESP Menu', emoji: '👁️' },
-      { label: 'Fast Fire', emoji: '🏎️' },
-      { label: 'Rapid Fire', emoji: '🧨' },
-      { label: 'Auto Spawn Kill', emoji: '⚰️' },
-    ],
-  },
-  {
-    title: '💀 Special Kills',
-    emoji: '💀',
-    color: '#aa44ff',
-    items: [
-      { label: 'Under Kill', emoji: '🕳️' },
-      { label: 'Drive Kill', emoji: '🏎️' },
-    ],
-  },
-  {
-    title: '🌀 Movement & Teleport',
-    emoji: '⚡',
-    color: '#00d4ff',
-    items: [
-      { label: 'Teleport V2', emoji: '⚡' },
-      { label: 'Teleport to Enemy', emoji: '📍' },
-      { label: 'Teleport Map', emoji: '🗺️' },
-      { label: '200M Teleport', emoji: '🛰️' },
-      { label: 'Fly Hack', emoji: '🕊️' },
-      { label: 'Fly Run', emoji: '🏃' },
-      { label: 'Fly Map', emoji: '🌌' },
-      { label: 'Speed Hack', emoji: '👟' },
-    ],
-  },
-  {
-    title: '📸 System',
-    emoji: '💻',
-    color: '#00ff88',
-    items: [
-      { label: 'Left Camera View', emoji: '🎥' },
-      { label: 'Version Hack', emoji: '💻' },
-      { label: '3 Min Timer Activated', emoji: '⏱️' },
-    ],
-  },
-];
-
-const featureCards = [
-  { title: 'Aimbot', icon: Crosshair, desc: 'Advanced targeting with smooth tracking and configurable power settings.' },
-  { title: 'ESP / Chams', icon: Eye, desc: 'Clean visual overlays with glow, 3D location, and rich color tuning.' },
-  { title: 'Teleport', icon: Map, desc: 'Multi-mode teleport engine — enemy snap, map jump, and 200m range.' },
-  { title: 'Security', icon: Shield, desc: 'Layered protection logic for safer runtime behavior and session control.' },
-  { title: 'Speed & Flight', icon: Wind, desc: 'Fly Hack, Speed Hack, and Fly Run for full movement domination.' },
-  { title: 'Encryption', icon: Lock, desc: 'Encrypted communication paths for secure panel operations.' },
-];
+import InteractiveCard from '@/components/effects/InteractiveCard';
 
 export default function FunctionsSection() {
   const location = useLocation();
   const [activePanel, setActivePanel] = useState(location.state?.tab || 'internal');
+  const [images, setImages] = useState({
+    internal: { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
+    external: { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
+  });
 
   useEffect(() => {
     if (location.state?.tab) {
       setActivePanel(location.state.tab);
     }
+    
+    // Fetch screenshots
+    const fetchImages = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'public_settings', 'functions_screenshots'));
+        if (snap.exists()) {
+          const data = snap.data();
+          setImages({
+            internal: data.internal_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
+            external: data.external_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
+          });
+        }
+      } catch (error) {
+        console.error("Error loading panel screenshots:", error);
+      }
+    };
+    fetchImages();
   }, [location.state]);
 
-  return (
-    <section id="functions" className="py-16 sm:py-24">
-      <div className="max-w-6xl mx-auto px-4 sm:px-8">
+  const currentImages = images[activePanel];
 
-        {/* Hero banner */}
+  return (
+    <section className="py-16 sm:py-24" style={{ background: '#0a0a0a', minHeight: '100vh', backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(20, 20, 20, 1) 0%, rgba(10, 10, 10, 1) 100%)' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        
+        {/* Toggle Switch */}
+        <div className="flex justify-center mb-10">
+          <div className="flex gap-2 p-1.5 rounded-2xl w-fit" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <button 
+              onClick={() => setActivePanel('external')}
+              className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs tracking-wider transition-all flex items-center gap-2"
+              style={{
+                background: activePanel === 'external' ? 'rgba(255,255,255,0.08)' : 'transparent',
+                border: activePanel === 'external' ? '1px solid rgba(255,255,255,0.2)' : '1px solid transparent',
+                color: activePanel === 'external' ? '#ffffff' : 'rgba(255,255,255,0.4)',
+              }}>
+              <LayoutGrid className="w-4 h-4" />
+              External Panel
+              <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-white/10 border border-white/20">BASIC</span>
+            </button>
+            <button 
+              onClick={() => setActivePanel('internal')}
+              className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs tracking-wider transition-all flex items-center gap-2"
+              style={{
+                background: activePanel === 'internal' ? 'rgba(255,255,255,0.08)' : 'transparent',
+                border: activePanel === 'internal' ? '1px solid rgba(255,255,255,0.2)' : '1px solid transparent',
+                color: activePanel === 'internal' ? '#ffffff' : 'rgba(255,255,255,0.4)',
+              }}>
+              <Settings className="w-4 h-4" />
+              Internal Panel
+              <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-white/10 border border-white/20">ADVANCED</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Hero Banner */}
         <ScrollReveal variant="fadeUp">
-        <motion.div
-          className="rounded-2xl p-8 sm:p-12 mb-10"
-          style={{
-            background: activePanel === 'internal'
-              ? 'linear-gradient(135deg, rgba(30,0,60,0.95) 0%, rgba(0,15,35,0.98) 100%)'
-              : 'linear-gradient(135deg, rgba(0,30,60,0.9) 0%, rgba(0,15,35,0.95) 100%)',
-            border: activePanel === 'internal' ? '1px solid rgba(170,68,255,0.25)' : '1px solid rgba(0,212,255,0.15)',
-            boxShadow: activePanel === 'internal' ? '0 0 60px rgba(170,68,255,0.08)' : '0 0 40px rgba(0,212,255,0.05)',
-            transition: 'all 0.5s ease',
-          }}
-        >
-          {activePanel === 'internal' ? (
-            <>
-              <span className="inline-block font-inter text-xs font-bold tracking-widest px-3 py-1 rounded-full mb-4"
-                style={{ border: '1px solid rgba(255,68,68,0.5)', color: '#ff4444', background: 'rgba(255,68,68,0.1)' }}>
-                🔥 BETA X V7A — INTERNAL
-              </span>
-              <h2 className="font-orbitron font-black text-3xl sm:text-5xl text-foreground mb-4 leading-tight">
-                PRRX <span style={{ color: '#aa44ff' }}>INTERNAL</span> PANEL
-              </h2>
-              <p className="font-inter text-muted-foreground text-sm sm:text-base max-w-2xl leading-relaxed">
-                Dominate the battlefield with our most powerful internal panel. Optimized for maximum performance and security. 
-                Full combat suite with teleport, movement hacks, and advanced kill mechanics.
-              </p>
-            </>
-          ) : (
-            <>
-              <span className="inline-block font-inter text-xs font-bold tracking-widest px-3 py-1 rounded-full mb-4"
-                style={{ border: '1px solid rgba(0,212,255,0.4)', color: '#00d4ff', background: 'rgba(0,212,255,0.08)' }}>
-                OFFICIAL — EXTERNAL
-              </span>
-              <h2 className="font-orbitron font-black text-3xl sm:text-5xl text-foreground mb-4 leading-tight">
-                PRRX <span style={{ color: '#00d4ff' }}>EXTERNAL</span> PANEL
-              </h2>
-              <p className="font-inter text-muted-foreground text-sm sm:text-base max-w-2xl leading-relaxed">
-                PRRX is engineered for speed with fast module response, light memory usage, and stable long-session performance. Every feature is tuned for real-time gameplay.
-              </p>
-            </>
-          )}
-        </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={activePanel}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className="rounded-3xl p-8 sm:p-10 mb-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8"
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: 'inset 0 0 100px rgba(0,0,0,0.5)' }}>
+              
+              <div>
+                <h2 className="font-orbitron font-bold text-3xl sm:text-4xl text-white mb-2 flex items-center gap-3">
+                  {activePanel === 'internal' ? 'Internal Panel' : 'External Panel'}
+                  <span className="px-2 py-1 rounded-md text-[10px] tracking-widest bg-white/5 border border-white/10 text-muted-foreground uppercase">
+                    {activePanel}
+                  </span>
+                </h2>
+                <p className="font-inter text-muted-foreground text-sm max-w-xl leading-relaxed">
+                  {activePanel === 'internal' 
+                    ? 'Built from real internal screenshots: Menu, ESP, Colors, Other, Keybinds, and Settings tabs.'
+                    : 'Built for speed and reliability: External modules tailored for smooth overlays.'}
+                </p>
+              </div>
+
+              <div className="flex gap-10">
+                <div className="text-center">
+                  <p className="font-orbitron font-bold text-4xl text-white mb-1">{activePanel === 'internal' ? '51' : '59'}</p>
+                  <p className="font-inter text-xs text-muted-foreground tracking-widest uppercase">Features</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-orbitron font-bold text-4xl text-white mb-1">6</p>
+                  <p className="font-inter text-xs text-muted-foreground tracking-widest uppercase">Categories</p>
+                </div>
+              </div>
+
+            </motion.div>
+          </AnimatePresence>
         </ScrollReveal>
 
-        {/* Panel Switcher */}
-        <div className="flex gap-2 mb-8 p-1.5 rounded-2xl w-fit"
-          style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
-          <button onClick={() => setActivePanel('internal')}
-            className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs tracking-widest transition-all duration-300"
-            style={{
-              background: activePanel === 'internal' ? 'linear-gradient(135deg, rgba(170,68,255,0.2), rgba(100,0,200,0.15))' : 'transparent',
-              border: activePanel === 'internal' ? '1px solid rgba(170,68,255,0.5)' : '1px solid transparent',
-              color: activePanel === 'internal' ? '#aa44ff' : 'rgba(180,200,220,0.4)',
-              boxShadow: activePanel === 'internal' ? '0 0 20px rgba(170,68,255,0.2)' : 'none',
-            }}>
-            🔥 INTERNAL
-          </button>
-          <button onClick={() => setActivePanel('external')}
-            className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs tracking-widest transition-all duration-300"
-            style={{
-              background: activePanel === 'external' ? 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,100,200,0.1))' : 'transparent',
-              border: activePanel === 'external' ? '1px solid rgba(0,212,255,0.5)' : '1px solid transparent',
-              color: activePanel === 'external' ? '#00d4ff' : 'rgba(180,200,220,0.4)',
-              boxShadow: activePanel === 'external' ? '0 0 20px rgba(0,212,255,0.2)' : 'none',
-            }}>
-            ⚡ EXTERNAL
-          </button>
+        {/* Style Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <InteractiveCard className="md:col-span-1 rounded-2xl p-6 flex flex-col justify-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+             <LayoutGrid className="w-6 h-6 text-white mb-4 opacity-50" />
+             <h3 className="font-orbitron font-bold text-xl text-white mb-1">Tabbed</h3>
+             <p className="font-inter text-xs text-muted-foreground tracking-widest uppercase">Layout Style</p>
+          </InteractiveCard>
+          <InteractiveCard className="md:col-span-1 rounded-2xl p-6 flex flex-col justify-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+             <SlidersHorizontal className="w-6 h-6 text-white mb-4 opacity-50" />
+             <h3 className="font-orbitron font-bold text-xl text-white mb-1">Toggle + Slider</h3>
+             <p className="font-inter text-xs text-muted-foreground tracking-widest uppercase">Control Style</p>
+          </InteractiveCard>
+          <InteractiveCard className="md:col-span-1 rounded-2xl p-6 flex flex-col justify-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+             <Check className="w-6 h-6 text-white mb-4 opacity-50" />
+             <h3 className="font-orbitron font-bold text-xl text-white mb-1">{activePanel === 'internal' ? '51' : '59'}</h3>
+             <p className="font-inter text-xs text-muted-foreground tracking-widest uppercase">Total Features</p>
+          </InteractiveCard>
         </div>
 
-        {/* Function Preview */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activePanel}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.3 }}
-            className="rounded-2xl p-6 sm:p-8 mb-10"
-            style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-orbitron font-bold text-base sm:text-lg text-primary tracking-wider">
-                {activePanel === 'internal' ? '🔥 Internal Panel Features' : '⚡ External Panel Features'}
-              </h3>
-              <span className="font-inter text-xs text-muted-foreground hidden sm:block">
-                {activePanel === 'internal' ? 'Beta X V7A — Free Fire' : 'UI structure mapped from your panel.'}
+        {/* Panel Screenshots */}
+        <ScrollReveal variant="fadeUp">
+          <div className="mb-6 flex items-center gap-2 text-muted-foreground">
+            <ImageIcon className="w-4 h-4" />
+            <span className="font-orbitron text-xs tracking-widest font-bold uppercase">PANEL SCREENSHOTS</span>
+          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={activePanel}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20"
+            >
+              {['aimbot', 'visuals', 'colors', 'misc', 'keybinds', 'settings'].map((cat, idx) => (
+                <div key={cat} className="rounded-2xl overflow-hidden aspect-[4/3] relative group" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  {currentImages[cat] ? (
+                    <img src={currentImages[cat]} alt={`${activePanel} ${cat}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center opacity-50">
+                      <ImageIcon className="w-8 h-8 mb-2" />
+                      <span className="font-inter text-xs uppercase tracking-widest">{cat} Preview</span>
+                    </div>
+                  )}
+                  {/* Subtle overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                </div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </ScrollReveal>
+
+        {/* Comparison Table */}
+        <ScrollReveal variant="fadeUp">
+          <div className="rounded-3xl p-8 sm:p-10 mb-10 overflow-x-auto" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+            
+            <div className="mb-8">
+              <span className="px-3 py-1.5 rounded-md text-[10px] tracking-widest bg-white/5 border border-white/10 text-muted-foreground uppercase font-orbitron mb-4 inline-block">
+                SIDE-BY-SIDE
               </span>
+              <h3 className="font-orbitron font-bold text-2xl text-white">External vs Internal — At a Glance</h3>
             </div>
 
-            {activePanel === 'internal' ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {internalGroups.map((group, gi) => (
-                  <motion.div
-                    key={group.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: gi * 0.08 }}
-                    className="rounded-xl overflow-hidden"
-                    style={{ background: 'rgba(0,25,55,0.8)', border: `1px solid ${group.color}18` }}
-                  >
-                    <div className="px-4 py-3 border-b" style={{ borderColor: `${group.color}15`, background: `${group.color}08` }}>
-                      <h4 className="font-orbitron font-bold text-xs tracking-wide" style={{ color: group.color }}>{group.title}</h4>
-                    </div>
-                    <ul className="divide-y" style={{ borderColor: 'rgba(0,212,255,0.05)' }}>
-                      {group.items.map((item) => (
-                        <li key={item.label} className="flex items-center justify-between px-4 py-2.5">
-                          <span className="font-inter text-xs text-muted-foreground">{item.emoji} {item.label}</span>
-                          <span className="font-inter text-xs font-bold px-2 py-0.5 rounded"
-                            style={{ background: `${group.color}15`, color: group.color, border: `1px solid ${group.color}30`, fontSize: '9px', letterSpacing: '0.1em' }}>
-                            ON
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-3 gap-4">
-                {externalGroups.map((group, gi) => (
-                  <motion.div
-                    key={group.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: gi * 0.1 }}
-                    className="rounded-xl overflow-hidden"
-                    style={{ background: 'rgba(0,25,55,0.8)', border: '1px solid rgba(0,212,255,0.08)' }}
-                  >
-                    <div className="px-4 py-3 border-b" style={{ borderColor: 'rgba(0,212,255,0.08)' }}>
-                      <h4 className="font-orbitron font-bold text-xs text-foreground tracking-wide">{group.emoji} {group.title}</h4>
-                    </div>
-                    <ul className="divide-y" style={{ borderColor: 'rgba(0,212,255,0.05)' }}>
-                      {group.items.map((item) => (
-                        <li key={item} className="flex items-center justify-between px-4 py-2.5">
-                          <span className="font-inter text-xs text-muted-foreground">{item}</span>
-                          <span className="font-inter text-xs font-bold px-2 py-0.5 rounded"
-                            style={{ background: 'rgba(0,212,255,0.1)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.2)', fontSize: '10px', letterSpacing: '0.1em' }}>
-                            ADDED
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Feature Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {featureCards.map((card, i) => {
-            const Icon = card.icon;
-            return (
-              <ScrollReveal key={card.title} variant="fadeUp" delay={i * 0.08}>
-                <InteractiveCard
-                  className="rounded-xl p-5 h-full"
-                  style={{ background: 'rgba(0,20,45,0.85)', border: '1px solid rgba(0,212,255,0.08)' }}
-                >
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
-                    style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)' }}>
-                    <Icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <h4 className="font-orbitron font-bold text-sm text-foreground mb-2 tracking-wide">{card.title}</h4>
-                  <p className="font-inter text-xs text-muted-foreground leading-relaxed">{card.desc}</p>
-                </InteractiveCard>
-              </ScrollReveal>
-            );
-          })}
-        </div>
+            <table className="w-full min-w-[600px] text-left">
+              <thead>
+                <tr className="border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                  <th className="py-4 font-inter text-xs tracking-widest text-muted-foreground uppercase font-medium">Capability</th>
+                  <th className="py-4 font-inter text-xs tracking-widest text-muted-foreground uppercase font-medium text-center">External</th>
+                  <th className="py-4 font-inter text-xs tracking-widest text-muted-foreground uppercase font-medium text-center">Internal</th>
+                </tr>
+              </thead>
+              <tbody className="font-inter text-sm text-gray-300 divide-y divide-white/5">
+                <tr>
+                  <td className="py-5">Total Features (visible)</td>
+                  <td className="py-5 text-center">59</td>
+                  <td className="py-5 text-center">51</td>
+                </tr>
+                <tr>
+                  <td className="py-5">Categories (visible)</td>
+                  <td className="py-5 text-center">6</td>
+                  <td className="py-5 text-center">6</td>
+                </tr>
+                <tr>
+                  <td className="py-5">Aim controls</td>
+                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70" /></td>
+                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70" /></td>
+                </tr>
+                <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
+                  <td className="py-5 px-3">ESP controls</td>
+                  <td className="py-5 text-center">Basic</td>
+                  <td className="py-5 text-center">Extended</td>
+                </tr>
+                <tr>
+                  <td className="py-5">Color controls</td>
+                  <td className="py-5 text-center"><Minus className="w-4 h-4 mx-auto opacity-30" /></td>
+                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70" /></td>
+                </tr>
+                <tr>
+                  <td className="py-5">Shop module</td>
+                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70" /></td>
+                  <td className="py-5 text-center"><Minus className="w-4 h-4 mx-auto opacity-30" /></td>
+                </tr>
+                <tr>
+                  <td className="py-5">Accessibility module</td>
+                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70" /></td>
+                  <td className="py-5 text-center"><Minus className="w-4 h-4 mx-auto opacity-30" /></td>
+                </tr>
+                <tr>
+                  <td className="py-5">Keybind controls</td>
+                  <td className="py-5 text-center"><Minus className="w-4 h-4 mx-auto opacity-30" /></td>
+                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70" /></td>
+                </tr>
+                <tr>
+                  <td className="py-5">Settings safety/timer</td>
+                  <td className="py-5 text-center"><Minus className="w-4 h-4 mx-auto opacity-30" /></td>
+                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70" /></td>
+                </tr>
+                <tr>
+                  <td className="py-5">Stream Mode</td>
+                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70" /></td>
+                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ScrollReveal>
 
       </div>
     </section>

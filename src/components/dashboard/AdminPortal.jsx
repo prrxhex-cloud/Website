@@ -19,6 +19,7 @@ import AdminOverviewTab from './AdminOverviewTab';
 import AdminMessagesTab from './AdminMessagesTab';
 import AdminAnnouncementsTab from './AdminAnnouncementsTab';
 import PanelImagesTab from './PanelImagesTab';
+import FunctionsScreenshotsTab from './FunctionsScreenshotsTab';
 
 function ReceiptsTab() {
   const [receipts, setReceipts] = useState([]);
@@ -432,6 +433,7 @@ function AdminPanel({ adminUser, onLogout }) {
     { key: 'messages',   label: 'Messages',   icon: MessageCircle },
     { key: 'announcements', label: 'Posts',   icon: Megaphone },
     { key: 'panel_images', label: 'Panel Imgs', icon: ImageIcon },
+    { key: 'functions_screenshots', label: 'Func Screenshots', icon: ImageIcon },
   ];
 
   return (
@@ -497,6 +499,7 @@ function AdminPanel({ adminUser, onLogout }) {
           { tab === 'messages' && <AdminMessagesTab /> }
           { tab === 'announcements' && <AdminAnnouncementsTab /> }
           { tab === 'panel_images' && <PanelImagesTab /> }
+          { tab === 'functions_screenshots' && <FunctionsScreenshotsTab /> }
         </motion.div>
       </AnimatePresence>
     </motion.div>
