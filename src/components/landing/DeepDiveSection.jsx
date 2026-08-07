@@ -152,10 +152,10 @@ export default function DeepDiveSection() {
                  { name: 'Next.js', icon: 'https://cdn.simpleicons.org/nextdotjs/ffffff' },
                  { name: 'Node.js', icon: 'https://cdn.simpleicons.org/nodedotjs/339933' },
                  { name: 'Python', icon: 'https://cdn.simpleicons.org/python/3776AB' },
-                 { name: 'C#', icon: 'https://cdn.simpleicons.org/csharp/9b4993' },
+                 { name: 'C#', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-original.svg' },
                  { name: 'C++', icon: 'https://cdn.simpleicons.org/cplusplus/00599c' },
                  { name: 'HTML5', icon: 'https://cdn.simpleicons.org/html5/E34F26' },
-                 { name: 'CSS3', icon: 'https://cdn.simpleicons.org/css3/1572B6' }
+                 { name: 'CSS3', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg' }
                ].map((tech) => (
                  <div key={tech.name} className="flex flex-col items-center justify-center p-4 rounded-3xl w-24 h-28 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors shadow-lg">
                     <img src={tech.icon} alt={tech.name} className="w-10 h-10 mb-3 object-contain" />
@@ -182,21 +182,21 @@ export default function DeepDiveSection() {
                  { 
                    name: 'BlueStacks 5', 
                    sub: 'Pie 64-bit / Nougat 32 & 64-bit', 
-                   icon: "https://upload.wikimedia.org/wikipedia/commons/4/42/BlueStacks_App_Player_Logo_2021.svg"
+                   icon: "https://logo.clearbit.com/bluestacks.com"
                  },
                  { 
                    name: 'MSI App Player', 
                    sub: 'High FPS & Low Latency', 
-                   icon: "https://upload.wikimedia.org/wikipedia/commons/c/ca/MSI_logo.svg"
+                   icon: "https://logo.clearbit.com/msi.com"
                  },
                  { 
                    name: 'Windows 10 / 11', 
                    sub: 'Full 64-bit Kernel Support', 
-                   icon: "https://cdn.simpleicons.org/windows11/0078D4"
+                   icon: "https://cdn.simpleicons.org/windows/00a4ef"
                  }
                ].map((plat) => (
                  <div key={plat.name} className="p-6 rounded-2xl flex items-center gap-5 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors shadow-lg">
-                    <img src={plat.icon} alt={plat.name} className="w-12 h-12 shrink-0 object-contain drop-shadow-md" />
+                    <img src={plat.icon} alt={plat.name} className="w-12 h-12 shrink-0 object-contain drop-shadow-md rounded-md" />
                     <div>
                       <h4 className="text-white font-bold font-inter text-[15px] mb-1">{plat.name}</h4>
                       <p className="text-[11px] text-muted-foreground font-inter tracking-wide">{plat.sub}</p>
