@@ -62,19 +62,6 @@
           console.log("%cThis is a restricted area. All actions are logged.", "color: white; font-size: 16px;");
         }, 1000);
 
-        // 6. Detect Console opening via toString proxy
-        const re = /x/;
-        let isConsoleOpen = false;
-        re.toString = function() {
-          isConsoleOpen = true;
-          document.body.innerHTML = '';
-          window.location.replace("about:blank");
-          return '';
-        };
-        setInterval(() => {
-          console.debug(re);
-        }, 1000);
-
       })();
     </script>
   </head>
