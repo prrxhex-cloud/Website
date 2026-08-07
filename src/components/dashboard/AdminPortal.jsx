@@ -108,7 +108,7 @@ function ReceiptsTab() {
       {loading ? <div className="flex justify-center py-8"><div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div> : (
         <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
           {displayed.map(r => (
-            <div key={r.id} className="rounded-xl p-4 space-y-3" style={{ background: 'rgba(0,15,35,0.8)', border: 1px solid 20 }}>
+            <div key={r.id} className="rounded-xl p-4 space-y-3" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div className="flex items-start gap-3">
                 {r.receipt_image_url && (
                   <a href={r.receipt_image_url} target="_blank" rel="noopener noreferrer">
