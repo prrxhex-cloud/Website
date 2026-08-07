@@ -21,10 +21,7 @@ export default function Footer() {
 
         {/* Brand */}
         <div className="text-center mb-10">
-          <span className="font-orbitron font-black text-2xl tracking-widest text-primary block"
-            style={{ textShadow: '0 0 20px rgba(0,212,255,0.6)' }}>
-            PRRX
-          </span>
+          <img src="/logo.png" alt="PRRX Logo" className="w-16 h-16 mx-auto mb-2 object-contain" />
           <p className="font-inter text-xs text-muted-foreground mt-1 tracking-widest uppercase">Free Fire Premium Panel</p>
         </div>
 

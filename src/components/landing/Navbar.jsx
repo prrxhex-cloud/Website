@@ -59,18 +59,13 @@ export default function Navbar() {
         }}
       >
         {/* Logo */}
-        <motion.span
+        <motion.div
           whileHover={{ scale: 1.05 }}
-          className="font-orbitron font-black text-base tracking-widest cursor-pointer select-none flex items-center gap-1.5 mr-2"
-          style={{ color: '#00d4ff', textShadow: '0 0 16px rgba(0,212,255,0.7)' }}
+          className="cursor-pointer select-none flex items-center mr-2"
           onClick={() => navigate('/')}
         >
-          <div className="w-6 h-6 rounded-md flex items-center justify-center"
-            style={{ background: 'rgba(0,212,255,0.12)', border: '1px solid rgba(0,212,255,0.35)' }}>
-            <Zap className="w-3.5 h-3.5" style={{ color: '#00d4ff' }} />
-          </div>
-          PRRX
-        </motion.span>
+          <img src="/logo.png" alt="PRRX Logo" className="w-8 h-8 object-contain" />
+        </motion.div>
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-1">
