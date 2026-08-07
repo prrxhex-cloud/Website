@@ -7,13 +7,13 @@ const steps = [
     icon: Download,
     number: '01',
     title: 'DOWNLOAD PRRX',
-    description: 'Download the PRRX HEX Premium installer. Lightweight, fast, and always up to date via the built-in auto-updater.',
+    description: 'Download the PRRX HEX Premium installer. Lightweight, fast, and always up to date via built-in auto-updater.',
   },
   {
     icon: KeyRound,
     number: '02',
-    title: 'LOGIN & LICENSE',
-    description: 'Enter your Username, Password, and License key. Use Licence Login for instant access to all premium features.',
+    title: 'ACTIVATE LICENSE KEY',
+    description: 'Enter your license key in the login tab for instant access to all premium features and bypass modules.',
   },
   {
     icon: Gamepad2,
@@ -25,53 +25,45 @@ const steps = [
 
 export default function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="relative py-24 sm:py-32 bg-card/30">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="py-20 bg-slate-50 border-b border-slate-200 font-inter">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          transition={{ duration: 0.5 }}
+          className="text-center mb-16 space-y-2"
         >
-          <span className="font-inter text-sm font-semibold text-primary uppercase tracking-widest">
-            Get Started
-          </span>
-          <h2 className="font-orbitron font-bold text-3xl sm:text-4xl lg:text-5xl text-foreground mt-4 mb-6 tracking-wider">
-            UP AND RUNNING IN <span className="text-primary">3 STEPS</span>
+          <div className="sub-heading">QUICK START</div>
+          <h2 className="font-outfit font-extrabold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+            UP AND RUNNING IN <span className="text-[#06b6d4]">3 EASY STEPS</span>
           </h2>
-          <p className="font-inter text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="font-inter text-slate-600 text-sm max-w-xl mx-auto">
             From zero to fully loaded in under 2 minutes. No complicated setup required.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+        <div className="grid md:grid-cols-3 gap-8">
           {steps.map((step, index) => (
             <motion.div
               key={step.number}
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.15 }}
-              className="relative text-center group"
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="clean-card p-8 bg-white border border-slate-200 rounded-3xl text-center space-y-4 relative"
             >
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-gradient-to-r from-primary/50 to-transparent" />
-              )}
-
-              <div className="relative inline-flex items-center justify-center w-24 h-24 rounded-xl bg-secondary border border-primary/20 mb-8 group-hover:border-primary/60 transition-colors">
-                <step.icon className="w-10 h-10 text-primary" />
-                <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <span className="font-orbitron font-bold text-xs text-primary-foreground">{step.number}</span>
-                </div>
+              <div className="w-16 h-16 rounded-2xl bg-cyan-50 border border-cyan-200 text-[#06b6d4] flex items-center justify-center mx-auto relative">
+                <step.icon className="w-8 h-8" />
+                <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#06b6d4] text-white font-outfit text-xs font-bold flex items-center justify-center shadow-sm">
+                  {step.number}
+                </span>
               </div>
 
-              <h3 className="font-orbitron font-bold text-base text-foreground mb-3 tracking-wider">
+              <h3 className="font-outfit font-extrabold text-lg text-slate-900">
                 {step.title}
               </h3>
-              <p className="font-inter text-muted-foreground leading-relaxed max-w-xs mx-auto text-sm">
+              <p className="font-inter text-xs text-slate-600 leading-relaxed">
                 {step.description}
               </p>
             </motion.div>

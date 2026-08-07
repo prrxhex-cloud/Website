@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Check, Minus, Settings, LayoutGrid, SlidersHorizontal, Image as ImageIcon, Lock, Keyboard } from 'lucide-react';
+import { Check, Settings, LayoutGrid, SlidersHorizontal, Image as ImageIcon, Lock, Keyboard } from 'lucide-react';
 import ScrollReveal from '@/components/effects/ScrollReveal';
-import InteractiveCard from '@/components/effects/InteractiveCard';
 
 export default function FunctionsSection() {
   const location = useLocation();
@@ -27,7 +25,6 @@ export default function FunctionsSection() {
       setActivePanel(location.state.tab);
     }
     
-    // Fetch screenshots
     const fetchImages = async () => {
       try {
         const snap = await getDoc(doc(db, 'public_settings', 'functions_screenshots'));
@@ -41,7 +38,6 @@ export default function FunctionsSection() {
           localStorage.setItem('prrx_functions_screenshots', JSON.stringify(newImages));
         }
         
-        // Fetch main panel images
         const panelSnap = await getDoc(doc(db, 'public_settings', 'panel_images'));
         if (panelSnap.exists()) {
           const newPanelImages = {
@@ -60,273 +56,196 @@ export default function FunctionsSection() {
 
   const currentImages = images[activePanel];
   const mainPreviewImage = panelImages[`${activePanel}_image_url`];
-
   const isInternal = activePanel === 'internal';
-  const themeColor = isInternal ? '#ff00ff' : '#00d4ff';
 
   return (
-    <section className="py-16 sm:py-24 relative overflow-hidden liquid-bg" style={{ minHeight: '100vh' }}>
-      
-      {/* Dynamic Background Blobs */}
-      <div className="absolute top-1/4 left-1/4 w-[30vw] h-[30vw] bg-[#00d4ff] liquid-blob mix-blend-screen opacity-20"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-[40vw] h-[40vw] bg-[#ff00ff] liquid-blob mix-blend-screen opacity-20" style={{ animationDelay: '-2s' }}></div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
+    <section className="py-16 sm:py-24 bg-slate-50 border-b border-slate-200 font-inter">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
         
         {/* Toggle Switch */}
         <div className="flex justify-center mb-10">
-          <div className="flex gap-2 p-1.5 rounded-[40px] liquid-glass w-fit">
+          <div className="bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm flex items-center gap-2">
             <button 
               onClick={() => setActivePanel('external')}
-              className="px-6 py-3 rounded-full font-orbitron font-bold text-xs tracking-wider transition-all flex items-center gap-2"
-              style={{
-                background: !isInternal ? 'linear-gradient(135deg, rgba(0,212,255,0.4), rgba(0,100,200,0.2))' : 'transparent',
-                color: !isInternal ? '#fff' : 'rgba(255,255,255,0.4)',
-                boxShadow: !isInternal ? '0 0 20px rgba(0,212,255,0.4)' : 'none',
-              }}>
+              className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-xs tracking-wider transition-all flex items-center gap-2 ${
+                !isInternal
+                  ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-md'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
               <LayoutGrid className="w-4 h-4" />
-              External Panel
-              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] bg-white/20">BASIC</span>
+              External Panel (PC)
             </button>
+
             <button 
               onClick={() => setActivePanel('internal')}
-              className="px-6 py-3 rounded-full font-orbitron font-bold text-xs tracking-wider transition-all flex items-center gap-2"
-              style={{
-                background: isInternal ? 'linear-gradient(135deg, rgba(255,0,255,0.4), rgba(100,0,200,0.2))' : 'transparent',
-                color: isInternal ? '#fff' : 'rgba(255,255,255,0.4)',
-                boxShadow: isInternal ? '0 0 20px rgba(255,0,255,0.4)' : 'none',
-              }}>
+              className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-xs tracking-wider transition-all flex items-center gap-2 ${
+                isInternal
+                  ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
               <Settings className="w-4 h-4" />
-              Internal Panel
-              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] bg-white/20">ADVANCED</span>
+              Internal Panel (APK)
             </button>
           </div>
         </div>
 
         {/* Hero Banner */}
         <ScrollReveal variant="fadeUp">
-          <AnimatePresence mode="wait">
-            <motion.div 
-              key={activePanel}
-              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}
-              className="liquid-glass p-8 sm:p-10 mb-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8"
-              style={{ border: `1px solid ${themeColor}50`, boxShadow: `0 0 40px ${themeColor}30` }}>
-              
+          <div className="clean-card p-8 sm:p-10 mb-10 bg-white border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+            <div>
+              <div className="sub-heading mb-2">FEATURES OVERVIEW</div>
+              <h2 className="font-outfit font-extrabold text-3xl sm:text-4xl text-slate-900 flex items-center gap-3">
+                {isInternal ? 'Internal Panel Suite' : 'External Overlay Panel'}
+              </h2>
+              <p className="font-inter text-slate-600 text-sm max-w-xl mt-2 leading-relaxed">
+                {isInternal 
+                  ? 'Advanced in-game injection overlay features: Headshot Aimbot, ESP Skeleton, Color Chams, and Custom Hotkeys.'
+                  : 'External memory-safe overlay with smooth aim assistance, radar ESP, and 120FPS bypass capabilities.'}
+              </p>
+            </div>
+
+            <div className="flex gap-8 border-l border-slate-200 pl-8">
               <div>
-                <h2 className="font-orbitron font-bold text-3xl sm:text-4xl text-white mb-3 flex items-center gap-3">
-                  {isInternal ? 'Internal Panel' : 'External Panel'}
-                  <span className="px-3 py-1 rounded-full text-[10px] tracking-widest font-bold uppercase"
-                        style={{ background: `linear-gradient(90deg, ${themeColor}40, transparent)`, color: themeColor }}>
-                    {activePanel}
-                  </span>
-                </h2>
-                <p className="font-inter text-gray-300 text-sm max-w-xl leading-relaxed">
-                  {isInternal 
-                    ? 'Built from real internal screenshots: Menu, ESP, Colors, Other, Keybinds, and Settings tabs.'
-                    : 'Built for speed and reliability: External modules tailored for smooth overlays.'}
-                </p>
+                <div className="font-outfit font-extrabold text-4xl text-[#06b6d4]">{isInternal ? '51' : '59'}</div>
+                <div className="font-inter text-xs text-slate-500 font-medium">Total Toggles</div>
               </div>
-
-              <div className="flex gap-10">
-                <div className="text-center">
-                  <p className="font-orbitron font-black text-4xl mb-1 glow-cyan" style={{ color: themeColor }}>{isInternal ? '51' : '59'}</p>
-                  <p className="font-inter text-[10px] text-gray-400 tracking-widest uppercase">Features</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-orbitron font-black text-4xl text-white mb-1">6</p>
-                  <p className="font-inter text-[10px] text-gray-400 tracking-widest uppercase">Categories</p>
-                </div>
+              <div>
+                <div className="font-outfit font-extrabold text-4xl text-slate-900">6</div>
+                <div className="font-inter text-xs text-slate-500 font-medium font-inter">Categories</div>
               </div>
-
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          </div>
         </ScrollReveal>
 
         {/* Live Preview & Style Cards */}
         <ScrollReveal variant="fadeUp">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
             
             {/* Left Large Preview */}
-            <AnimatePresence mode="wait">
-              <motion.div 
-                key={activePanel + '-preview'}
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="lg:col-span-2 liquid-glass overflow-hidden relative flex flex-col p-2"
-                style={{ border: `1px solid ${themeColor}40` }}
-              >
-                {/* Mac OS Window Header */}
-                <div className="px-4 py-3 flex items-center gap-2" style={{ background: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                  </div>
-                  <div className="mx-auto text-[10px] text-muted-foreground font-inter flex items-center gap-1.5 bg-black/40 px-6 py-1.5 rounded-md border border-white/5">
-                    <Lock className="w-3 h-3 opacity-50" /> {isInternal ? 'int.prrx.local' : 'ext.prrx.local'}
-                  </div>
+            <div className="lg:col-span-2 clean-card p-4 bg-white border border-slate-200 flex flex-col">
+              {/* Window Header */}
+              <div className="px-4 py-2.5 bg-slate-100 rounded-xl flex items-center gap-2 mb-3 border border-slate-200">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                 </div>
-
-                {/* Preview Image (Using main panel image) */}
-                <div className="p-1 flex-1 relative bg-black/20">
-                  {mainPreviewImage ? (
-                    <img src={mainPreviewImage} className="w-full h-full object-cover rounded-xl" alt="Live Preview" />
-                  ) : (
-                    <div className="w-full h-full min-h-[300px] flex items-center justify-center">
-                      <ImageIcon className="w-10 h-10 opacity-20 text-white" />
-                    </div>
-                  )}
-                  <div className="absolute top-6 left-6 px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 rounded font-orbitron text-[10px] tracking-widest text-white shadow-xl">
-                    LIVE PREVIEW
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent pt-12">
-                    <p className="font-inter text-[10px] text-muted-foreground tracking-widest uppercase">
-                      {isInternal ? 'Internal Panel — live preview' : 'External Panel — live preview'}
-                    </p>
-                  </div>
+                <div className="mx-auto text-xs text-slate-500 font-mono flex items-center gap-1.5">
+                  <Lock className="w-3 h-3 text-slate-400" /> {isInternal ? 'int.prrx.local' : 'ext.prrx.local'}
                 </div>
-              </motion.div>
-            </AnimatePresence>
+              </div>
 
-            {/* Right Side Small Cards (2x2 Grid) */}
+              {/* Preview Image */}
+              <div className="flex-1 bg-slate-900 rounded-xl overflow-hidden min-h-[340px] relative flex items-center justify-center">
+                {mainPreviewImage ? (
+                  <img src={mainPreviewImage} className="w-full h-full object-contain" alt="Live Preview" />
+                ) : (
+                  <div className="text-center p-8 space-y-2">
+                    <ImageIcon className="w-12 h-12 text-slate-600 mx-auto" />
+                    <p className="font-outfit text-slate-400 text-sm font-bold">Panel HUD Interface Active</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Side Small Cards */}
             <div className="lg:col-span-1 grid grid-cols-2 gap-4">
-              <InteractiveCard className="rounded-[30px] p-5 flex flex-col justify-center liquid-glass" style={{ border: `1px solid ${themeColor}40` }}>
-                 <LayoutGrid className="w-5 h-5 mb-3 opacity-80" style={{ color: themeColor }} />
-                 <h3 className="font-orbitron font-bold text-lg text-white mb-1">Tabbed</h3>
-                 <p className="font-inter text-[9px] text-gray-400 tracking-widest uppercase">Layout Style</p>
-              </InteractiveCard>
+              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center">
+                <LayoutGrid className="w-5 h-5 mb-2 text-[#06b6d4]" />
+                <h3 className="font-outfit font-extrabold text-base text-slate-900">Tabbed</h3>
+                <p className="font-inter text-xs text-slate-500">Layout Style</p>
+              </div>
 
-              <InteractiveCard className="rounded-[30px] p-5 flex flex-col justify-center liquid-glass" style={{ border: `1px solid ${themeColor}40` }}>
-                 <SlidersHorizontal className="w-5 h-5 mb-3 opacity-80" style={{ color: themeColor }} />
-                 <h3 className="font-orbitron font-bold text-lg text-white mb-1 leading-tight">Toggle +<br/>Slider</h3>
-                 <p className="font-inter text-[9px] text-gray-400 tracking-widest uppercase mt-1">Control Style</p>
-              </InteractiveCard>
+              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center">
+                <SlidersHorizontal className="w-5 h-5 mb-2 text-violet-600" />
+                <h3 className="font-outfit font-extrabold text-base text-slate-900">Sliders</h3>
+                <p className="font-inter text-xs text-slate-500">Smooth FOV</p>
+              </div>
 
-              <InteractiveCard className="rounded-[30px] p-5 flex flex-col justify-center liquid-glass" style={{ border: `1px solid ${themeColor}40` }}>
-                 <Keyboard className="w-5 h-5 mb-3 opacity-80" style={{ color: themeColor }} />
-                 <h3 className="font-orbitron font-bold text-lg text-white mb-1">Keybind tab</h3>
-                 <p className="font-inter text-[9px] text-gray-400 tracking-widest uppercase">Hotkey Control</p>
-              </InteractiveCard>
+              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center">
+                <Keyboard className="w-5 h-5 mb-2 text-indigo-600" />
+                <h3 className="font-outfit font-extrabold text-base text-slate-900">Keybinds</h3>
+                <p className="font-inter text-xs text-slate-500">Custom Binds</p>
+              </div>
 
-              <InteractiveCard className="rounded-[30px] p-5 flex flex-col justify-center liquid-glass" style={{ border: `1px solid ${themeColor}40` }}>
-                 <Check className="w-5 h-5 mb-3 opacity-80" style={{ color: themeColor }} />
-                 <h3 className="font-orbitron font-bold text-2xl text-white mb-1">{isInternal ? '51' : '59'}</h3>
-                 <p className="font-inter text-[9px] text-gray-400 tracking-widest uppercase">Total Features</p>
-              </InteractiveCard>
+              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center">
+                <Check className="w-5 h-5 mb-2 text-emerald-600" />
+                <h3 className="font-outfit font-extrabold text-2xl text-slate-900">{isInternal ? '51' : '59'}</h3>
+                <p className="font-inter text-xs text-slate-500">Total Features</p>
+              </div>
             </div>
           </div>
         </ScrollReveal>
 
         {/* Panel Screenshots */}
         <ScrollReveal variant="fadeUp">
-          <div className="mb-6 flex items-center gap-2 text-gray-400 pl-2">
-            <ImageIcon className="w-4 h-4 opacity-50" />
-            <span className="font-orbitron text-xs tracking-widest font-bold uppercase">PANEL SCREENSHOTS</span>
+          <div className="mb-4">
+            <h3 className="font-outfit font-extrabold text-lg text-slate-900">Panel Feature Screenshots</h3>
           </div>
 
-          <AnimatePresence mode="wait">
-            <motion.div 
-              key={activePanel + '-screenshots'}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20"
-            >
-              {[
-                { key: 'aimbot', label: 'Aimbot Menu' },
-                { key: 'visuals', label: 'Visuals / ESP' },
-                { key: 'colors', label: 'Colors' },
-                { key: 'misc', label: 'Misc / Other' },
-                { key: 'keybinds', label: 'Keybinds' },
-                { key: 'settings', label: 'Settings' }
-              ].map((cat) => (
-                <div key={cat.key} className="liquid-card aspect-[16/10] relative group p-1" style={{ border: `1px solid ${themeColor}40` }}>
-                  <div className="w-full h-full rounded-[28px] overflow-hidden relative">
-                    {currentImages[cat.key] ? (
-                      <img src={currentImages[cat.key]} alt={`${activePanel} ${cat.key}`} className="w-full h-full object-cover opacity-90 group-hover:scale-110 group-hover:opacity-100 transition-all duration-700" />
-                    ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center opacity-30 bg-black/50">
-                        <ImageIcon className="w-6 h-6 mb-2 text-white" />
-                        <span className="font-inter text-[10px] text-white uppercase tracking-widest">{cat.label}</span>
-                      </div>
-                    )}
-                    {/* Subtle overlay gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex items-end p-6">
-                      <span className="font-orbitron text-sm font-bold tracking-widest text-white shadow-sm glow-cyan">{cat.label}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+            {[
+              { key: 'aimbot', label: 'Aimbot Menu' },
+              { key: 'visuals', label: 'Visuals / ESP' },
+              { key: 'colors', label: 'Color Chams' },
+              { key: 'misc', label: 'Misc Modifications' },
+              { key: 'keybinds', label: 'Keybind Config' },
+              { key: 'settings', label: 'Settings & Security' }
+            ].map((cat) => (
+              <div key={cat.key} className="clean-card p-3 bg-white border border-slate-200 space-y-2">
+                <div className="aspect-[16/10] bg-slate-900 rounded-xl overflow-hidden relative flex items-center justify-center">
+                  {currentImages[cat.key] ? (
+                    <img src={currentImages[cat.key]} alt={cat.label} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center">
+                      <ImageIcon className="w-6 h-6 text-slate-600 mx-auto mb-1" />
+                      <span className="font-inter text-[11px] text-slate-400 font-semibold">{cat.label}</span>
                     </div>
-                  </div>
+                  )}
                 </div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
+                <div className="font-outfit font-bold text-xs text-slate-800 px-1">{cat.label}</div>
+              </div>
+            ))}
+          </div>
         </ScrollReveal>
 
         {/* Comparison Table */}
         <ScrollReveal variant="fadeUp">
-          <div className="liquid-glass p-8 sm:p-10 mb-10 overflow-x-auto" style={{ border: `1px solid ${themeColor}40` }}>
-            
-            <div className="mb-8">
-              <span className="px-3 py-1.5 rounded-full text-[9px] tracking-widest font-bold bg-white/10 text-gray-300 uppercase font-orbitron mb-4 inline-block">
-                SIDE-BY-SIDE
-              </span>
-              <h3 className="font-orbitron font-bold text-2xl text-white tracking-wide">External vs Internal — At a Glance</h3>
+          <div className="clean-card p-6 sm:p-8 bg-white border border-slate-200 overflow-x-auto">
+            <div className="mb-6">
+              <h3 className="font-outfit font-extrabold text-xl text-slate-900">External vs Internal Comparison</h3>
             </div>
 
-            <table className="w-full min-w-[700px] text-left">
+            <table className="w-full text-left font-inter text-xs">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="py-4 font-inter text-xs tracking-widest text-gray-400 uppercase font-medium">Capability</th>
-                  <th className="py-4 font-inter text-xs tracking-widest text-gray-400 uppercase font-medium text-center">External</th>
-                  <th className="py-4 font-inter text-xs tracking-widest text-gray-400 uppercase font-medium text-center">Internal</th>
+                <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase">
+                  <th className="py-3">Capability</th>
+                  <th className="py-3 text-center">External Panel</th>
+                  <th className="py-3 text-center">Internal Panel</th>
                 </tr>
               </thead>
-              <tbody className="font-inter text-sm text-gray-300 divide-y divide-white/10">
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-5 pl-2">Total Features (visible)</td>
-                  <td className="py-5 text-center font-orbitron text-white">59</td>
-                  <td className="py-5 text-center font-orbitron text-white">51</td>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                <tr>
+                  <td className="py-3 font-semibold text-slate-900">Total Features</td>
+                  <td className="py-3 text-center font-bold">59</td>
+                  <td className="py-3 text-center font-bold">51</td>
                 </tr>
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-5 pl-2">Categories (visible)</td>
-                  <td className="py-5 text-center font-orbitron text-white">6</td>
-                  <td className="py-5 text-center font-orbitron text-white">6</td>
+                <tr>
+                  <td className="py-3 font-semibold text-slate-900">Aimbot & Aim Assist</td>
+                  <td className="py-3 text-center text-emerald-600 font-bold">✓ Included</td>
+                  <td className="py-3 text-center text-emerald-600 font-bold">✓ Included</td>
                 </tr>
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-5 pl-2">Aim controls</td>
-                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70 text-[#00d4ff]" /></td>
-                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70 text-[#ff00ff]" /></td>
+                <tr>
+                  <td className="py-3 font-semibold text-slate-900">ESP Wallhack & Skeleton</td>
+                  <td className="py-3 text-center text-slate-600">Basic Overlay</td>
+                  <td className="py-3 text-center text-indigo-600 font-bold">Extended 3D Box</td>
                 </tr>
-                <tr className="hover:bg-white/5 transition-colors bg-white/5">
-                  <td className="py-5 pl-2 font-medium text-white glow-cyan">ESP controls</td>
-                  <td className="py-5 text-center text-gray-400">Basic</td>
-                  <td className="py-5 text-center text-white font-bold">Extended</td>
-                </tr>
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-5 pl-2">Color controls</td>
-                  <td className="py-5 text-center"><Minus className="w-4 h-4 mx-auto opacity-30" /></td>
-                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70 text-[#ff00ff]" /></td>
-                </tr>
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-5 pl-2">Shop module</td>
-                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70 text-[#00d4ff]" /></td>
-                  <td className="py-5 text-center"><Minus className="w-4 h-4 mx-auto opacity-30" /></td>
-                </tr>
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-5 pl-2">Accessibility module</td>
-                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70 text-[#00d4ff]" /></td>
-                  <td className="py-5 text-center"><Minus className="w-4 h-4 mx-auto opacity-30" /></td>
-                </tr>
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-5 pl-2">Keybind controls</td>
-                  <td className="py-5 text-center"><Minus className="w-4 h-4 mx-auto opacity-30" /></td>
-                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70 text-[#ff00ff]" /></td>
-                </tr>
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-5 pl-2">Settings safety/timer</td>
-                  <td className="py-5 text-center"><Minus className="w-4 h-4 mx-auto opacity-30" /></td>
-                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70 text-[#ff00ff]" /></td>
-                </tr>
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-5 pl-2">Stream Mode</td>
-                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70 text-[#00d4ff]" /></td>
-                  <td className="py-5 text-center"><Check className="w-4 h-4 mx-auto opacity-70 text-[#ff00ff]" /></td>
+                <tr>
+                  <td className="py-3 font-semibold text-slate-900">Stream Mode Stealth</td>
+                  <td className="py-3 text-center text-emerald-600 font-bold">✓ Included</td>
+                  <td className="py-3 text-center text-emerald-600 font-bold">✓ Included</td>
                 </tr>
               </tbody>
             </table>

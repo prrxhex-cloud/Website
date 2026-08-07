@@ -3,82 +3,80 @@ import { motion } from 'framer-motion';
 
 export default function FeaturesSection() {
   return (
-    <section id="features" className="py-24 sm:py-32 liquid-bg relative overflow-hidden">
-      
-      {/* Dynamic Background Blobs */}
-      <div className="absolute top-1/3 right-1/4 w-[30vw] h-[30vw] bg-[#00d4ff] liquid-blob mix-blend-screen opacity-10"></div>
-      <div className="absolute bottom-1/3 left-1/4 w-[25vw] h-[25vw] bg-[#ff00ff] liquid-blob mix-blend-screen opacity-10" style={{ animationDelay: '-3s' }}></div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
+    <section id="features" className="py-20 bg-slate-50 border-b border-slate-200 font-inter">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-20">
 
         {/* Block 1: Left image, Right text */}
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-28">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
+            initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="liquid-card p-1"
+            transition={{ duration: 0.5 }}
+            className="clean-card p-3 bg-white border border-slate-200"
           >
-            <div className="w-full h-full rounded-[28px] overflow-hidden">
+            <div className="w-full aspect-[16/10] rounded-2xl overflow-hidden bg-slate-900">
               <img
                 src="https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&q=80"
                 alt="PRRX Login Panel"
-                className="w-full h-auto hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover"
               />
             </div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 40 }}
+            initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-4"
           >
-            <h2 className="font-orbitron font-bold text-2xl sm:text-3xl lg:text-4xl text-white mb-6 tracking-wide">
-              Engineered for <span className="text-[#00d4ff] glow-cyan">speed</span>
+            <div className="sub-heading">PERFORMANCE FIRST</div>
+            <h2 className="font-outfit font-extrabold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+              Engineered for <span className="text-[#06b6d4]">maximum speed</span>
             </h2>
-            <p className="font-inter text-gray-300 leading-relaxed text-base mb-4">
-              Built with an optimized UI structure, lightweight assets, and efficient workflows to ensure maximum speed, stability, and usability. Modern liquid interface engineered for fast response and smooth navigation.
+            <p className="font-inter text-slate-600 leading-relaxed text-sm">
+              Built with an optimized UI structure, lightweight assets, and efficient workflows to ensure maximum speed, stability, and usability. Modern interface engineered for fast response and smooth navigation.
             </p>
-            <p className="font-inter text-gray-400 leading-relaxed text-sm">
-              Every feature is crafted to respond instantly — from login to in-game activation. No lag, no delays.
+            <p className="font-inter text-slate-500 leading-relaxed text-xs">
+              Every feature is crafted to respond instantly — from key verification to in-game activation. Zero lag, zero delay.
             </p>
           </motion.div>
         </div>
 
         {/* Block 2: Left text, Right image */}
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
+            initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="order-2 lg:order-1"
+            transition={{ duration: 0.5 }}
+            className="order-2 lg:order-1 space-y-4"
           >
-            <h2 className="font-orbitron font-bold text-2xl sm:text-3xl lg:text-4xl text-white mb-6 tracking-wide">
-              Designed for speed. <span className="text-[#ff00ff] glow-magenta">Built for control.</span>
+            <div className="sub-heading">COMPLETE CONTROL</div>
+            <h2 className="font-outfit font-extrabold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+              Designed for speed. <span className="text-violet-600">Built for total control.</span>
             </h2>
-            <p className="font-inter text-gray-300 leading-relaxed text-base mb-4">
+            <p className="font-inter text-slate-600 leading-relaxed text-sm">
               The optimized system design reduces visual clutter, improves performance, and delivers a reliable, high-speed experience across all devices.
             </p>
-            <p className="font-inter text-gray-400 leading-relaxed text-sm">
+            <p className="font-inter text-slate-500 leading-relaxed text-xs">
               From Aimbot to ESP, every toggle works instantly. Trusted by thousands of Free Fire players worldwide.
             </p>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 40 }}
+            initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="order-1 lg:order-2 liquid-card p-1"
+            transition={{ duration: 0.5 }}
+            className="order-1 lg:order-2 clean-card p-3 bg-white border border-slate-200"
           >
-            <div className="w-full h-full rounded-[28px] overflow-hidden">
+            <div className="w-full aspect-[16/10] rounded-2xl overflow-hidden bg-slate-900">
               <img
                 src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80"
                 alt="PRRX App Panel"
-                className="w-full h-auto hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover"
               />
             </div>
           </motion.div>
