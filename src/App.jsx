@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/lib/ThemeContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Home from '@/pages/Home.jsx';
 import Functions from '@/pages/Functions';
-import Chat from '@/pages/Chat.jsx';
+
 import Dashboard from '@/pages/Dashboard';
 import Prices from '@/pages/Prices.jsx';
 import Resellers from '@/pages/Resellers';
@@ -47,7 +47,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/functions" element={<Functions />} />
-      <Route path="/chat" element={<Chat />} />
+
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/prices" element={<Prices />} />
       <Route path="/resellers" element={<Resellers />} />
