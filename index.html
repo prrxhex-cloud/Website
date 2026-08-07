@@ -38,22 +38,10 @@
           }
         };
         
-        // 4. Timing Analysis to Detect DevTools
+        // 4. Security monitoring (Relaxed for developer testing)
         setInterval(() => {
-          const t0 = performance.now();
-          debugger;
-          const t1 = performance.now();
-          if (t1 - t0 > 100) {
-            // DevTools is open and paused the debugger
-            document.body.innerHTML = `
-              <div style="height:100vh;display:flex;align-items:center;justify-content:center;background:#000;color:#ff0000;font-family:monospace;flex-direction:column;">
-                <h1>SECURITY VIOLATION DETECTED</h1>
-                <p>UNAUTHORIZED ACCESS ATTEMPT LOGGED.</p>
-              </div>
-            `;
-            trap();
-          }
-        }, 2000);
+          // Additional monitoring could go here
+        }, 5000);
 
         // 5. Console clearing loop to prevent console reading
         setInterval(() => {
