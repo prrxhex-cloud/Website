@@ -61,18 +61,18 @@ export default function FunctionsSection() {
   const isInternal = activePanel === 'internal';
 
   return (
-    <section className="py-16 sm:py-24 bg-slate-50 border-b border-slate-200 font-inter">
+    <section className="py-16 sm:py-24 bg-[var(--bg-main)] border-b border-[var(--border-color)] font-inter text-[var(--text-primary)] transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
         
         {/* Toggle Switch */}
         <div className="flex justify-center mb-10">
-          <div className="bg-white/90 backdrop-blur-md border border-slate-200 p-1.5 rounded-2xl shadow-md flex items-center gap-2">
+          <div className="bg-[var(--bg-glass-card)] backdrop-blur-xl border border-[var(--border-color)] p-1.5 rounded-2xl shadow-md flex items-center gap-2">
             <button 
               onClick={() => setActivePanel('external')}
               className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-xs tracking-wider transition-all flex items-center gap-2 ${
                 !isInternal
                   ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-md'
-                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+                  : 'text-[var(--text-primary)] hover:text-[var(--text-heading)] hover:bg-[var(--bg-subtle)]'
               }`}
             >
               <LayoutGrid className="w-4 h-4" />
@@ -84,7 +84,7 @@ export default function FunctionsSection() {
               className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-xs tracking-wider transition-all flex items-center gap-2 ${
                 isInternal
                   ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
-                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+                  : 'text-[var(--text-primary)] hover:text-[var(--text-heading)] hover:bg-[var(--bg-subtle)]'
               }`}
             >
               <Settings className="w-4 h-4" />
@@ -95,27 +95,27 @@ export default function FunctionsSection() {
 
         {/* Hero Banner */}
         <ScrollReveal variant="fadeUp">
-          <div className="clean-card p-8 sm:p-10 mb-10 bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+          <div className="clean-card p-8 sm:p-10 mb-10 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-8 text-left">
             <div>
               <div className="sub-heading mb-2">FEATURES OVERVIEW</div>
-              <h2 className="font-outfit font-extrabold text-3xl sm:text-4xl text-slate-900 flex items-center gap-3">
+              <h2 className="font-outfit font-extrabold text-3xl sm:text-4xl text-[var(--text-heading)] flex items-center gap-3">
                 {isInternal ? 'Internal Panel Suite' : 'External Overlay Panel'}
               </h2>
-              <p className="font-inter text-slate-600 text-sm max-w-xl mt-2 leading-relaxed">
+              <p className="font-inter text-[var(--text-muted)] text-sm max-w-xl mt-2 leading-relaxed">
                 {isInternal 
                   ? 'Advanced in-game injection overlay features: Headshot Aimbot, ESP Skeleton, Color Chams, and Custom Hotkeys.'
                   : 'External memory-safe overlay with smooth aim assistance, radar ESP, and 120FPS bypass capabilities.'}
               </p>
             </div>
 
-            <div className="flex gap-8 border-l border-slate-200 pl-8">
+            <div className="flex gap-8 border-l border-[var(--border-color)] pl-8">
               <div>
                 <div className="font-outfit font-extrabold text-4xl text-[#06b6d4]">{isInternal ? '51' : '59'}</div>
-                <div className="font-inter text-xs text-slate-500 font-medium">Total Toggles</div>
+                <div className="font-inter text-xs text-[var(--text-muted)] font-medium">Total Toggles</div>
               </div>
               <div>
-                <div className="font-outfit font-extrabold text-4xl text-slate-900">6</div>
-                <div className="font-inter text-xs text-slate-500 font-medium font-inter">Categories</div>
+                <div className="font-outfit font-extrabold text-4xl text-[var(--text-heading)]">6</div>
+                <div className="font-inter text-xs text-[var(--text-muted)] font-medium font-inter">Categories</div>
               </div>
             </div>
           </div>
@@ -126,21 +126,21 @@ export default function FunctionsSection() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
             
             {/* Left Large Preview Container */}
-            <div className="lg:col-span-2 clean-card p-4 bg-white border border-slate-200 shadow-md flex flex-col">
+            <div className="lg:col-span-2 clean-card p-4 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md flex flex-col">
               {/* Window Header */}
-              <div className="px-4 py-2.5 bg-slate-100 rounded-xl flex items-center gap-2 mb-3 border border-slate-200">
+              <div className="px-4 py-2.5 bg-slate-950 rounded-xl flex items-center gap-2 mb-3 border border-slate-800">
                 <div className="flex gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
                   <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                 </div>
-                <div className="mx-auto text-xs text-slate-500 font-mono flex items-center gap-1.5">
+                <div className="mx-auto text-xs text-cyan-400 font-mono flex items-center gap-1.5">
                   <Lock className="w-3 h-3 text-slate-400" /> {isInternal ? 'int.prrx.local' : 'ext.prrx.local'}
                 </div>
               </div>
 
               {/* Preview Image Viewport - Full View Object Contain */}
-              <div className="flex-1 bg-slate-950 rounded-xl overflow-hidden min-h-[360px] p-2 relative flex items-center justify-center group cursor-pointer"
+              <div className="flex-1 bg-slate-950 rounded-xl overflow-hidden min-h-[360px] p-2 relative flex items-center justify-center group cursor-pointer border border-slate-800"
                 onClick={() => mainPreviewImage && setSelectedImage(mainPreviewImage)}>
                 {mainPreviewImage ? (
                   <>
@@ -149,14 +149,14 @@ export default function FunctionsSection() {
                       className="w-full h-full max-h-[460px] object-contain rounded-lg" 
                       alt="Full Panel Preview" 
                     />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-2">
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-2">
                       <Maximize2 className="w-4 h-4" /> Click to view full image
                     </div>
                   </>
                 ) : (
                   <div className="text-center p-8 space-y-2">
                     <ImageIcon className="w-12 h-12 text-slate-600 mx-auto" />
-                    <p className="font-outfit text-slate-400 text-sm font-bold">Panel HUD Interface Active</p>
+                    <p className="font-outfit text-[var(--text-muted)] text-sm font-bold">Panel HUD Interface Active</p>
                   </div>
                 )}
               </div>
@@ -164,28 +164,28 @@ export default function FunctionsSection() {
 
             {/* Right Side Small Cards */}
             <div className="lg:col-span-1 grid grid-cols-2 gap-4">
-              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center shadow-sm">
+              <div className="clean-card p-5 bg-[var(--bg-card)] border border-[var(--border-color)] flex flex-col justify-center shadow-sm text-left">
                 <LayoutGrid className="w-5 h-5 mb-2 text-[#06b6d4]" />
-                <h3 className="font-outfit font-extrabold text-base text-slate-900">Tabbed</h3>
-                <p className="font-inter text-xs text-slate-500">Layout Style</p>
+                <h3 className="font-outfit font-extrabold text-base text-[var(--text-heading)]">Tabbed</h3>
+                <p className="font-inter text-xs text-[var(--text-muted)]">Layout Style</p>
               </div>
 
-              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center shadow-sm">
-                <SlidersHorizontal className="w-5 h-5 mb-2 text-violet-600" />
-                <h3 className="font-outfit font-extrabold text-base text-slate-900">Sliders</h3>
-                <p className="font-inter text-xs text-slate-500">Smooth FOV</p>
+              <div className="clean-card p-5 bg-[var(--bg-card)] border border-[var(--border-color)] flex flex-col justify-center shadow-sm text-left">
+                <SlidersHorizontal className="w-5 h-5 mb-2 text-violet-400" />
+                <h3 className="font-outfit font-extrabold text-base text-[var(--text-heading)]">Sliders</h3>
+                <p className="font-inter text-xs text-[var(--text-muted)]">Smooth FOV</p>
               </div>
 
-              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center shadow-sm">
-                <Keyboard className="w-5 h-5 mb-2 text-indigo-600" />
-                <h3 className="font-outfit font-extrabold text-base text-slate-900">Keybinds</h3>
-                <p className="font-inter text-xs text-slate-500">Custom Binds</p>
+              <div className="clean-card p-5 bg-[var(--bg-card)] border border-[var(--border-color)] flex flex-col justify-center shadow-sm text-left">
+                <Keyboard className="w-5 h-5 mb-2 text-indigo-400" />
+                <h3 className="font-outfit font-extrabold text-base text-[var(--text-heading)]">Keybinds</h3>
+                <p className="font-inter text-xs text-[var(--text-muted)]">Custom Binds</p>
               </div>
 
-              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center shadow-sm">
-                <Check className="w-5 h-5 mb-2 text-emerald-600" />
-                <h3 className="font-outfit font-extrabold text-2xl text-slate-900">{isInternal ? '51' : '59'}</h3>
-                <p className="font-inter text-xs text-slate-500">Total Features</p>
+              <div className="clean-card p-5 bg-[var(--bg-card)] border border-[var(--border-color)] flex flex-col justify-center shadow-sm text-left">
+                <Check className="w-5 h-5 mb-2 text-emerald-400" />
+                <h3 className="font-outfit font-extrabold text-2xl text-[var(--text-heading)]">{isInternal ? '51' : '59'}</h3>
+                <p className="font-inter text-xs text-[var(--text-muted)]">Total Features</p>
               </div>
             </div>
           </div>
@@ -194,8 +194,8 @@ export default function FunctionsSection() {
         {/* Panel Screenshots Grid - Object Contain */}
         <ScrollReveal variant="fadeUp">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-outfit font-extrabold text-lg text-slate-900">Panel Feature Screenshots</h3>
-            <span className="text-xs text-slate-500 font-medium">Click any screenshot to zoom in full view</span>
+            <h3 className="font-outfit font-extrabold text-lg text-[var(--text-heading)]">Panel Feature Screenshots</h3>
+            <span className="text-xs text-[var(--text-muted)] font-medium">Click any screenshot to zoom in full view</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
@@ -207,9 +207,9 @@ export default function FunctionsSection() {
               { key: 'keybinds', label: 'Keybind Config' },
               { key: 'settings', label: 'Settings & Security' }
             ].map((cat) => (
-              <div key={cat.key} className="clean-card p-3 bg-white border border-slate-200 space-y-2 shadow-sm">
+              <div key={cat.key} className="clean-card p-3 bg-[var(--bg-card)] border border-[var(--border-color)] space-y-2 shadow-sm text-left">
                 <div 
-                  className="aspect-[16/10] bg-slate-950 rounded-xl overflow-hidden relative flex items-center justify-center p-1 group cursor-pointer"
+                  className="aspect-[16/10] bg-slate-950 rounded-xl overflow-hidden relative flex items-center justify-center p-1 group cursor-pointer border border-slate-800"
                   onClick={() => currentImages[cat.key] && setSelectedImage(currentImages[cat.key])}
                 >
                   {currentImages[cat.key] ? (
@@ -219,18 +219,18 @@ export default function FunctionsSection() {
                         alt={cat.label} 
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" 
                       />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
                         <Maximize2 className="w-4 h-4" /> Full View
                       </div>
                     </>
                   ) : (
                     <div className="text-center">
                       <ImageIcon className="w-6 h-6 text-slate-600 mx-auto mb-1" />
-                      <span className="font-inter text-[11px] text-slate-400 font-semibold">{cat.label}</span>
+                      <span className="font-inter text-[11px] text-[var(--text-muted)] font-semibold">{cat.label}</span>
                     </div>
                   )}
                 </div>
-                <div className="font-outfit font-bold text-xs text-slate-800 px-1">{cat.label}</div>
+                <div className="font-outfit font-bold text-xs text-[var(--text-heading)] px-1">{cat.label}</div>
               </div>
             ))}
           </div>

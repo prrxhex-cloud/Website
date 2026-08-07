@@ -31,7 +31,7 @@ export default function DeepDiveSection() {
   }, []);
 
   return (
-    <section className="py-20 bg-slate-50 border-b border-slate-200 font-inter">
+    <section className="py-20 bg-[var(--bg-main)] border-b border-[var(--border-color)] font-inter text-[var(--text-primary)] transition-colors duration-300">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-20">
         
         {/* Inside the Engine */}
@@ -39,10 +39,10 @@ export default function DeepDiveSection() {
           <ScrollReveal variant="fadeUp">
             <div className="text-center space-y-3">
               <div className="sub-heading">ENGINE ARCHITECTURE</div>
-              <h2 className="font-outfit font-extrabold text-3xl sm:text-5xl text-slate-900 tracking-tight">
+              <h2 className="font-outfit font-extrabold text-3xl sm:text-5xl text-[var(--text-heading)] tracking-tight">
                 INSIDE THE ENGINE
               </h2>
-              <p className="font-inter text-slate-600 text-sm max-w-xl mx-auto">
+              <p className="font-inter text-[var(--text-muted)] text-sm max-w-xl mx-auto">
                 Explore how our external and internal bypass technologies achieve 100% undetected performance.
               </p>
             </div>
@@ -51,14 +51,14 @@ export default function DeepDiveSection() {
           {/* External Bypass Row */}
           <ScrollReveal variant="fadeLeft">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div className="clean-card p-8 bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-md space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-50 text-[#06b6d4] border border-cyan-200 rounded-full font-outfit text-xs font-bold">
+              <div className="clean-card p-8 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md space-y-6 text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#06b6d4]/15 text-[#06b6d4] border border-[#06b6d4]/30 rounded-full font-outfit text-xs font-bold">
                   OFFICIAL — EXTERNAL
                 </div>
-                <h3 className="font-outfit font-extrabold text-3xl text-slate-900">
+                <h3 className="font-outfit font-extrabold text-3xl text-[var(--text-heading)]">
                   SAFETY <span className="text-[#06b6d4]">FIRST</span>
                 </h3>
-                <p className="font-inter text-slate-600 text-sm leading-relaxed">
+                <p className="font-inter text-[var(--text-muted)] text-sm leading-relaxed">
                   Runs inside an isolated overlay space. It operates separately from your system processes, achieving safety by never modifying protected game memory.
                 </p>
                 <div className="space-y-3">
@@ -68,7 +68,7 @@ export default function DeepDiveSection() {
                     'Customized system registry mapping',
                     'Bypass client validation engines'
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 text-xs font-inter text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div key={i} className="flex items-center gap-3 text-xs font-inter text-[var(--text-primary)] bg-[var(--bg-subtle)] p-3 rounded-xl border border-[var(--border-color)]">
                       <div className="w-2 h-2 rounded-full bg-[#06b6d4]" />
                       <span>{item}</span>
                     </div>
@@ -77,24 +77,24 @@ export default function DeepDiveSection() {
               </div>
 
               {/* Preview Window */}
-              <div className="clean-card p-3 bg-white border border-slate-200 shadow-md">
-                <div className="px-4 py-2 bg-slate-100 rounded-xl flex items-center justify-between text-xs text-slate-500 font-mono mb-2">
+              <div className="clean-card p-3 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md">
+                <div className="px-4 py-2 bg-slate-950 rounded-xl flex items-center justify-between text-xs text-cyan-400 font-mono mb-2 border border-slate-800">
                   <span>ext.prrx.local</span>
                   <Lock className="w-3.5 h-3.5 text-slate-400" />
                 </div>
                 <div 
-                  className="bg-slate-950 rounded-xl overflow-hidden min-h-[300px] p-2 flex items-center justify-center relative group cursor-pointer"
+                  className="bg-slate-950 rounded-xl overflow-hidden min-h-[300px] p-2 flex items-center justify-center relative group cursor-pointer border border-slate-800"
                   onClick={() => panelImages.external_image_url && setSelectedImage(panelImages.external_image_url)}
                 >
                   {panelImages.external_image_url ? (
                     <>
                       <img src={panelImages.external_image_url} alt="External Panel" className="w-full h-auto max-h-[360px] object-contain rounded-lg" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
                         <Maximize2 className="w-4 h-4" /> Full View
                       </div>
                     </>
                   ) : (
-                    <div className="text-center p-6 text-slate-500 font-outfit text-sm">
+                    <div className="text-center p-6 text-[var(--text-muted)] font-outfit text-sm">
                       External Overlay HUD Active
                     </div>
                   )}
@@ -106,38 +106,38 @@ export default function DeepDiveSection() {
           {/* Internal Injection Row */}
           <ScrollReveal variant="fadeRight">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div className="clean-card p-3 bg-white border border-slate-200 shadow-md lg:order-1 order-2">
-                <div className="px-4 py-2 bg-slate-100 rounded-xl flex items-center justify-between text-xs text-slate-500 font-mono mb-2">
+              <div className="clean-card p-3 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md lg:order-1 order-2">
+                <div className="px-4 py-2 bg-slate-950 rounded-xl flex items-center justify-between text-xs text-cyan-400 font-mono mb-2 border border-slate-800">
                   <span>int.prrx.local</span>
                   <Lock className="w-3.5 h-3.5 text-slate-400" />
                 </div>
                 <div 
-                  className="bg-slate-950 rounded-xl overflow-hidden min-h-[300px] p-2 flex items-center justify-center relative group cursor-pointer"
+                  className="bg-slate-950 rounded-xl overflow-hidden min-h-[300px] p-2 flex items-center justify-center relative group cursor-pointer border border-slate-800"
                   onClick={() => panelImages.internal_image_url && setSelectedImage(panelImages.internal_image_url)}
                 >
                   {panelImages.internal_image_url ? (
                     <>
                       <img src={panelImages.internal_image_url} alt="Internal Panel" className="w-full h-auto max-h-[360px] object-contain rounded-lg" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
                         <Maximize2 className="w-4 h-4" /> Full View
                       </div>
                     </>
                   ) : (
-                    <div className="text-center p-6 text-slate-500 font-outfit text-sm">
+                    <div className="text-center p-6 text-[var(--text-muted)] font-outfit text-sm">
                       Internal Injected Menu Active
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="clean-card p-8 bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-md space-y-6 lg:order-2 order-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-violet-50 text-violet-700 border border-violet-200 rounded-full font-outfit text-xs font-bold">
+              <div className="clean-card p-8 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md space-y-6 lg:order-2 order-1 text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-violet-500/15 text-violet-400 border border-violet-500/30 rounded-full font-outfit text-xs font-bold">
                   BETA X V7A — INTERNAL
                 </div>
-                <h3 className="font-outfit font-extrabold text-3xl text-slate-900">
-                  MAXIMUM <span className="text-violet-600">POWER</span>
+                <h3 className="font-outfit font-extrabold text-3xl text-[var(--text-heading)]">
+                  MAXIMUM <span className="text-violet-400">POWER</span>
                 </h3>
-                <p className="font-inter text-slate-600 text-sm leading-relaxed">
+                <p className="font-inter text-[var(--text-muted)] text-sm leading-relaxed">
                   Dominate the battlefield. Optimized for maximum performance and security with a full combat suite and movement hacks.
                 </p>
                 <div className="space-y-3">
@@ -147,8 +147,8 @@ export default function DeepDiveSection() {
                     'Ultra-fast prediction vector engines',
                     '0ms action delay metrics'
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 text-xs font-inter text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                      <div className="w-2 h-2 rounded-full bg-violet-600" />
+                    <div key={i} className="flex items-center gap-3 text-xs font-inter text-[var(--text-primary)] bg-[var(--bg-subtle)] p-3 rounded-xl border border-[var(--border-color)]">
+                      <div className="w-2 h-2 rounded-full bg-violet-500" />
                       <span>{item}</span>
                     </div>
                   ))}
@@ -163,7 +163,7 @@ export default function DeepDiveSection() {
           <div className="space-y-8">
             <div className="text-center space-y-2">
               <div className="sub-heading">TECHNOLOGY</div>
-              <h2 className="font-outfit font-extrabold text-3xl text-slate-900">Engineered Stack</h2>
+              <h2 className="font-outfit font-extrabold text-3xl text-[var(--text-heading)]">Engineered Stack</h2>
             </div>
             
             <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
@@ -179,9 +179,9 @@ export default function DeepDiveSection() {
                 { name: 'HTML5', icon: 'https://cdn.simpleicons.org/html5/E34F26' },
                 { name: 'CSS3', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg' }
               ].map((tech) => (
-                <div key={tech.name} className="clean-card p-4 w-28 h-28 bg-white border border-slate-200 flex flex-col items-center justify-center space-y-2 hover:shadow-md transition-shadow">
+                <div key={tech.name} className="clean-card p-4 w-28 h-28 bg-[var(--bg-card)] border border-[var(--border-color)] flex flex-col items-center justify-center space-y-2 hover:shadow-md transition-shadow">
                   <img src={tech.icon} alt={tech.name} className="w-8 h-8 object-contain" />
-                  <span className="text-[11px] font-bold text-slate-800 font-inter">{tech.name}</span>
+                  <span className="text-[11px] font-bold text-[var(--text-heading)] font-inter">{tech.name}</span>
                 </div>
               ))}
             </div>
@@ -193,8 +193,8 @@ export default function DeepDiveSection() {
           <div className="space-y-8">
             <div className="text-center space-y-2">
               <div className="sub-heading">COMPATIBILITY</div>
-              <h2 className="font-outfit font-extrabold text-3xl text-slate-900">Supported Platforms</h2>
-              <p className="font-inter text-slate-500 text-xs">Full support for popular Android emulators and Windows 10/11 x64 systems.</p>
+              <h2 className="font-outfit font-extrabold text-3xl text-[var(--text-heading)]">Supported Platforms</h2>
+              <p className="font-inter text-[var(--text-muted)] text-xs">Full support for popular Android emulators and Windows 10/11 x64 systems.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -215,11 +215,11 @@ export default function DeepDiveSection() {
                   icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/windows8/windows8-original.svg"
                 }
               ].map((plat) => (
-                <div key={plat.name} className="clean-card p-5 bg-white border border-slate-200 flex items-center gap-4">
+                <div key={plat.name} className="clean-card p-5 bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center gap-4 text-left">
                   <img src={plat.icon} alt={plat.name} className="w-10 h-10 shrink-0 object-contain" />
                   <div>
-                    <h4 className="text-slate-900 font-extrabold font-outfit text-base">{plat.name}</h4>
-                    <p className="text-xs text-slate-500 font-inter">{plat.sub}</p>
+                    <h4 className="text-[var(--text-heading)] font-extrabold font-outfit text-base">{plat.name}</h4>
+                    <p className="text-xs text-[var(--text-muted)] font-inter">{plat.sub}</p>
                   </div>
                 </div>
               ))}

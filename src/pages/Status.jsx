@@ -5,32 +5,30 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import { Globe, Cpu, Activity, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 const STATUS_CONFIG = {
-  online:      { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'UNDETECTED', icon: CheckCircle },
-  offline:     { bg: 'bg-rose-50',    text: 'text-rose-700',    border: 'border-rose-200',    label: 'OFFLINE',    icon: XCircle },
-  maintaining: { bg: 'bg-amber-50',   text: 'text-amber-700',   border: 'border-amber-200',   label: 'TESTING',    icon: AlertTriangle },
+  online:      { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30', label: 'UNDETECTED', icon: CheckCircle },
+  offline:     { bg: 'bg-rose-500/15',    text: 'text-rose-400',    border: 'border-rose-500/30',    label: 'OFFLINE',    icon: XCircle },
+  maintaining: { bg: 'bg-amber-500/15',   text: 'text-amber-400',   border: 'border-amber-500/30',   label: 'TESTING',    icon: AlertTriangle },
 };
 
 function ServiceCard({ service, index }) {
   const cfg = STATUS_CONFIG[service.status] || STATUS_CONFIG.online;
-  const Icon = cfg.icon;
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08 }}
-      className="clean-card p-6 flex flex-col gap-4 bg-white border border-slate-200 hover:shadow-lg transition-all"
+      className="clean-card p-6 flex flex-col gap-4 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md hover:shadow-lg transition-all text-left"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-primary)] flex items-center justify-center">
             {service.category === 'website' ? <Globe className="w-5 h-5" /> : <Cpu className="w-5 h-5 text-[#06b6d4]" />}
           </div>
           <div>
-            <h3 className="font-outfit font-bold text-slate-900 text-base">{service.name}</h3>
-            <p className="font-inter text-xs text-slate-500">{service.description}</p>
+            <h3 className="font-outfit font-bold text-[var(--text-heading)] text-base">{service.name}</h3>
+            <p className="font-inter text-xs text-[var(--text-muted)]">{service.description}</p>
           </div>
         </div>
         <div className={`px-3 py-1 rounded-full border ${cfg.bg} ${cfg.text} ${cfg.border} font-outfit font-extrabold text-[11px] flex items-center gap-1.5`}>
@@ -39,14 +37,14 @@ function ServiceCard({ service, index }) {
         </div>
       </div>
 
-      <div className="border-t border-slate-100 pt-3 grid grid-cols-2 gap-2 text-xs font-inter">
+      <div className="border-t border-[var(--border-color)] pt-3 grid grid-cols-2 gap-2 text-xs font-inter">
         <div>
-          <span className="text-slate-400 block text-[10px] font-bold uppercase">Current Patch</span>
-          <span className="font-semibold text-slate-700">Free Fire OB46</span>
+          <span className="text-[var(--text-muted)] block text-[10px] font-bold uppercase">Current Patch</span>
+          <span className="font-semibold text-[var(--text-heading)]">Free Fire OB46</span>
         </div>
         <div>
-          <span className="text-slate-400 block text-[10px] font-bold uppercase">Uptime Ratio</span>
-          <span className="font-semibold text-emerald-600">{service.uptime_elapsed || '99.9% (30D)'}</span>
+          <span className="text-[var(--text-muted)] block text-[10px] font-bold uppercase">Uptime Ratio</span>
+          <span className="font-semibold text-emerald-500">{service.uptime_elapsed || '99.9% (30D)'}</span>
         </div>
       </div>
     </motion.div>
@@ -56,7 +54,6 @@ function ServiceCard({ service, index }) {
 export default function Status() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   const load = async () => {
     setLoading(true);
@@ -80,19 +77,19 @@ export default function Status() {
   const online = services.filter(s => s.status === 'online').length;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-inter">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter transition-colors duration-300">
       <Navbar />
 
       {/* Header */}
-      <section className="pt-16 pb-12 text-center bg-white border-b border-slate-200">
+      <section className="pt-16 pb-12 text-center bg-[var(--bg-glass-card)] backdrop-blur-xl border-b border-[var(--border-color)]">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-4">
           <div className="sub-heading">
             <Activity className="w-3.5 h-3.5" /> REAL-TIME MONITORING
           </div>
-          <h1 className="font-outfit font-extrabold text-4xl sm:text-5xl text-slate-900 tracking-tight">
+          <h1 className="font-outfit font-extrabold text-4xl sm:text-5xl text-[var(--text-heading)] tracking-tight">
             LIVE ANTI-CHEAT DETECTION STATUS
           </h1>
-          <p className="font-inter text-slate-600 text-base max-w-2xl mx-auto">
+          <p className="font-inter text-[var(--text-muted)] text-base max-w-2xl mx-auto">
             Our automated server system continuously tests every cheat build against Garena's latest anti-cheat patches every 60 seconds.
           </p>
         </div>
@@ -102,21 +99,21 @@ export default function Status() {
         
         {/* Metric Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-          <div className="clean-card p-5 text-center bg-white border border-slate-200">
-            <div className="font-outfit font-extrabold text-3xl text-slate-900">{total || 6}</div>
-            <div className="font-inter text-xs text-slate-500 font-medium mt-1">Total Services</div>
+          <div className="clean-card p-5 text-center bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md">
+            <div className="font-outfit font-extrabold text-3xl text-[var(--text-heading)]">{total || 6}</div>
+            <div className="font-inter text-xs text-[var(--text-muted)] font-medium mt-1">Total Services</div>
           </div>
-          <div className="clean-card p-5 text-center bg-white border border-slate-200">
-            <div className="font-outfit font-extrabold text-3xl text-emerald-600">{online || 6}</div>
-            <div className="font-inter text-xs text-slate-500 font-medium mt-1">Undetected Build</div>
+          <div className="clean-card p-5 text-center bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md">
+            <div className="font-outfit font-extrabold text-3xl text-emerald-500">{online || 6}</div>
+            <div className="font-inter text-xs text-[var(--text-muted)] font-medium mt-1">Undetected Build</div>
           </div>
-          <div className="clean-card p-5 text-center bg-white border border-slate-200">
+          <div className="clean-card p-5 text-center bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md">
             <div className="font-outfit font-extrabold text-3xl text-[#06b6d4]">99.98%</div>
-            <div className="font-inter text-xs text-slate-500 font-medium mt-1">30-Day Uptime</div>
+            <div className="font-inter text-xs text-[var(--text-muted)] font-medium mt-1">30-Day Uptime</div>
           </div>
-          <div className="clean-card p-5 text-center bg-white border border-slate-200">
-            <div className="font-outfit font-extrabold text-3xl text-indigo-600">60s</div>
-            <div className="font-inter text-xs text-slate-500 font-medium mt-1">Check Frequency</div>
+          <div className="clean-card p-5 text-center bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md">
+            <div className="font-outfit font-extrabold text-3xl text-indigo-400">60s</div>
+            <div className="font-inter text-xs text-[var(--text-muted)] font-medium mt-1">Check Frequency</div>
           </div>
         </div>
 
@@ -128,8 +125,8 @@ export default function Status() {
         ) : (
           <div className="space-y-10">
             {/* Panel Services */}
-            <div className="space-y-4">
-              <h2 className="font-outfit font-extrabold text-xl text-slate-900 flex items-center gap-2">
+            <div className="space-y-4 text-left">
+              <h2 className="font-outfit font-extrabold text-xl text-[var(--text-heading)] flex items-center gap-2">
                 <Cpu className="w-5 h-5 text-[#06b6d4]" /> Free Fire Cheat Panels
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -142,9 +139,9 @@ export default function Status() {
             </div>
 
             {/* Infrastructure Services */}
-            <div className="space-y-4 pt-6 border-t border-slate-200">
-              <h2 className="font-outfit font-extrabold text-xl text-slate-900 flex items-center gap-2">
-                <Globe className="w-5 h-5 text-indigo-600" /> Infrastructure & Server Systems
+            <div className="space-y-4 pt-6 border-t border-[var(--border-color)] text-left">
+              <h2 className="font-outfit font-extrabold text-xl text-[var(--text-heading)] flex items-center gap-2">
+                <Globe className="w-5 h-5 text-indigo-400" /> Infrastructure & Server Systems
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {(websiteServices.length > 0 ? websiteServices : [

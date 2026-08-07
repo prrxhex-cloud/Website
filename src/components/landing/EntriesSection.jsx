@@ -21,14 +21,14 @@ const entries = [
 
 export default function EntriesSection() {
   return (
-    <section id="entries" className="py-20 bg-slate-50 border-b border-slate-200 font-inter">
+    <section id="entries" className="py-20 bg-[var(--bg-main)] border-b border-[var(--border-color)] font-inter text-[var(--text-primary)] transition-colors duration-300">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
         <ScrollReveal variant="fadeDown" className="text-center mb-12 space-y-2">
           <div className="sub-heading">KEY MODULES</div>
-          <h2 className="font-outfit font-extrabold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+          <h2 className="font-outfit font-extrabold text-3xl sm:text-4xl text-[var(--text-heading)] tracking-tight">
             CORE SYSTEM ENTRIES
           </h2>
-          <p className="font-inter text-slate-600 text-sm max-w-xl mx-auto">
+          <p className="font-inter text-[var(--text-muted)] text-sm max-w-xl mx-auto">
             Manage access, stay active, and control everything from one place.
           </p>
         </ScrollReveal>
@@ -36,8 +36,8 @@ export default function EntriesSection() {
         <div className="grid sm:grid-cols-3 gap-6">
           {entries.map((entry, i) => (
             <ScrollReveal key={entry.title} variant="fadeUp" delay={i * 0.15}>
-              <div className="clean-card bg-white border border-slate-200 overflow-hidden h-full flex flex-col group">
-                <div className="overflow-hidden aspect-video bg-slate-900">
+              <div className="clean-card bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden h-full flex flex-col group shadow-md text-left">
+                <div className="overflow-hidden aspect-video bg-slate-950">
                   <img
                     src={entry.img}
                     alt={entry.title}
@@ -45,8 +45,8 @@ export default function EntriesSection() {
                   />
                 </div>
                 <div className="p-6 space-y-2 flex-1 flex flex-col">
-                  <h3 className="font-outfit font-extrabold text-base text-slate-900">{entry.title}</h3>
-                  <p className="font-inter text-xs text-slate-600 leading-relaxed flex-1">{entry.desc}</p>
+                  <h3 className="font-outfit font-extrabold text-base text-[var(--text-heading)]">{entry.title}</h3>
+                  <p className="font-inter text-xs text-[var(--text-muted)] leading-relaxed flex-1">{entry.desc}</p>
                 </div>
               </div>
             </ScrollReveal>

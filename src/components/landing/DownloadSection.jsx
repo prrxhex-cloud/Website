@@ -33,36 +33,36 @@ export default function DownloadSection() {
   }, []);
 
   return (
-    <section id="download" className="py-20 bg-slate-50 border-b border-slate-200 font-inter">
+    <section id="download" className="py-20 bg-[var(--bg-main)] border-b border-[var(--border-color)] font-inter text-[var(--text-primary)] transition-colors duration-300">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
         <ScrollReveal variant="zoomIn" className="text-center mb-12 space-y-2">
           <div className="sub-heading">PREMIUM RELEASE — BETA X V7A</div>
-          <h2 className="font-outfit font-extrabold text-3xl sm:text-5xl text-slate-900 tracking-tight">
+          <h2 className="font-outfit font-extrabold text-3xl sm:text-5xl text-[var(--text-heading)] tracking-tight">
             DOWNLOAD <span className="text-[#06b6d4]">PRRX PANELS</span>
           </h2>
-          <p className="font-inter text-slate-600 text-sm max-w-xl mx-auto">
+          <p className="font-inter text-[var(--text-muted)] text-sm max-w-xl mx-auto">
             Download PRRX HEX Premium now. #1 External & Internal panels, full feature suite. Join thousands of elite Grandmaster players.
           </p>
         </ScrollReveal>
 
         {/* Main download card */}
-        <div className="clean-card p-8 sm:p-12 bg-white border border-slate-200 rounded-3xl max-w-4xl mx-auto mb-12 shadow-md">
+        <div className="clean-card p-8 sm:p-12 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl max-w-4xl mx-auto mb-12 shadow-md">
           <div className="grid sm:grid-cols-2 gap-10 items-center">
-            <div className="space-y-6">
+            <div className="space-y-6 text-left">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-[#06b6d4]">
+                <div className="w-14 h-14 rounded-2xl bg-[#06b6d4]/15 border border-[#06b6d4]/30 flex items-center justify-center text-[#06b6d4]">
                   <Download className="w-7 h-7" />
                 </div>
                 <div>
-                  <h3 className="font-outfit font-extrabold text-2xl text-slate-900">PRRX HEX VIP</h3>
+                  <h3 className="font-outfit font-extrabold text-2xl text-[var(--text-heading)]">PRRX HEX VIP</h3>
                   <p className="font-inter text-xs text-[#06b6d4] font-bold">Beta X V7A · Free Fire Bypass</p>
                 </div>
               </div>
 
               <div className="space-y-2.5">
                 {features.map((f) => (
-                  <div key={f} className="flex items-center gap-3 text-xs font-inter text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                    <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <div key={f} className="flex items-center gap-3 text-xs font-inter text-[var(--text-primary)] bg-[var(--bg-subtle)] p-2.5 rounded-xl border border-[var(--border-color)]">
+                    <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                     <span>{f}</span>
                   </div>
                 ))}
@@ -79,14 +79,14 @@ export default function DownloadSection() {
 
               <a
                 href={internalUrl}
-                className="py-4 px-6 rounded-2xl font-inter font-bold text-xs flex items-center justify-center gap-3 bg-violet-600 hover:bg-violet-700 text-white shadow-md w-full transition-colors"
+                className="py-4 px-6 rounded-2xl font-inter font-bold text-xs flex items-center justify-center gap-3 bg-violet-600 hover:bg-violet-500 text-white shadow-md w-full transition-colors"
               >
                 <Download className="w-5 h-5" /> <span>{internalLabel}</span>
               </a>
 
-              <div className="flex items-center justify-center gap-6 pt-4 text-xs font-inter text-slate-500 font-bold border-t border-slate-100">
-                <span className="flex items-center gap-1 text-emerald-600"><Shield className="w-4 h-4" /> 100% Undetected</span>
-                <span className="flex items-center gap-1 text-amber-600"><Zap className="w-4 h-4" /> Instant Setup</span>
+              <div className="flex items-center justify-center gap-6 pt-4 text-xs font-inter text-[var(--text-muted)] font-bold border-t border-[var(--border-color)]">
+                <span className="flex items-center gap-1 text-emerald-500"><Shield className="w-4 h-4" /> 100% Undetected</span>
+                <span className="flex items-center gap-1 text-amber-500"><Zap className="w-4 h-4" /> Instant Setup</span>
               </div>
             </div>
           </div>
@@ -99,9 +99,9 @@ export default function DownloadSection() {
             { val: 'V7A', label: 'Latest Build' },
             { val: '99.9%', label: 'Undetected Uptime' },
           ].map((s) => (
-            <div key={s.label} className="clean-card p-6 bg-white border border-slate-200 rounded-3xl text-center space-y-1">
-              <div className="font-outfit font-extrabold text-3xl text-slate-900">{s.val}</div>
-              <div className="font-inter text-xs text-slate-500 font-bold uppercase">{s.label}</div>
+            <div key={s.label} className="clean-card p-6 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl text-center space-y-1 shadow-sm">
+              <div className="font-outfit font-extrabold text-3xl text-[var(--text-heading)]">{s.val}</div>
+              <div className="font-inter text-xs text-[var(--text-muted)] font-bold uppercase">{s.label}</div>
             </div>
           ))}
         </div>
