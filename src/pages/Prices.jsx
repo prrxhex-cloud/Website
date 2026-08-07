@@ -5,7 +5,7 @@ import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import ScrollReveal from '@/components/effects/ScrollReveal';
-import { Crown, Zap, Star, Shield, MessageCircle, Tag, Check } from 'lucide-react';
+import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings } from 'lucide-react';
 
 function applyDiscount(plan, discounts, panelType) {
   const now = new Date();
@@ -45,13 +45,13 @@ function PlanCard({ plan, index }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className={`clean-card p-6 flex flex-col relative bg-white border ${
+      className={`clean-card p-6 flex flex-col relative bg-[var(--bg-card)] border ${
         plan.crown 
-          ? 'border-amber-400 shadow-amber-100' 
+          ? 'border-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.2)]' 
           : plan.popular 
-          ? 'border-[#06b6d4] shadow-cyan-100' 
-          : 'border-slate-200'
-      }`}
+          ? 'border-[#06b6d4] shadow-[0_0_25px_rgba(6,182,212,0.2)]' 
+          : 'border-[var(--border-color)]'
+      } text-left shadow-md`}
     >
       {/* Badges */}
       {plan.crown && (
@@ -67,17 +67,17 @@ function PlanCard({ plan, index }) {
 
       {/* Plan Header */}
       <div className="mb-4">
-        <h3 className="font-outfit font-extrabold text-xl text-slate-900 tracking-tight">
+        <h3 className="font-outfit font-extrabold text-xl text-[var(--text-heading)] tracking-tight">
           {plan.label}
         </h3>
-        <p className="font-inter text-xs text-slate-500 font-medium mt-1">
+        <p className="font-inter text-xs text-[var(--text-muted)] font-medium mt-1">
           {plan.days}
         </p>
       </div>
 
       {/* Discount Pill */}
       {plan.discount && (
-        <div className="mb-3 inline-flex items-center gap-1.5 bg-violet-50 border border-violet-200 text-violet-700 text-xs font-bold px-2.5 py-1 rounded-md">
+        <div className="mb-3 inline-flex items-center gap-1.5 bg-violet-500/15 border border-violet-500/30 text-violet-400 text-xs font-bold px-2.5 py-1 rounded-md">
           <Tag className="w-3.5 h-3.5" />
           <span>{plan.discount.discount_type === 'percentage' ? `${plan.discount.discount_value}% OFF` : `LKR ${plan.discount.discount_value} OFF`}</span>
         </div>
@@ -86,19 +86,19 @@ function PlanCard({ plan, index }) {
       {/* Price */}
       <div className="my-4">
         <div className="flex items-baseline gap-1">
-          <span className="font-outfit font-extrabold text-xs text-slate-500">LKR</span>
-          <span className="font-outfit font-extrabold text-4xl text-slate-900">
+          <span className="font-outfit font-extrabold text-xs text-[var(--text-muted)]">LKR</span>
+          <span className="font-outfit font-extrabold text-4xl text-[var(--text-heading)]">
             {(plan.lkr || 0).toLocaleString()}
           </span>
         </div>
         {plan.originalLkr && (
-          <span className="font-inter text-xs line-through text-slate-400 font-semibold">
+          <span className="font-inter text-xs line-through text-[var(--text-muted)] font-semibold">
             LKR {plan.originalLkr.toLocaleString()}
           </span>
         )}
       </div>
 
-      <div className="border-t border-slate-100 my-4" />
+      <div className="border-t border-[var(--border-color)] my-4" />
 
       {/* Features checklist */}
       <div className="space-y-3 flex-1 mb-6">
@@ -109,8 +109,8 @@ function PlanCard({ plan, index }) {
           'Main Account Safe (HWID Spoof)',
           '24/7 Priority Support',
         ].map((feat, i) => (
-          <div key={i} className="flex items-center gap-2.5 text-xs font-inter text-slate-700">
-            <div className="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center flex-shrink-0">
+          <div key={i} className="flex items-center gap-2.5 text-xs font-inter text-[var(--text-primary)]">
+            <div className="w-4 h-4 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
               <Check className="w-3 h-3" />
             </div>
             <span>{feat}</span>
@@ -123,13 +123,13 @@ function PlanCard({ plan, index }) {
         href="https://wa.me/94761386077"
         target="_blank"
         rel="noopener noreferrer"
-        className={`w-full py-3 px-4 rounded-xl font-inter font-bold text-sm tracking-wide text-center flex items-center justify-center gap-2 transition-transform hover:-translate-y-0.5 ${
+        className={`w-full py-3.5 px-4 rounded-xl font-inter font-bold text-xs tracking-wide text-center flex items-center justify-center gap-2 transition-transform hover:-translate-y-0.5 ${
           plan.crown 
             ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md' 
-            : 'btn-primary-cyan shadow-md'
+            : 'btn-primary-cyan btn-glow shadow-md'
         }`}
       >
-        <Zap className="w-4 h-4" /> BUY KEY NOW
+        <Zap className="w-4 h-4" /> BUY VIP KEY NOW
       </a>
     </motion.div>
   );
@@ -137,104 +137,94 @@ function PlanCard({ plan, index }) {
 
 export default function Prices() {
   const [panel, setPanel] = useState('external');
-  const [plans, setPlans] = useState(DEFAULT_PLANS);
+  const [plans, setPlans] = useState(() => {
+    const cached = localStorage.getItem('prrx_cached_plans');
+    return cached ? JSON.parse(cached) : DEFAULT_PLANS;
+  });
   const [discounts, setDiscounts] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Instant background sync without blocking rendering
     Promise.all([
       getDocs(query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
       getDocs(query(collection(db, 'discounts'), orderBy('created_date', 'desc'))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() })))
     ]).then(([planData, discountData]) => {
       if (planData?.length) {
-        setPlans({
+        const newPlans = {
           external: planData.filter(p => p.panel_type === 'external').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
           internal: planData.filter(p => p.panel_type === 'internal').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
-        });
+        };
+        setPlans(newPlans);
+        localStorage.setItem('prrx_cached_plans', JSON.stringify(newPlans));
       }
       setDiscounts(discountData || []);
-    }).catch(console.error).finally(() => setLoading(false));
+    }).catch(err => console.error('Pricing sync error:', err));
   }, []);
 
   const current = plans[panel] || [];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-inter">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter transition-colors duration-300">
       <Navbar />
 
-      {/* Header Section */}
-      <section className="pt-16 pb-12 text-center bg-white border-b border-slate-200">
+      {/* Header */}
+      <section className="pt-16 pb-12 text-center bg-[var(--bg-glass-card)] backdrop-blur-xl border-b border-[var(--border-color)]">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-4">
-          <div className="sub-heading">
-            <Shield className="w-3.5 h-3.5" /> TRANSPARENT PRICING
-          </div>
-          <h1 className="font-outfit font-extrabold text-4xl sm:text-5xl text-slate-900 tracking-tight">
-            VIP CHEATS CATALOG & PRICING
+          <div className="sub-heading">PRICING BUNDLES</div>
+          <h1 className="font-outfit font-extrabold text-4xl sm:text-5xl text-[var(--text-heading)] tracking-tight">
+            VIP LICENSE <span className="text-[#06b6d4]">PRICING</span>
           </h1>
-          <p className="font-inter text-slate-600 text-base max-w-xl mx-auto">
-            Choose your preferred panel version. Instant activation key delivery with 24/7 support.
+          <p className="font-inter text-[var(--text-muted)] text-base max-w-2xl mx-auto">
+            Choose your VIP panel plan. Instant key activation delivered to your account and WhatsApp.
           </p>
+
+          {/* Panel Selector Toggle */}
+          <div className="flex justify-center pt-4">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-1.5 rounded-2xl shadow-md flex items-center gap-2">
+              <button
+                onClick={() => setPanel('external')}
+                className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-xs tracking-wider transition-all flex items-center gap-2 ${
+                  panel === 'external'
+                    ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-md'
+                    : 'text-[var(--text-primary)] hover:text-[var(--text-heading)]'
+                }`}
+              >
+                <LayoutGrid className="w-4 h-4" /> External Panel (PC)
+              </button>
+
+              <button
+                onClick={() => setPanel('internal')}
+                className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-xs tracking-wider transition-all flex items-center gap-2 ${
+                  panel === 'internal'
+                    ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
+                    : 'text-[var(--text-primary)] hover:text-[var(--text-heading)]'
+                }`}
+              >
+                <Settings className="w-4 h-4" /> Internal Panel (APK)
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Main Content Container */}
-      <main className="max-w-[1240px] mx-auto px-4 sm:px-6 py-12 space-y-12">
-        
-        {/* Panel Switcher Tabs */}
-        <div className="flex justify-center">
-          <div className="bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm flex items-center gap-2">
-            <button
-              onClick={() => setPanel('external')}
-              className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-sm transition-all ${
-                panel === 'external'
-                  ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              ⚡ EXTERNAL PANEL (PC / Emulator)
-            </button>
-            <button
-              onClick={() => setPanel('internal')}
-              className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-sm transition-all ${
-                panel === 'internal'
-                  ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              🔥 INTERNAL PANEL (Android APK)
-            </button>
-          </div>
+      {/* Main Plans Grid — Loads INSTANTLY (0 Seconds) */}
+      <main className="max-w-[1240px] mx-auto px-4 sm:px-6 py-12 space-y-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {current.map((p, i) => {
+            const planWithDiscount = applyDiscount(p, discounts, panel);
+            return <PlanCard key={p.id || p.label} plan={planWithDiscount} index={i} />;
+          })}
         </div>
 
-        {/* Pricing Cards Grid */}
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {current.map((plan, i) => (
-              <PlanCard key={i} plan={applyDiscount(plan, discounts, panel)} index={i} />
-            ))}
-            {current.length === 0 && (
-              <div className="col-span-full py-16 text-center bg-white border border-slate-200 rounded-2xl">
-                <p className="font-outfit text-slate-500 font-bold text-lg">No plans available for this category right now.</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Support & Contact Strip */}
+        {/* Support CTA */}
         <ScrollReveal variant="fadeUp">
-          <div className="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-xl relative overflow-hidden">
-            <div className="max-w-2xl mx-auto space-y-4 relative z-10">
-              <span className="text-xs font-bold tracking-widest uppercase text-[#06b6d4]">
-                NEED CUSTOM BUNDLES OR RESELLER DISCOUNTS?
-              </span>
-              <h2 className="font-outfit font-extrabold text-3xl sm:text-4xl">
+          <div className="clean-card p-8 sm:p-12 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-cyan-500/30 rounded-3xl text-center text-white shadow-2xl relative overflow-hidden">
+            <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
+              <span className="sub-heading bg-cyan-500/15 border-cyan-500/30 text-cyan-400">INSTANT SUPPORT</span>
+              <h2 className="font-outfit font-black text-3xl sm:text-4xl tracking-tight">
                 TALK TO OUR ADMIN TEAM ON WHATSAPP
               </h2>
-              <p className="font-inter text-slate-400 text-sm">
+              <p className="font-inter text-slate-300 text-sm">
                 Get instant answers, custom key activations, bulk pricing, and payment verification support.
               </p>
               <div className="pt-2 flex justify-center gap-4 flex-wrap">
@@ -242,9 +232,9 @@ export default function Prices() {
                   href="https://wa.me/94761386077"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white font-inter font-bold px-8 py-3.5 rounded-xl shadow-lg flex items-center gap-2 transition-transform hover:-translate-y-0.5"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-inter font-bold px-8 py-3.5 rounded-xl shadow-lg flex items-center gap-2 transition-transform hover:-translate-y-0.5"
                 >
-                  <MessageCircle className="w-5 h-5" /> Chat on WhatsApp
+                  <MessageCircle className="w-5 h-5 fill-current" /> Chat on WhatsApp (+94 761 386 077)
                 </a>
               </div>
             </div>

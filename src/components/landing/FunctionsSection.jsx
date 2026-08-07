@@ -146,7 +146,7 @@ export default function FunctionsSection() {
                   <>
                     <img 
                       src={mainPreviewImage} 
-                      className="w-full h-full max-h-[460px] object-contain rounded-lg" 
+                      className="w-full h-full max-h-[460px] object-cover object-top rounded-lg" 
                       alt="Full Panel Preview" 
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-2">
@@ -185,7 +185,7 @@ export default function FunctionsSection() {
               <div className="clean-card p-5 bg-[var(--bg-card)] border border-[var(--border-color)] flex flex-col justify-center shadow-sm text-left">
                 <Check className="w-5 h-5 mb-2 text-emerald-400" />
                 <h3 className="font-outfit font-extrabold text-2xl text-[var(--text-heading)]">{isInternal ? '51' : '59'}</h3>
-                <p className="font-inter text-xs text-[var(--text-muted)]">Total Features</p>
+                <p className="font-inter text-xs text-[var(--text-muted)] font-medium">Total Features</p>
               </div>
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function FunctionsSection() {
             ].map((cat) => (
               <div key={cat.key} className="clean-card p-3 bg-[var(--bg-card)] border border-[var(--border-color)] space-y-2 shadow-sm text-left">
                 <div 
-                  className="aspect-[16/10] bg-slate-950 rounded-xl overflow-hidden relative flex items-center justify-center p-1 group cursor-pointer border border-slate-800"
+                  className="aspect-[16/10] bg-slate-950 rounded-xl overflow-hidden relative flex items-center justify-center p-0.5 group cursor-pointer border border-slate-800"
                   onClick={() => currentImages[cat.key] && setSelectedImage(currentImages[cat.key])}
                 >
                   {currentImages[cat.key] ? (
@@ -217,7 +217,7 @@ export default function FunctionsSection() {
                       <img 
                         src={currentImages[cat.key]} 
                         alt={cat.label} 
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" 
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300 rounded-lg" 
                       />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
                         <Maximize2 className="w-4 h-4" /> Full View

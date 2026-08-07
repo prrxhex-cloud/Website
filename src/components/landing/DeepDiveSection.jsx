@@ -83,12 +83,12 @@ export default function DeepDiveSection() {
                   <Lock className="w-3.5 h-3.5 text-slate-400" />
                 </div>
                 <div 
-                  className="bg-slate-950 rounded-xl overflow-hidden min-h-[300px] p-2 flex items-center justify-center relative group cursor-pointer border border-slate-800"
+                  className="bg-slate-950 rounded-xl overflow-hidden min-h-[300px] aspect-[16/10] p-1 flex items-center justify-center relative group cursor-pointer border border-slate-800"
                   onClick={() => panelImages.external_image_url && setSelectedImage(panelImages.external_image_url)}
                 >
                   {panelImages.external_image_url ? (
                     <>
-                      <img src={panelImages.external_image_url} alt="External Panel" className="w-full h-auto max-h-[360px] object-contain rounded-lg" />
+                      <img src={panelImages.external_image_url} alt="External Panel" className="w-full h-full object-cover object-top rounded-lg" />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
                         <Maximize2 className="w-4 h-4" /> Full View
                       </div>
@@ -112,12 +112,12 @@ export default function DeepDiveSection() {
                   <Lock className="w-3.5 h-3.5 text-slate-400" />
                 </div>
                 <div 
-                  className="bg-slate-950 rounded-xl overflow-hidden min-h-[300px] p-2 flex items-center justify-center relative group cursor-pointer border border-slate-800"
+                  className="bg-slate-950 rounded-xl overflow-hidden min-h-[300px] aspect-[16/10] p-1 flex items-center justify-center relative group cursor-pointer border border-slate-800"
                   onClick={() => panelImages.internal_image_url && setSelectedImage(panelImages.internal_image_url)}
                 >
                   {panelImages.internal_image_url ? (
                     <>
-                      <img src={panelImages.internal_image_url} alt="Internal Panel" className="w-full h-auto max-h-[360px] object-contain rounded-lg" />
+                      <img src={panelImages.internal_image_url} alt="Internal Panel" className="w-full h-full object-cover object-top rounded-lg" />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
                         <Maximize2 className="w-4 h-4" /> Full View
                       </div>
