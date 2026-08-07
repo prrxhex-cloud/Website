@@ -10,11 +10,17 @@ import InteractiveCard from '@/components/effects/InteractiveCard';
 export default function FunctionsSection() {
   const location = useLocation();
   const [activePanel, setActivePanel] = useState(location.state?.tab || 'internal');
-  const [images, setImages] = useState({
-    internal: { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
-    external: { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
+  const [images, setImages] = useState(() => {
+    const cached = localStorage.getItem('prrx_functions_screenshots');
+    return cached ? JSON.parse(cached) : {
+      internal: { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
+      external: { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
+    };
   });
-  const [panelImages, setPanelImages] = useState({ external_image_url: '', internal_image_url: '' });
+  const [panelImages, setPanelImages] = useState(() => {
+    const cached = localStorage.getItem('prrx_panel_images');
+    return cached ? JSON.parse(cached) : { external_image_url: '', internal_image_url: '' };
+  });
 
   useEffect(() => {
     if (location.state?.tab) {
@@ -27,19 +33,23 @@ export default function FunctionsSection() {
         const snap = await getDoc(doc(db, 'public_settings', 'functions_screenshots'));
         if (snap.exists()) {
           const data = snap.data();
-          setImages({
+          const newImages = {
             internal: data.internal_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
             external: data.external_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
-          });
+          };
+          setImages(newImages);
+          localStorage.setItem('prrx_functions_screenshots', JSON.stringify(newImages));
         }
         
         // Fetch main panel images
         const panelSnap = await getDoc(doc(db, 'public_settings', 'panel_images'));
         if (panelSnap.exists()) {
-          setPanelImages({
+          const newPanelImages = {
             external_image_url: panelSnap.data().external_image_url || '',
             internal_image_url: panelSnap.data().internal_image_url || ''
-          });
+          };
+          setPanelImages(newPanelImages);
+          localStorage.setItem('prrx_panel_images', JSON.stringify(newPanelImages));
         }
       } catch (error) {
         console.error("Error loading panel screenshots:", error);
