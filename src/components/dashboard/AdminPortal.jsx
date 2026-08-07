@@ -9,6 +9,16 @@ import DiscordSettingsTab from './DiscordSettingsTab';
 import DiscountsTab from './DiscountsTab';
 import FreebiesTab from './FreebiesTab';
 import StatusTab from './StatusTab';
+import AccountRequestsTab from './AccountRequestsTab';
+import BeneficiaryAccountsTab from './BeneficiaryAccountsTab';
+import ResellersTab from './ResellersTab';
+import KeyBankTab from './KeyBankTab';
+import PricePlansTab from './PricePlansTab';
+import DownloadLinksTab from './DownloadLinksTab';
+import AdminOverviewTab from './AdminOverviewTab';
+import AdminMessagesTab from './AdminMessagesTab';
+import AdminAnnouncementsTab from './AdminAnnouncementsTab';
+import { Activity, UserPlus, Clock, Store, Key, CreditCard, DollarSign, Tag, Link2, Users, Gift, Shield, Bell, MessageCircle, Megaphone } from 'lucide-react';
 
 function ReceiptsTab() {
   const [receipts, setReceipts] = useState([]);
@@ -401,51 +411,93 @@ function LoginForm({ onSuccess }) {
 }
 
 function AdminPanel({ adminUser, onLogout }) {
-  const [tab, setTab] = useState('receipts');
-  
-  const TABS = [
-    { id: 'receipts', label: 'Receipts' },
-    { id: 'users', label: 'Users' },
-    { id: 'admins', label: 'Admins' },
-    { id: 'discounts', label: 'Discounts' },
-    { id: 'freebies', label: 'Freebies' },
-    { id: 'status', label: 'Service Status' },
-    { id: 'community', label: 'Community Links' },
-    { id: 'discord', label: 'Discord Settings' },
+  const [tab, setTab] = useState('overview');
+
+  const tabs = [
+    { key: 'overview',   label: 'Overview',   icon: Activity },
+    { key: 'accrequests', label: 'Acc Requests', icon: UserPlus },
+    { key: 'receipts',   label: 'Receipts',   icon: Clock },
+    { key: 'resellers',  label: 'Resellers',  icon: Store },
+    { key: 'keys',       label: 'Key Bank',   icon: Key },
+    { key: 'beneficiaries', label: 'Beneficiaries', icon: CreditCard },
+    { key: 'prices',     label: 'Prices',     icon: DollarSign },
+    { key: 'discounts',  label: 'Discounts',  icon: Tag },
+    { key: 'status',     label: 'Status',     icon: Activity },
+    { key: 'links',      label: 'DL Links',   icon: Link2 },
+    { key: 'community',  label: 'Community',  icon: Users },
+    { key: 'freebies',   label: 'Freebies',   icon: Gift },
+    { key: 'admins',     label: 'Admins',     icon: Shield },
+    { key: 'discord',    label: 'Discord',    icon: Bell },
+    { key: 'users',      label: 'Users',      icon: Users },
+    { key: 'messages',   label: 'Messages',   icon: MessageCircle },
+    { key: 'announcements', label: 'Posts',   icon: Megaphone },
   ];
 
   return (
-    <div className="flex flex-col md:flex-row gap-6">
-      <div className="w-full md:w-56 space-y-1">
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className="w-full text-left px-4 py-2.5 rounded-xl font-inter text-sm font-medium transition-all"
-            style={{
-              background: tab === t.id ? 'rgba(0,212,255,0.1)' : 'transparent',
-              color: tab === t.id ? '#00d4ff' : 'rgba(255,255,255,0.5)'
-            }}>
-            {t.label}
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <Crown className="w-4 h-4" style={{ color: '#ffaa00' }} />
+          <span className="font-orbitron font-bold text-sm text-primary tracking-wider">ADMIN PANEL</span>
+          <span className="font-inter text-xs px-2 py-0.5 rounded-full"
+            style={{ background: 'rgba(0,255,100,0.1)', border: '1px solid rgba(0,255,100,0.3)', color: '#00ff64' }}>
+            ● {adminUser}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={onLogout}
+            className="flex items-center gap-1.5 font-inter text-xs text-red-400 hover:text-red-300 transition-colors px-3 py-1.5 rounded-lg"
+            style={{ border: '1px solid rgba(255,80,80,0.2)', background: 'rgba(255,80,80,0.05)' }}>
+            <LogOut className="w-3.5 h-3.5" /> Logout
           </button>
-        ))}
-        <button onClick={onLogout} className="w-full text-left px-4 py-2.5 rounded-xl font-inter text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all mt-4 flex items-center gap-2">
-          <LogOut className="w-4 h-4" /> Logout
-        </button>
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <AnimatePresence mode="wait">
-          <motion.div key={tab} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}>
-            {tab === 'receipts' && <ReceiptsTab />}
-            {tab === 'users' && <UsersTab />}
-            {tab === 'admins' && <AdminsTab />}
-            {tab === 'discounts' && <DiscountsTab />}
-            {tab === 'freebies' && <FreebiesTab />}
-            {tab === 'status' && <StatusTab />}
-            {tab === 'community' && <CommunityLinksTab />}
-            {tab === 'discord' && <DiscordSettingsTab />}
-          </motion.div>
-        </AnimatePresence>
+
+      {/* Tabs - scrollable */}
+      <div className="overflow-x-auto pb-2 -mb-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+        <div className="flex gap-1 p-1 rounded-xl min-w-max" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
+          {tabs.map(t => {
+            const Icon = t.icon;
+            return (
+              <button key={t.key} onClick={() => setTab(t.key)}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-inter text-xs font-medium transition-all whitespace-nowrap"
+                style={{
+                  background: tab === t.key ? 'rgba(0,212,255,0.15)' : 'transparent',
+                  color: tab === t.key ? '#00d4ff' : 'rgba(180,200,220,0.5)',
+                  border: tab === t.key ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
+                }}>
+                <Icon className="w-3.5 h-3.5" />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      {/* Content */}
+      <AnimatePresence mode="wait">
+        <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+          {tab === 'overview' && <AdminOverviewTab />}
+          {tab === 'accrequests' && <AccountRequestsTab adminUser={adminUser} />}
+          {tab === 'receipts' && <ReceiptsTab />}
+          {tab === 'resellers' && <ResellersTab />}
+          {tab === 'keys' && <KeyBankTab />}
+          {tab === 'beneficiaries' && <BeneficiaryAccountsTab />}
+          {tab === 'prices' && <PricePlansTab />}
+          {tab === 'discounts' && <DiscountsTab />}
+          {tab === 'status' && <StatusTab />}
+          {tab === 'links' && <DownloadLinksTab />}
+          {tab === 'community' && <CommunityLinksTab />}
+          {tab === 'freebies' && <FreebiesTab />}
+          {tab === 'admins' && <AdminsTab />}
+          {tab === 'discord' && <DiscordSettingsTab />}
+          {tab === 'users' && <UsersTab />}
+          {tab === 'messages' && <AdminMessagesTab />}
+          {tab === 'announcements' && <AdminAnnouncementsTab />}
+        </motion.div>
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
