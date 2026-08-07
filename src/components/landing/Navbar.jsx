@@ -7,7 +7,6 @@ const navLinks = [
   { label: 'Home', type: 'scroll', id: 'hero', path: '/' },
   { label: 'Price', type: 'page', path: '/prices' },
   { label: 'Functions', type: 'page', path: '/functions' },
-  { label: 'Chat', type: 'page', path: '/chat', badge: 'LIVE' },
   { label: 'Resellers', type: 'page', path: '/resellers', badge: 'NEW' },
   { label: 'Freebies', type: 'page', path: '/freebies', badge: 'FREE' },
   { label: 'Status', type: 'page', path: '/status' },
