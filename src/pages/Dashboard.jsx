@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import Navbar from '@/components/landing/Navbar';
+import Footer from '@/components/landing/Footer';
 import { Download, MessageCircle, DollarSign, Activity, Store, Shield, LogOut, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfileEditor from '@/components/dashboard/ProfileEditor';
@@ -103,6 +104,8 @@ export default function Dashboard() {
         <ProfileEditor currentUser={currentUser} />
 
       </main>
+
+      <Footer />
     </div>
   );
 }

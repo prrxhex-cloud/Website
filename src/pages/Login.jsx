@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { signInWithEmailAndPassword, signInWithPopup, auth, googleProvider } from '@/lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
+import Footer from '@/components/landing/Footer';
 
 import logoImg from '@/assets/logo.jpeg';
 
@@ -127,6 +128,8 @@ export default function Login() {
           </button>
         </motion.div>
       </div>
+
+      <Footer />
     </div>
   );
 }

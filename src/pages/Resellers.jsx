@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/landing/Navbar';
+import Footer from '@/components/landing/Footer';
 import ResellerLogin from '@/components/resellers/ResellerLogin';
 import ResellerPortal from '@/components/resellers/ResellerPortal';
-
 import SessionWatcher from '@/components/security/SessionWatcher';
 
 const SESSION_KEY = 'prrx_reseller_logged_in';
@@ -23,9 +23,9 @@ export default function Resellers() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden liquid-bg text-white">
+    <div className="min-h-screen relative overflow-x-hidden bg-[var(--bg-main)] text-[var(--text-primary)] transition-colors duration-300 flex flex-col">
       <Navbar />
-      <div className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+      <div className="flex-1 relative z-10 pt-12 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full">
         <AnimatePresence mode="wait">
           {!resellerUser ? (
             <motion.div key="login" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
@@ -40,6 +40,8 @@ export default function Resellers() {
           )}
         </AnimatePresence>
       </div>
+
+      <Footer />
     </div>
   );
 }

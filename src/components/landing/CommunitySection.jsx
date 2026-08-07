@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Zap, Radio, Star } from 'lucide-react';
+import { Users, Zap, Radio, Star, MessageCircle } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, getDocs, limit, orderBy } from 'firebase/firestore';
 import ScrollReveal from '@/components/effects/ScrollReveal';
@@ -41,6 +41,7 @@ export default function CommunitySection() {
   const [activeUsers, setActiveUsers] = useState(null);
   const [testimonials] = useState(TESTIMONIALS_STATIC);
   const [visibleIdx, setVisibleIdx] = useState(0);
+  const [discordInviteUrl, setDiscordInviteUrl] = useState('https://discord.com/users/prrx2021');
 
   useEffect(() => {
     const q = query(collection(db, 'world_messages'), orderBy('created_date', 'desc'), limit(50));
@@ -49,6 +50,15 @@ export default function CommunitySection() {
         setActiveUsers(1200 + (snapshot.docs.length || 0) * 3);
       })
       .catch(() => setActiveUsers(1247));
+
+    // Fetch dynamic discord invite url set by admin in admin portal
+    getDocs(collection(db, 'discord_webhooks'))
+      .then(snap => {
+        if (!snap.empty && snap.docs[0].data().discord_invite_url) {
+          setDiscordInviteUrl(snap.docs[0].data().discord_invite_url);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -61,16 +71,16 @@ export default function CommunitySection() {
   const visible = [0, 1, 2].map((offset) => testimonials[(visibleIdx + offset) % testimonials.length]);
 
   return (
-    <section className="py-20 bg-slate-50 border-b border-slate-200 font-inter">
+    <section className="py-20 bg-[var(--bg-main)] border-b border-[var(--border-color)] font-inter text-[var(--text-primary)] transition-colors duration-300">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
         
         {/* Header */}
         <ScrollReveal variant="fadeUp" className="text-center mb-16 space-y-2">
           <div className="sub-heading">LIVE COMMUNITY</div>
-          <h2 className="font-outfit font-extrabold text-3xl sm:text-5xl text-slate-900 tracking-tight">
+          <h2 className="font-outfit font-extrabold text-3xl sm:text-5xl text-[var(--text-heading)] tracking-tight">
             TRUSTED BY <span className="text-[#06b6d4]">THOUSANDS</span>
           </h2>
-          <p className="font-inter text-slate-600 text-sm max-w-xl mx-auto">
+          <p className="font-inter text-[var(--text-muted)] text-sm max-w-xl mx-auto">
             Real players. Real results. Live right now across Free Fire global servers.
           </p>
         </ScrollReveal>
@@ -103,22 +113,62 @@ export default function CommunitySection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="clean-card p-8 bg-white border border-slate-200 rounded-3xl text-center space-y-3"
+              className="clean-card p-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl text-center space-y-3"
             >
-              <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto" style={{ color: stat.color }}>
+              <div className="w-14 h-14 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] flex items-center justify-center mx-auto" style={{ color: stat.color }}>
                 <stat.icon className="w-7 h-7" />
               </div>
-              <div className="font-outfit font-extrabold text-3xl text-slate-900">{stat.value}</div>
-              <div className="font-inter text-xs text-slate-500 font-bold uppercase tracking-wider">{stat.label}</div>
+              <div className="font-outfit font-extrabold text-3xl text-[var(--text-heading)]">{stat.value}</div>
+              <div className="font-inter text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">{stat.label}</div>
             </motion.div>
           ))}
         </div>
 
+        {/* JOIN OUR OFFICIAL DISCORD COMMUNITY Banner (Photo 1) */}
+        <ScrollReveal variant="fadeUp" className="mb-16">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-700 via-indigo-800 to-indigo-950 p-8 sm:p-12 text-white shadow-2xl border border-indigo-500/40">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 text-left">
+              <div className="space-y-4 max-w-2xl">
+                <h3 className="font-outfit font-black text-3xl sm:text-4xl tracking-tight leading-tight text-white">
+                  JOIN OUR OFFICIAL DISCORD COMMUNITY
+                </h3>
+                <p className="font-inter text-indigo-100 text-sm sm:text-base leading-relaxed">
+                  Get instant patch updates, customer reviews, 24/7 live setup assistance, and free giveaways!
+                </p>
+                <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-bold font-inter">
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20">
+                    <Users className="w-4 h-4 text-cyan-300" />
+                    <span>35,400+ Members</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>4,800+ Online Now</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="shrink-0">
+                <a
+                  href={discordInviteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-glow px-8 py-4 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white font-outfit font-extrabold text-base shadow-xl border border-indigo-300/40 flex items-center gap-3 transition-transform hover:scale-105"
+                >
+                  <MessageCircle className="w-5 h-5 text-cyan-300" />
+                  <span>Join Discord Server</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
         {/* Testimonials feed */}
-        <div className="clean-card bg-white border border-slate-200 rounded-3xl p-6">
-          <div className="flex items-center gap-3 pb-6 mb-6 border-b border-slate-200">
+        <div className="clean-card bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 shadow-md">
+          <div className="flex items-center gap-3 pb-6 mb-6 border-b border-[var(--border-color)]">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-outfit font-extrabold text-xs text-slate-900 tracking-wider">LIVE VERIFIED REVIEWS</span>
+            <span className="font-outfit font-extrabold text-xs text-[var(--text-heading)] tracking-wider">LIVE VERIFIED REVIEWS</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -129,19 +179,19 @@ export default function CommunitySection() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-4"
+                  className="p-5 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] flex flex-col justify-between space-y-4 text-left"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-outfit font-extrabold text-sm" style={{ color: t.accent }}>
+                    <div className="w-10 h-10 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center font-outfit font-extrabold text-sm" style={{ color: t.accent }}>
                       {t.avatar}
                     </div>
                     <div>
-                      <p className="font-outfit font-bold text-sm text-slate-900">{t.name}</p>
-                      <p className="font-inter text-[10px] text-slate-400 font-semibold">{t.time}</p>
+                      <p className="font-outfit font-bold text-sm text-[var(--text-heading)]">{t.name}</p>
+                      <p className="font-inter text-[10px] text-[var(--text-muted)] font-semibold">{t.time}</p>
                     </div>
                   </div>
 
-                  <p className="font-inter text-xs text-slate-700 leading-relaxed font-medium">"{t.text}"</p>
+                  <p className="font-inter text-xs text-[var(--text-primary)] leading-relaxed font-medium">"{t.text}"</p>
 
                   <div className="flex gap-1">
                     {[...Array(5)].map((_, si) => (
