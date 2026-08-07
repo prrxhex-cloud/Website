@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, where, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Check, X, User, Trash2, RefreshCw, LogOut } from 'lucide-react';
+import { Crown, Check, X, User, Trash2, RefreshCw, LogOut, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
 function ReceiptsTab() {
@@ -226,20 +226,171 @@ function UsersTab() {
   );
 }
 
-function LoginForm({ onSuccess }) {
-  const [password, setPassword] = useState('');
+function AdminsTab() {
+  const [admins, setAdmins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const snap = await getDocs(query(collection(db, 'system_admins')));
+      setAdmins(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch(e) { console.error(e); }
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const addAdmin = async () => {
+    if (!newUsername || !newPassword) return toast.error('Fill both fields');
+    try {
+      await setDoc(doc(db, 'system_admins', newUsername.toLowerCase()), {
+        username: newUsername,
+        password: newPassword,
+        created_at: new Date().toISOString()
+      });
+      toast.success('Admin added!');
+      setNewUsername('');
+      setNewPassword('');
+      load();
+    } catch(e) {
+      toast.error('Failed to add admin');
+    }
+  };
+
+  const delAdmin = async (id) => {
+    if(!window.confirm('Delete this admin?')) return;
+    try {
+      await deleteDoc(doc(db, 'system_admins', id));
+      toast.success('Admin deleted');
+      load();
+    } catch(e) {
+      toast.error('Error deleting admin');
+    }
+  };
+
   return (
-    <div className="p-8 text-center space-y-4">
-      <Crown className="w-12 h-12 text-primary mx-auto opacity-80" />
-      <h2 className="font-orbitron font-bold text-lg text-foreground">Admin Access Required</h2>
-      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Admin Password"
-        className="w-full max-w-xs mx-auto px-4 py-2 rounded-xl text-center bg-white/5 border border-white/10 outline-none focus:border-primary/50 transition-all block" />
-      <button onClick={() => {
-        if(password === 'admin123') onSuccess('Admin User');
-        else toast.error('Invalid password');
-      }} className="px-6 py-2 rounded-xl font-orbitron font-bold text-xs bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 transition-all">
-        LOGIN
-      </button>
+    <div className="space-y-4">
+      <div className="rounded-xl p-5" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
+        <h3 className="font-orbitron text-sm font-bold text-primary tracking-wider mb-4">ADD NEW ADMIN</h3>
+        <div className="flex gap-3 flex-wrap">
+          <input type="text" value={newUsername} onChange={e => setNewUsername(e.target.value)} placeholder="Username"
+            className="flex-1 min-w-[200px] px-4 py-2 rounded-lg font-inter text-sm outline-none transition-all"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onFocus={e => e.target.style.borderColor = '#00d4ff'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Password"
+            className="flex-1 min-w-[200px] px-4 py-2 rounded-lg font-inter text-sm outline-none transition-all"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onFocus={e => e.target.style.borderColor = '#00d4ff'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+          <button onClick={addAdmin} className="px-6 py-2 rounded-lg font-orbitron font-bold text-xs"
+            style={{ background: 'rgba(0,212,255,0.15)', border: '1px solid rgba(0,212,255,0.3)', color: '#00d4ff' }}>
+            ADD ADMIN
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="px-4 py-3 border-b flex justify-between" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+          <p className="font-orbitron text-xs text-muted-foreground tracking-wider">SYSTEM ADMINS</p>
+          <button onClick={load} className="text-muted-foreground hover:text-white"><RefreshCw className="w-4 h-4" /></button>
+        </div>
+        {loading ? <div className="p-8 flex justify-center"><div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div> : (
+          <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="flex items-center gap-3">
+                <Crown className="w-4 h-4 text-yellow-400" />
+                <p className="font-inter text-sm font-medium text-white">Sayuru <span className="text-xs text-muted-foreground ml-2">(Default System Admin)</span></p>
+              </div>
+            </div>
+            {admins.map(a => (
+              <div key={a.id} className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <User className="w-4 h-4 text-primary" />
+                  <p className="font-inter text-sm font-medium text-white">{a.username}</p>
+                </div>
+                <button onClick={() => delAdmin(a.id)} className="p-2 rounded-lg text-red-400 hover:bg-red-400/10 transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LoginForm({ onSuccess }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!username || !password) return toast.error('Enter username and password');
+    
+    if (username === 'Sayuru' && password === 'Jayani') {
+      onSuccess(username);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'system_admins'), where('username', '==', username), where('password', '==', password));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        onSuccess(username);
+      } else {
+        toast.error('Invalid username or password');
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Connection error');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center py-12 px-4 w-full">
+      <div className="w-full max-w-md rounded-2xl p-8 space-y-6" style={{ background: 'rgba(0,10,25,0.95)', border: '1px solid rgba(0,212,255,0.15)', boxShadow: '0 16px 48px rgba(0,0,0,0.5)' }}>
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4" style={{ background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.2)' }}>
+            <Shield className="w-8 h-8" style={{ color: '#00d4ff' }} />
+          </div>
+          <h2 className="font-orbitron font-black text-2xl tracking-widest mb-1" style={{ color: '#00d4ff' }}>PRRX ADMIN</h2>
+          <p className="font-inter text-xs text-muted-foreground">Secure portal — authorized personnel only</p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="relative">
+            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Username"
+              className="w-full pl-10 pr-4 py-3 rounded-xl font-inter text-sm text-foreground outline-none transition-all"
+              style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}
+              onFocus={e => e.target.style.borderColor = '#00d4ff'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+          </div>
+          <div className="relative">
+            <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password"
+              className="w-full pl-10 pr-4 py-3 rounded-xl font-inter text-sm text-foreground outline-none transition-all"
+              style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}
+              onFocus={e => e.target.style.borderColor = '#00d4ff'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+          </div>
+        </div>
+
+        <button onClick={handleLogin} disabled={loading}
+          className="w-full py-3 rounded-xl font-orbitron font-bold text-sm tracking-widest flex items-center justify-center gap-2 transition-all hover:scale-[1.02] hover:brightness-110 disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, #00d4ff, #0099cc)', color: '#020810', boxShadow: '0 0 16px rgba(0,212,255,0.4)' }}>
+          {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
+          ENTER PORTAL
+        </button>
+
+        <div className="text-center mt-6 flex items-center justify-center gap-1.5 opacity-60">
+          <Shield className="w-3 h-3 text-yellow-500" />
+          <p className="font-inter text-[10px] text-muted-foreground">Protected by PRRX Security — Session monitored</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -250,6 +401,7 @@ function AdminPanel({ adminUser, onLogout }) {
   const TABS = [
     { id: 'receipts', label: 'Receipts' },
     { id: 'users', label: 'Users' },
+    { id: 'admins', label: 'Admins' },
   ];
 
   return (
@@ -274,6 +426,7 @@ function AdminPanel({ adminUser, onLogout }) {
           <motion.div key={tab} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}>
             {tab === 'receipts' && <ReceiptsTab />}
             {tab === 'users' && <UsersTab />}
+            {tab === 'admins' && <AdminsTab />}
           </motion.div>
         </AnimatePresence>
       </div>
