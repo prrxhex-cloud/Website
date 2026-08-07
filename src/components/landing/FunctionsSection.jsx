@@ -14,6 +14,7 @@ export default function FunctionsSection() {
     internal: { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
     external: { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
   });
+  const [panelImages, setPanelImages] = useState({ external_image_url: '', internal_image_url: '' });
 
   useEffect(() => {
     if (location.state?.tab) {
@@ -31,6 +32,15 @@ export default function FunctionsSection() {
             external: data.external_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
           });
         }
+        
+        // Fetch main panel images
+        const panelSnap = await getDoc(doc(db, 'public_settings', 'panel_images'));
+        if (panelSnap.exists()) {
+          setPanelImages({
+            external_image_url: panelSnap.data().external_image_url || '',
+            internal_image_url: panelSnap.data().internal_image_url || ''
+          });
+        }
       } catch (error) {
         console.error("Error loading panel screenshots:", error);
       }
@@ -39,6 +49,7 @@ export default function FunctionsSection() {
   }, [location.state]);
 
   const currentImages = images[activePanel];
+  const mainPreviewImage = panelImages[`${activePanel}_image_url`];
 
   const isInternal = activePanel === 'internal';
   const themeColor = isInternal ? '#aa44ff' : '#00d4ff';
@@ -154,10 +165,10 @@ export default function FunctionsSection() {
                   </div>
                 </div>
 
-                {/* Preview Image (Using aimbot as main preview) */}
+                {/* Preview Image (Using main panel image) */}
                 <div className="p-1 flex-1 relative bg-black/20">
-                  {currentImages.aimbot ? (
-                    <img src={currentImages.aimbot} className="w-full h-full object-cover rounded-xl" alt="Live Preview" />
+                  {mainPreviewImage ? (
+                    <img src={mainPreviewImage} className="w-full h-full object-cover rounded-xl" alt="Live Preview" />
                   ) : (
                     <div className="w-full h-full min-h-[300px] flex items-center justify-center">
                       <ImageIcon className="w-10 h-10 opacity-20 text-white" />
