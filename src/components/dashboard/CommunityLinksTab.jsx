@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { MessageCircle, Users, Save, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 

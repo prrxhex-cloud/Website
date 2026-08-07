@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Code2, Shield, Server, Crown, MessageCircle, Phone, ExternalLink } from 'lucide-react';
+import { Code2, Shield, Server, Crown, MessageCircle, ExternalLink } from 'lucide-react';
 import logoImg from '../../assets/logo.jpeg';
 
 const devRoles = [

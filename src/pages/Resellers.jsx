@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/landing/Navbar';
 import ResellerLogin from '@/components/resellers/ResellerLogin';

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { RefreshCw, Check, X, User, Clock, CheckCircle, Zap, Shield, ChevronDown } from 'lucide-react';
+import { RefreshCw, X, User, Clock, CheckCircle, Zap, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
 const STATUS_COLOR = {

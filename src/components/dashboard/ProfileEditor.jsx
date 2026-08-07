@@ -4,7 +4,6 @@ import { updateProfile } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc } from 'firebase/firestore';
 import { User, Camera, Loader2, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
 const GENDERS = [

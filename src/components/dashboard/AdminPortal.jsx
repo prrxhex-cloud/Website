@@ -432,59 +432,44 @@ function LoginForm({ onSuccess }) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 w-full relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#ffaa00]/5 to-transparent pointer-events-none blur-3xl"></div>
-      
-      <div className="w-full max-w-md rounded-[32px] p-10 space-y-8 relative overflow-hidden liquid-glass border border-red-500/20" 
-        style={{ boxShadow: '0 30px 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,80,80,0.05)' }}>
+    <div className="flex flex-col items-center justify-center py-10 px-4 w-full">
+      <div className="w-full max-w-md rounded-3xl p-8 space-y-6 bg-white border border-slate-200 shadow-xl relative overflow-hidden">
         
-        {/* Animated background elements */}
-        <div className="absolute -top-20 -left-20 w-40 h-40 bg-red-500/10 rounded-full blur-2xl animate-pulse"></div>
-        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-[#00d4ff]/10 rounded-full blur-2xl animate-pulse animation-delay-2000"></div>
-
-        <div className="text-center relative z-10">
-          <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-6 relative group" 
-            style={{ background: 'rgba(255,80,80,0.05)', border: '1px solid rgba(255,80,80,0.3)' }}>
-            <div className="absolute inset-0 bg-red-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl"></div>
-            <Shield className="w-10 h-10 text-red-500 relative z-10 drop-shadow-[0_0_10px_rgba(255,80,80,0.5)]" />
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4 bg-rose-50 border border-rose-200 text-rose-600">
+            <Shield className="w-8 h-8" />
           </div>
-          <h2 className="font-orbitron font-black text-3xl tracking-widest mb-2 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">PRRX ADMIN</h2>
-          <p className="font-inter text-sm text-red-400 font-bold tracking-widest uppercase">Strictly Confidential</p>
+          <h2 className="font-outfit font-extrabold text-2xl text-slate-900">PRRX ADMIN</h2>
+          <p className="font-inter text-xs text-rose-600 font-bold uppercase tracking-wider mt-1">Strictly Confidential Access</p>
         </div>
 
-        <div className="space-y-5 relative z-10">
-          <div className="relative group">
-            <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#00d4ff] transition-colors" />
-            <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Admin ID"
-              className="w-full pl-14 pr-5 py-4 rounded-2xl font-inter text-base text-white outline-none transition-all placeholder:text-gray-500"
-              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
-              onFocus={e => { e.target.style.borderColor = 'rgba(0,212,255,0.5)'; e.target.style.boxShadow = '0 0 20px rgba(0,212,255,0.2)'; }} 
-              onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.boxShadow = 'none'; }} />
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Admin ID</label>
+            <div className="relative">
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Username"
+                className="w-full pl-10 pr-4 py-3 rounded-xl font-inter text-sm text-slate-900 bg-slate-50 border border-slate-200 outline-none focus:border-[#06b6d4] transition-colors" />
+            </div>
           </div>
-          <div className="relative group">
-            <Key className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-400 transition-colors" />
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Authorization Key"
-              className="w-full pl-14 pr-5 py-4 rounded-2xl font-inter text-base text-white outline-none transition-all placeholder:text-gray-500"
-              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
-              onFocus={e => { e.target.style.borderColor = 'rgba(255,80,80,0.5)'; e.target.style.boxShadow = '0 0 20px rgba(255,80,80,0.2)'; }} 
-              onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.boxShadow = 'none'; }} />
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Authorization Key</label>
+            <div className="relative">
+              <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password"
+                className="w-full pl-10 pr-4 py-3 rounded-xl font-inter text-sm text-slate-900 bg-slate-50 border border-slate-200 outline-none focus:border-[#06b6d4] transition-colors" />
+            </div>
           </div>
         </div>
 
         <button onClick={handleLogin} disabled={loading}
-          className="w-full py-4 rounded-2xl font-orbitron font-black text-sm tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 group relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, rgba(255,80,80,0.2), rgba(255,0,0,0.2))', border: '1px solid rgba(255,80,80,0.5)', color: '#fff', boxShadow: '0 0 20px rgba(255,80,80,0.3)' }}>
-          <div className="absolute inset-0 bg-red-500/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-          {loading ? <RefreshCw className="w-5 h-5 animate-spin text-white relative z-10" /> : <Shield className="w-5 h-5 text-red-400 group-hover:text-white transition-colors relative z-10" />}
-          <span className="relative z-10 text-red-100 group-hover:text-white transition-colors">DECRYPT PORTAL</span>
+          className="btn-primary-cyan btn-glow w-full py-3.5 rounded-xl font-inter font-bold text-sm tracking-wider flex items-center justify-center gap-2 shadow-md">
+          {loading ? <RefreshCw className="w-4 h-4 animate-spin text-white" /> : <Shield className="w-4 h-4 text-white" />}
+          <span>DECRYPT PORTAL</span>
         </button>
 
-        <div className="text-center mt-8 flex flex-col items-center justify-center gap-2 opacity-70 relative z-10">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-            <p className="font-orbitron text-xs font-bold text-red-400 tracking-widest">IP LOGGED & MONITORED</p>
-          </div>
-          <p className="font-inter text-[10px] text-gray-500 max-w-[250px]">Unauthorized access attempts will be reported to system administrators.</p>
+        <div className="text-center pt-2">
+          <p className="font-inter text-[11px] text-slate-400">IP logged and monitored for unauthorized access attempts.</p>
         </div>
       </div>
     </div>
@@ -521,44 +506,36 @@ function AdminPanel({ adminUser, onLogout }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,170,0,0.1)', border: '1px solid rgba(255,170,0,0.3)' }}>
-            <Crown className="w-5 h-5 text-yellow-400 drop-shadow-[0_0_8px_rgba(255,170,0,0.8)]" />
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+            <Crown className="w-5 h-5 text-amber-500" />
           </div>
           <div>
-            <span className="font-orbitron font-black text-lg text-white tracking-widest block">ADMIN PANEL</span>
-            <span className="font-orbitron text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest mt-1 inline-block"
-              style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.3)', color: '#00d4ff' }}>
-              ID: {adminUser}
+            <span className="font-outfit font-extrabold text-lg text-slate-900 block">ADMINISTRATOR CONTROL</span>
+            <span className="font-inter text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase bg-cyan-50 text-[#06b6d4] border border-cyan-200 inline-block mt-0.5">
+              Active ID: {adminUser}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={onLogout}
-            className="flex items-center gap-2 font-orbitron text-xs font-bold text-red-400 hover:text-white transition-colors px-4 py-2.5 rounded-xl border group relative overflow-hidden"
-            style={{ borderColor: 'rgba(255,80,80,0.3)', background: 'rgba(255,80,80,0.1)' }}>
-            <div className="absolute inset-0 bg-red-500/20 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-            <LogOut className="w-4 h-4 relative z-10 group-hover:-translate-x-1 transition-transform" /> 
-            <span className="relative z-10 tracking-widest">DISCONNECT</span>
-          </button>
-        </div>
+        <button onClick={onLogout}
+          className="btn-secondary-white px-4 py-2 text-rose-600 border-rose-200 hover:bg-rose-50 font-inter font-bold text-xs flex items-center gap-2">
+          <LogOut className="w-4 h-4" /> <span>Disconnect</span>
+        </button>
       </div>
 
       {/* Tabs - scrollable */}
-      <div className="overflow-x-auto pb-4 -mb-4 custom-scrollbar">
-        <div className="flex gap-2 p-2 rounded-2xl min-w-max border" style={{ background: 'rgba(0,15,35,0.4)', borderColor: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+      <div className="overflow-x-auto pb-2 custom-scrollbar">
+        <div className="flex gap-2 p-1.5 rounded-2xl bg-white border border-slate-200 min-w-max shadow-sm">
           {tabs.map(t => {
             const Icon = t.icon;
             const isActive = tab === t.key;
             return (
               <button key={t.key} onClick={() => setTab(t.key)}
-                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-orbitron text-xs font-bold tracking-wider transition-all whitespace-nowrap group"
-                style={{
-                  background: isActive ? 'rgba(0,212,255,0.15)' : 'transparent',
-                  color: isActive ? '#fff' : 'rgba(180,200,220,0.6)',
-                  border: isActive ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
-                  boxShadow: isActive ? '0 0 15px rgba(0,212,255,0.1)' : 'none'
-                }}>
-                <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-[#00d4ff]' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                className={`flex items-center justify-center gap-2 py-2 px-3.5 rounded-xl font-outfit text-xs font-bold transition-all whitespace-nowrap ${
+                  isActive 
+                    ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-sm' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}>
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                 {t.label.toUpperCase()}
               </button>
             );
@@ -567,33 +544,30 @@ function AdminPanel({ adminUser, onLogout }) {
       </div>
 
       {/* Content */}
-      <div className="rounded-[32px] overflow-hidden liquid-glass border border-white/10 relative p-6 sm:p-8" style={{ minHeight: '600px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
-        <div className="relative z-10">
-          <AnimatePresence mode="wait">
-            <motion.div key={tab} initial={{ opacity: 0, y: 10, filter: 'blur(5px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} exit={{ opacity: 0, filter: 'blur(5px)' }} transition={{ duration: 0.3 }}>
-              {tab === 'overview' && <AdminOverviewTab />}
-              {tab === 'accrequests' && <AccountRequestsTab adminUser={adminUser} />}
-              {tab === 'receipts' && <ReceiptsTab />}
-              {tab === 'resellers' && <ResellersTab />}
-              {tab === 'keys' && <KeyBankTab />}
-              {tab === 'beneficiaries' && <BeneficiaryAccountsTab />}
-              {tab === 'prices' && <PricePlansTab />}
-              {tab === 'discounts' && <DiscountsTab />}
-              {tab === 'status' && <StatusTab />}
-              {tab === 'links' && <DownloadLinksTab />}
-              {tab === 'community' && <CommunityLinksTab />}
-              {tab === 'freebies' && <FreebiesTab />}
-              {tab === 'admins' && <AdminsTab />}
-              {tab === 'discord' && <DiscordSettingsTab />}
-              { tab === 'users' && <UsersTab /> }
-              { tab === 'messages' && <AdminMessagesTab /> }
-              { tab === 'announcements' && <AdminAnnouncementsTab /> }
-              { tab === 'panel_images' && <PanelImagesTab /> }
-              { tab === 'functions_screenshots' && <FunctionsScreenshotsTab /> }
-            </motion.div>
-          </AnimatePresence>
-        </div>
+      <div className="rounded-3xl bg-white border border-slate-200 shadow-md p-6 sm:p-8" style={{ minHeight: '600px' }}>
+        <AnimatePresence mode="wait">
+          <motion.div key={tab} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            {tab === 'overview' && <AdminOverviewTab />}
+            {tab === 'accrequests' && <AccountRequestsTab adminUser={adminUser} />}
+            {tab === 'receipts' && <ReceiptsTab />}
+            {tab === 'resellers' && <ResellersTab />}
+            {tab === 'keys' && <KeyBankTab />}
+            {tab === 'beneficiaries' && <BeneficiaryAccountsTab />}
+            {tab === 'prices' && <PricePlansTab />}
+            {tab === 'discounts' && <DiscountsTab />}
+            {tab === 'status' && <StatusTab />}
+            {tab === 'links' && <DownloadLinksTab />}
+            {tab === 'community' && <CommunityLinksTab />}
+            {tab === 'freebies' && <FreebiesTab />}
+            {tab === 'admins' && <AdminsTab />}
+            {tab === 'discord' && <DiscordSettingsTab />}
+            {tab === 'users' && <UsersTab />}
+            {tab === 'messages' && <AdminMessagesTab />}
+            {tab === 'announcements' && <AdminAnnouncementsTab />}
+            {tab === 'panel_images' && <PanelImagesTab />}
+            {tab === 'functions_screenshots' && <FunctionsScreenshotsTab />}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </motion.div>
   );

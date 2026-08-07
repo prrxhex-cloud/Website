@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Crown, Calendar, Activity, Clock, LogOut, Shield, Zap } from 'lucide-react';
+import { Crown, Calendar, Clock, LogOut, Shield, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function DashboardLicenseCard() {

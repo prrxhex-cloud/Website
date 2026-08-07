@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 import { ExternalLink } from 'lucide-react';
 import InteractiveCard from '@/components/effects/InteractiveCard';

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import ScrollReveal from '@/components/effects/ScrollReveal';
-import { Shield, LayoutGrid, Monitor } from 'lucide-react';
 
 export default function DeepDiveSection() {
   // Use localStorage caching to fix slower image loading

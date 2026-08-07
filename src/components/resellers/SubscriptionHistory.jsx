@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { Key, RefreshCw, Copy, CheckCircle } from 'lucide-react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { RefreshCw, Copy, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PRODUCT_COLOR = { external: '#00d4ff', internal: '#aa44ff', both: '#ffaa00' };

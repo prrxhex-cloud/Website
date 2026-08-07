@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Megaphone, Pin, RefreshCw } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { motion } from 'framer-motion';
 
 const TYPE_COLOR = {
   news: '#00d4ff',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Link2, Plus, Trash2, Check, X, RefreshCw } from 'lucide-react';
+import { Link2, Plus, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function DownloadLinksTab() {
