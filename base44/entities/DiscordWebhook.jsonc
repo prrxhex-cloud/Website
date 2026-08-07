@@ -1,0 +1,19 @@
+{
+  "name": "DiscordWebhook",
+  "type": "object",
+  "properties": {
+    "ticket_webhook_url": {
+      "type": "string",
+      "description": "Discord webhook URL for moderator channel (ticket notifications)"
+    },
+    "freebie_webhook_url": {
+      "type": "string",
+      "description": "Discord webhook URL for announcement channel (free panel notifications)"
+    },
+    "receipt_webhook_url": {
+      "type": "string",
+      "description": "Discord webhook URL for receipt verification notifications"
+    }
+  },
+  "required": []
+}

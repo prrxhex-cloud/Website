@@ -1,0 +1,63 @@
+{
+  "name": "ResellerAccountRequest",
+  "type": "object",
+  "properties": {
+    "requested_by": {
+      "type": "string",
+      "description": "Username of the reseller who made the request"
+    },
+    "requested_username": {
+      "type": "string",
+      "description": "Custom username requested for the customer"
+    },
+    "requested_password": {
+      "type": "string",
+      "description": "Custom password requested for the customer"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "external",
+        "internal",
+        "both"
+      ],
+      "default": "external",
+      "description": "Panel type for this account"
+    },
+    "duration": {
+      "type": "string",
+      "enum": [
+        "1_day",
+        "7_days",
+        "30_days",
+        "lifetime"
+      ],
+      "default": "30_days",
+      "description": "License duration"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "claimed",
+        "created",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Status of the account creation request"
+    },
+    "claimed_by": {
+      "type": "string",
+      "description": "Admin username who claimed this request"
+    },
+    "admin_note": {
+      "type": "string",
+      "description": "Note from admin"
+    }
+  },
+  "required": [
+    "requested_by",
+    "requested_username",
+    "requested_password"
+  ]
+}

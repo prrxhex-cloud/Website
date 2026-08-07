@@ -1,0 +1,54 @@
+{
+  "name": "LicenseKey",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "The license key string"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "external",
+        "internal",
+        "both"
+      ],
+      "default": "external"
+    },
+    "duration": {
+      "type": "string",
+      "enum": [
+        "1_day",
+        "7_days",
+        "30_days",
+        "lifetime"
+      ],
+      "default": "30_days"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "used",
+        "expired"
+      ],
+      "default": "available"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Reseller username it was assigned to"
+    },
+    "receipt_id": {
+      "type": "string",
+      "description": "Linked receipt ID"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "key",
+    "product_type",
+    "duration"
+  ]
+}

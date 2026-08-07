@@ -1,0 +1,34 @@
+{
+  "name": "DownloadLink",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "external",
+        "internal"
+      ],
+      "description": "Panel type"
+    },
+    "label": {
+      "type": "string",
+      "description": "Button label shown to users"
+    },
+    "url": {
+      "type": "string",
+      "description": "Download URL"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version string e.g. V7A BETA"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "type",
+    "url"
+  ]
+}

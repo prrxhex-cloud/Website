@@ -1,0 +1,22 @@
+{
+  "name": "V7aApkLink",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "Download URL for the V7a Apk"
+    },
+    "label": {
+      "type": "string",
+      "description": "Button label",
+      "default": "Download V7a Apk"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "url"
+  ]
+}

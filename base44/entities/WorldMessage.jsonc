@@ -1,0 +1,38 @@
+{
+  "name": "WorldMessage",
+  "type": "object",
+  "properties": {
+    "sender_email": {
+      "type": "string",
+      "description": "Email of the sender"
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Display name of the sender"
+    },
+    "sender_avatar": {
+      "type": "string",
+      "description": "Avatar URL of the sender"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message text content"
+    }
+  },
+  "required": [
+    "sender_email",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "read": {},
+    "update": {
+      "created_by": "{{user.email}}"
+    },
+    "delete": {
+      "created_by": "{{user.email}}"
+    }
+  }
+}

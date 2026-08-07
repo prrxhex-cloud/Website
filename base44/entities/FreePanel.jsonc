@@ -1,0 +1,37 @@
+{
+  "name": "FreePanel",
+  "type": "object",
+  "properties": {
+    "panel_type": {
+      "type": "string",
+      "enum": [
+        "external",
+        "internal"
+      ],
+      "description": "Which panel this free credential belongs to"
+    },
+    "start_day": {
+      "type": "string",
+      "description": "Start day of the free panel availability"
+    },
+    "end_day": {
+      "type": "string",
+      "description": "End day of the free panel availability"
+    },
+    "username": {
+      "type": "string",
+      "description": "Free panel username"
+    },
+    "password": {
+      "type": "string",
+      "description": "Free panel password"
+    },
+    "custom_message": {
+      "type": "string",
+      "description": "Custom message sent to Discord announcement channel when panel goes live"
+    }
+  },
+  "required": [
+    "panel_type"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "Announcement",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Announcement title"
+    },
+    "content": {
+      "type": "string",
+      "description": "Full announcement text"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "news",
+        "announcement",
+        "update",
+        "warning"
+      ],
+      "default": "announcement"
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false
+    },
+    "author_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "content"
+  ]
+}

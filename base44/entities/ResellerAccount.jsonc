@@ -1,0 +1,38 @@
+{
+  "name": "ResellerAccount",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string",
+      "description": "Reseller login username"
+    },
+    "password": {
+      "type": "string",
+      "description": "Reseller login password (plain, admin-managed)"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Display name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Contact email"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes"
+    }
+  },
+  "required": [
+    "username",
+    "password"
+  ]
+}

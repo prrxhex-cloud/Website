@@ -1,0 +1,23 @@
+{
+  "name": "CommunityLink",
+  "type": "object",
+  "properties": {
+    "whatsapp_url": {
+      "type": "string",
+      "description": "WhatsApp group invite link"
+    },
+    "discord_url": {
+      "type": "string",
+      "description": "Discord server invite link"
+    },
+    "popup_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the community popup is shown to visitors"
+    }
+  },
+  "required": [
+    "whatsapp_url",
+    "discord_url"
+  ]
+}

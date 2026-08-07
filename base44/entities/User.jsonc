@@ -1,0 +1,39 @@
+{
+  name User,
+  type object,
+  properties {
+    role {
+      type string,
+      description The role of the user in the app,
+      enum [
+        admin,
+        user
+      ]
+    },
+    avatar_url {
+      type string,
+      description Profile picture URL
+    },
+    display_name {
+      type string,
+      description Custom display name
+    },
+    gender {
+      type string,
+      enum [
+        male,
+        female,
+        other,
+        prefer_not_to_say
+      ],
+      description Gender
+    },
+    bio {
+      type string,
+      description Short bio or status
+    }
+  },
+  required [
+    role
+  ]
+}

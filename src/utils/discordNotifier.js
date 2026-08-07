@@ -1,0 +1,160 @@
+import { base44 } from '@/api/base44Client';
+
+const DEFAULT_RECEIPT_WEBHOOK = 'https://ptb.discord.com/api/webhooks/1522773386483466331/XQuU4n2bP7NbJdhFe2tG-K74q-EkcbMaudmabGePF-r6Z_TWqT5FENC8HYt7gTprxpZz';
+
+let cachedConfig = null;
+
+async function getConfig() {
+  if (cachedConfig) return cachedConfig;
+  try {
+    const data = await base44.entities.DiscordWebhook.list();
+    cachedConfig = data[0] || null;
+    return cachedConfig;
+  } catch (e) {
+    return null;
+  }
+}
+
+export function clearDiscordConfigCache() {
+  cachedConfig = null;
+}
+
+async function postWebhook(url, payload) {
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    console.error('Discord webhook failed:', e);
+  }
+}
+
+export async function sendTicketNotification({ customerName, customerEmail }) {
+  const config = await getConfig();
+  if (!config?.ticket_webhook_url) return;
+
+  await postWebhook(config.ticket_webhook_url, {
+    embeds: [{
+      title: '🔔 New Support Ticket Created',
+      color: 0x00d4ff,
+      fields: [
+        { name: 'Customer', value: `${customerName || 'Unknown'}\n${customerEmail || 'No email'}`, inline: false },
+        { name: 'Time', value: new Date().toLocaleString(), inline: false },
+      ],
+      footer: { text: 'PRRX Support Ticket System' },
+      timestamp: new Date().toISOString(),
+    }],
+  });
+}
+
+export async function sendFreePanelNotification({ panelType, startDay, endDay, username, password, customMessage }) {
+  const config = await getConfig();
+  if (!config?.freebie_webhook_url) return;
+
+  const isExternal = panelType === 'external';
+  const panelLabel = isExternal ? 'PRRX Premium External Panel' : 'PRRX Premium Internal Panel';
+  const color = isExternal ? 0x00d4ff : 0xaa44ff;
+
+  await postWebhook(config.freebie_webhook_url, {
+    content: customMessage?.trim() || '@everyone',
+    embeds: [{
+      title: '🎁 FREE PANEL NOW AVAILABLE!',
+      description: `**${panelLabel}** is now LIVE!`,
+      color: color,
+      fields: [
+        { name: '📅 Start Day', value: startDay, inline: true },
+        { name: '📅 End Day', value: endDay, inline: true },
+        { name: '👤 Username', value: `\`${username}\``, inline: true },
+        { name: '🔑 Password', value: `\`${password}\``, inline: true },
+      ],
+      footer: { text: 'PRRX Freebies — Get it before it expires!' },
+      timestamp: new Date().toISOString(),
+    }],
+  });
+}
+
+export async function sendReceiptVerificationNotification({ resellerName, resellerUsername, productType, duration, ocrData, expectedAmount, verified, reason, receiptImageUrl }) {
+  const config = await getConfig();
+  const webhookUrl = config?.receipt_webhook_url || DEFAULT_RECEIPT_WEBHOOK;
+  if (!webhookUrl) return;
+
+  const color = verified ? 0x00ff64 : 0xff4444;
+  const title = verified ? '✅ Receipt Verified' : '❌ Receipt Verification Failed';
+
+  const fields = [
+    { name: 'Reseller', value: `${resellerName || resellerUsername}`, inline: false },
+    { name: 'Product', value: productType || '—', inline: true },
+    { name: 'Duration', value: duration?.replace('_', ' ') || '—', inline: true },
+  ];
+
+  if (ocrData?.amount) {
+    fields.push({ name: 'Extracted Amount', value: `LKR ${ocrData.amount}`, inline: true });
+  }
+  if (expectedAmount) {
+    fields.push({ name: 'Expected Amount', value: `LKR ${expectedAmount}`, inline: true });
+  }
+  if (ocrData?.date) {
+    fields.push({ name: 'Date', value: ocrData.date, inline: true });
+  }
+  if (ocrData?.transaction_number) {
+    fields.push({ name: 'Reference', value: ocrData.transaction_number, inline: true });
+  }
+  if (ocrData?.beneficiary_account_number) {
+    fields.push({ name: 'Beneficiary Acct', value: ocrData.beneficiary_account_number, inline: true });
+  }
+  if (reason) {
+    fields.push({ name: 'Reason', value: reason, inline: false });
+  }
+
+  await postWebhook(webhookUrl, {
+    embeds: [{
+      title,
+      color,
+      fields,
+      image: receiptImageUrl ? { url: receiptImageUrl } : undefined,
+      footer: { text: 'PRRX Receipt Verification System' },
+      timestamp: new Date().toISOString(),
+    }],
+  });
+}
+
+export async function sendLowStockWarning({ productType, duration, remaining }) {
+  const config = await getConfig();
+  if (!config?.ticket_webhook_url) return;
+
+  await postWebhook(config.ticket_webhook_url, {
+    embeds: [{
+      title: '⚠️ Key Bank Low Stock Warning',
+      description: `Only **${remaining}** key${remaining === 1 ? '' : 's'} left for **${productType}** / **${duration?.replace('_', ' ')}**. Please restock soon.`,
+      color: 0xffaa00,
+      fields: [
+        { name: 'Product', value: productType || '—', inline: true },
+        { name: 'Duration', value: duration?.replace('_', ' ') || '—', inline: true },
+        { name: 'Remaining', value: `${remaining}`, inline: true },
+      ],
+      footer: { text: 'PRRX Key Bank Monitor' },
+      timestamp: new Date().toISOString(),
+    }],
+  });
+}
+
+export async function checkAndWarnLowStock(productType, duration) {
+  try {
+    const available = await base44.entities.LicenseKey.filter({ product_type: productType, status: 'available', duration });
+    const remaining = available.length;
+    const key = `prrx_lowstock_${productType}_${duration}`;
+    if (remaining <= 10) {
+      if (!localStorage.getItem(key)) {
+        await sendLowStockWarning({ productType, duration, remaining });
+        localStorage.setItem(key, '1');
+      }
+    } else {
+      localStorage.removeItem(key);
+    }
+  } catch (e) {
+    console.error('Low stock check failed:', e);
+  }
+}

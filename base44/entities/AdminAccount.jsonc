@@ -1,0 +1,26 @@
+{
+  "name": "AdminAccount",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string",
+      "description": "Admin login username"
+    },
+    "password": {
+      "type": "string",
+      "description": "Admin login password"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Display name shown in admin panel"
+    },
+    "added_by": {
+      "type": "string",
+      "description": "Username of the admin who added this account"
+    }
+  },
+  "required": [
+    "username",
+    "password"
+  ]
+}

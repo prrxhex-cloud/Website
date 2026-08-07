@@ -1,0 +1,77 @@
+{
+  "name": "ResellerReceipt",
+  "type": "object",
+  "properties": {
+    "reseller_username": {
+      "type": "string",
+      "description": "Username of the reseller who submitted"
+    },
+    "reseller_display_name": {
+      "type": "string"
+    },
+    "receipt_image_url": {
+      "type": "string",
+      "description": "Uploaded receipt image URL"
+    },
+    "extracted_amount": {
+      "type": "number",
+      "description": "OCR extracted payment amount"
+    },
+    "extracted_date": {
+      "type": "string",
+      "description": "OCR extracted date"
+    },
+    "extracted_reference": {
+      "type": "string",
+      "description": "OCR extracted reference ID"
+    },
+    "raw_ocr_text": {
+      "type": "string",
+      "description": "Raw OCR output"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "external",
+        "internal",
+        "both"
+      ],
+      "default": "external"
+    },
+    "duration": {
+      "type": "string",
+      "enum": [
+        "1_day",
+        "7_days",
+        "30_days",
+        "lifetime"
+      ],
+      "default": "30_days"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "generated_key": {
+      "type": "string",
+      "description": "License key generated after approval"
+    },
+    "admin_note": {
+      "type": "string",
+      "description": "Admin rejection/approval note"
+    },
+    "auto_verified": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "reseller_username",
+    "receipt_image_url"
+  ]
+}

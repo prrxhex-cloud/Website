@@ -1,0 +1,34 @@
+{
+  "name": "BeneficiaryAccount",
+  "type": "object",
+  "properties": {
+    "account_number": {
+      "type": "string",
+      "description": "Bank account number of the team member or reseller"
+    },
+    "bank_name": {
+      "type": "string",
+      "description": "Bank name e.g. BOC, Peoples Bank, Commercial Bank"
+    },
+    "owner_name": {
+      "type": "string",
+      "description": "Name of the account holder"
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": [
+        "team",
+        "reseller"
+      ],
+      "default": "team",
+      "description": "Whether this is a team member or reseller account"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "account_number"
+  ]
+}

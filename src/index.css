@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root,
+  [data-theme="dark"] {
+    --background: 216 40% 4%;
+    --foreground: 200 20% 92%;
+    --card: 216 35% 7%;
+    --card-foreground: 200 20% 92%;
+    --popover: 216 35% 7%;
+    --popover-foreground: 200 20% 92%;
+    --primary: 191 100% 50%;
+    --primary-foreground: 216 40% 4%;
+    --secondary: 216 30% 10%;
+    --secondary-foreground: 200 20% 80%;
+    --muted: 216 30% 10%;
+    --muted-foreground: 215 20% 50%;
+    --accent: 216 30% 12%;
+    --accent-foreground: 200 20% 92%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 216 25% 14%;
+    --input: 216 25% 14%;
+    --ring: 191 100% 50%;
+    --radius: 0.75rem;
+    --font-inter: 'Inter', sans-serif;
+    --font-orbitron: 'Orbitron', sans-serif;
+    --sidebar-background: 216 40% 4%;
+    --sidebar-foreground: 200 20% 92%;
+    --sidebar-primary: 191 100% 50%;
+    --sidebar-primary-foreground: 216 40% 4%;
+    --sidebar-accent: 216 30% 10%;
+    --sidebar-accent-foreground: 200 20% 92%;
+    --sidebar-border: 216 25% 14%;
+    --sidebar-ring: 191 100% 50%;
+    /* Dark theme page bg */
+    --page-bg: #020810;
+  }
+
+  [data-theme="light"] {
+    --background: 210 40% 98%;
+    --foreground: 216 40% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 216 40% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 216 40% 8%;
+    --primary: 191 100% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 30% 92%;
+    --secondary-foreground: 216 40% 20%;
+    --muted: 210 30% 92%;
+    --muted-foreground: 215 20% 40%;
+    --accent: 210 30% 90%;
+    --accent-foreground: 216 40% 8%;
+    --destructive: 0 84.2% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 25% 82%;
+    --input: 210 25% 82%;
+    --ring: 191 100% 38%;
+    --radius: 0.75rem;
+    --font-inter: 'Inter', sans-serif;
+    --font-orbitron: 'Orbitron', sans-serif;
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 216 40% 8%;
+    --sidebar-primary: 191 100% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 30% 92%;
+    --sidebar-accent-foreground: 216 40% 8%;
+    --sidebar-border: 210 25% 82%;
+    --sidebar-ring: 191 100% 38%;
+    /* Light theme page bg */
+    --page-bg: #f0f4f8;
+  }
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground font-inter; }
+}
+
+/* ── Liquid Glass Utility Classes ── */
+.glass {
+  background: rgba(0, 20, 50, 0.45);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(0, 212, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass-strong {
+  background: rgba(0, 15, 40, 0.65);
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.glass-purple {
+  background: rgba(30, 0, 60, 0.45);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(170, 68, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.glass-card {
+  background: rgba(0, 18, 45, 0.5);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 212, 255, 0.25);
+  box-shadow: 0 8px 40px rgba(0, 212, 255, 0.08), 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Glow text */
+.glow-cyan {
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.6), 0 0 40px rgba(0, 212, 255, 0.3);
+}
+.glow-purple {
+  text-shadow: 0 0 20px rgba(170, 68, 255, 0.6), 0 0 40px rgba(170, 68, 255, 0.3);
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(0,212,255,0.15) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Pulse glow */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(0,212,255,0.2); }
+  50% { box-shadow: 0 0 40px rgba(0,212,255,0.5), 0 0 80px rgba(0,212,255,0.2); }
+}
+.pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+.float { animation: float 4s ease-in-out infinite; }

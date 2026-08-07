@@ -1,0 +1,44 @@
+{
+  name ChatMessage,
+  type object,
+  properties {
+    conversation_id {
+      type string,
+      description ID of the conversation this message belongs to
+    },
+    sender_email {
+      type string,
+      description Email of the sender
+    },
+    sender_name {
+      type string,
+      description Display name of the sender
+    },
+    content {
+      type string,
+      description Message text content
+    },
+    read_by {
+      type array,
+      items {
+        type string
+      },
+      description List of emails who have read this message
+    }
+  },
+  required [
+    conversation_id,
+    sender_email,
+    content
+  ],
+  rls {
+    create {
+      created_by {{user.email}}
+    },
+    read {},
+    update {
+      created_by {{user.email}}
+    },
+    delete {}
+  }
+}

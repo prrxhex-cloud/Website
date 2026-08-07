@@ -1,0 +1,54 @@
+{
+  "name": "Discount",
+  "type": "object",
+  "properties": {
+    "panel_type": {
+      "type": "string",
+      "enum": [
+        "external",
+        "internal",
+        "both"
+      ],
+      "description": "Which panel(s) this discount applies to"
+    },
+    "plan_label": {
+      "type": "string",
+      "description": "The plan label it applies to, e.g. '1 Month'. Leave empty for all plans."
+    },
+    "discount_type": {
+      "type": "string",
+      "enum": [
+        "percentage",
+        "fixed"
+      ],
+      "default": "percentage",
+      "description": "Percentage off or fixed LKR reduction"
+    },
+    "discount_value": {
+      "type": "number",
+      "description": "e.g. 20 for 20% off, or 500 for LKR 500 off"
+    },
+    "promo_code": {
+      "type": "string",
+      "description": "Optional promo code label to display"
+    },
+    "badge_text": {
+      "type": "string",
+      "description": "Badge shown on card, e.g. 'SALE' or 'LIMITED'"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Optional expiry date"
+    }
+  },
+  "required": [
+    "panel_type",
+    "discount_type",
+    "discount_value"
+  ]
+}

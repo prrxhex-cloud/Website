@@ -1,0 +1,70 @@
+{
+  "name": "ChatConversation",
+  "type": "object",
+  "properties": {
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of participant emails"
+    },
+    "participant_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Display names of participants"
+    },
+    "last_message": {
+      "type": "string",
+      "description": "Preview of the last message"
+    },
+    "last_message_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_support": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is an admin support ticket"
+    },
+    "ticket_status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "claimed",
+        "closed"
+      ],
+      "default": "open",
+      "description": "Status of the support ticket"
+    },
+    "claimed_by": {
+      "type": "string",
+      "description": "Email of the admin who claimed this ticket"
+    },
+    "claimed_by_name": {
+      "type": "string",
+      "description": "Display name of the admin who claimed this ticket"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Email of the customer who opened the ticket"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "Display name of the customer"
+    }
+  },
+  "required": [
+    "participants"
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "read": {},
+    "update": {},
+    "delete": {}
+  }
+}
