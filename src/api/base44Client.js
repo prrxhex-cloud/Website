@@ -1,47 +1,40 @@
 // Dummy Base44 Client to prevent build errors and allow static hosting
 // This replaces the proprietary Base44 backend with static/mock responses.
 
-const mockData = {
-    announcements: [],
-    status: [],
-    freebies: [],
-    prices: [],
-    communityLinks: [],
-    discounts: []
-};
-
-const createMockProxy = () => {
-    return new Proxy(function() {}, {
-        get: (target, prop) => {
-            if (prop === 'get') {
-                return async (collection) => {
-                    return mockData[collection] || [];
-                };
-            }
-            if (prop === 'insert' || prop === 'update' || prop === 'delete') {
-                return async () => ({ success: true });
-            }
-            if (prop === 'me') {
-                return async () => ({ role: 'user', id: 'local-user' });
-            }
-            return createMockProxy();
-        },
-        apply: async () => {
-            return [];
-        }
-    });
+const mockEntity = {
+    list: async () => [],
+    filter: async () => [],
+    create: async () => ({ id: '1', success: true }),
+    update: async () => ({ id: '1', success: true }),
+    delete: async () => ({ success: true }),
+    subscribe: () => { 
+        return () => {}; // return dummy unsubscribe function
+    }
 };
 
 export const base44 = {
-    db: createMockProxy(),
     auth: {
         me: async () => {
-            const user = localStorage.getItem('auth_user');
-            return user ? JSON.parse(user) : null;
+            const user = localStorage.getItem('prrx_keyauth_user');
+            return user ? JSON.parse(user) : { role: 'guest' };
+        },
+        updateMe: async () => ({ success: true }),
+        logout: () => { localStorage.removeItem('prrx_keyauth_user'); },
+        redirectToLogin: () => {}
+    },
+    integrations: {
+        Core: {
+            UploadFile: async () => ({ file_url: '' }),
+            InvokeLLM: async () => ({})
         }
     },
+    entities: new Proxy({}, {
+        get: () => mockEntity
+    }),
+    db: new Proxy({}, {
+        get: () => mockEntity
+    }),
     storage: {
         getUrl: () => ''
-    },
-    functions: createMockProxy()
+    }
 };
