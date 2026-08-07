@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Code2, Shield, Server, Crown, MessageCircle, Phone, ExternalLink } from 'lucide-react';
+import logoImg from '../../assets/logo.jpeg';
 
 const devRoles = [
   { icon: Crown,         label: 'PRRX Official Seller' },
@@ -21,7 +22,7 @@ export default function Footer() {
 
         {/* Brand */}
         <div className="text-center mb-10">
-          <img src="/logo.png" alt="PRRX Logo" className="w-16 h-16 mx-auto mb-2 object-contain" />
+          <img src={logoImg} alt="PRRX Logo" className="w-16 h-16 mx-auto mb-2 object-contain" />
           <p className="font-inter text-xs text-muted-foreground mt-1 tracking-widest uppercase">Free Fire Premium Panel</p>
         </div>
 

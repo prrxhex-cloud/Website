@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Zap } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import logoImg from '../../assets/logo.jpeg';
 
 const navLinks = [
   { label: 'Home', type: 'scroll', id: 'hero', path: '/' },
@@ -64,7 +65,7 @@ export default function Navbar() {
           className="cursor-pointer select-none flex items-center mr-2"
           onClick={() => navigate('/')}
         >
-          <img src="/logo.png" alt="PRRX Logo" className="w-8 h-8 object-contain" />
+          <img src={logoImg} alt="PRRX Logo" className="w-8 h-8 object-contain" />
         </motion.div>
 
         {/* Desktop links */}
