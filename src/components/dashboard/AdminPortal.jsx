@@ -118,7 +118,7 @@ function ReceiptsTab() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <span className="font-orbitron font-bold text-xs" style={{ color: '#00d4ff' }}>{r.reseller_display_name || r.reseller_username || r.reseller_email}</span>
-                    <span className="font-inter text-xs px-2 py-0.5 rounded-full capitalize" style={{ background: ${STATUS_COLOR[r.status]}15, color: STATUS_COLOR[r.status], border: 1px solid 35 }}>{r.status}</span>
+                    <span className="font-inter text-xs px-2 py-0.5 rounded-full capitalize" style={{ background: `${STATUS_COLOR[r.status]}15`, color: STATUS_COLOR[r.status], border: `1px solid ${STATUS_COLOR[r.status]}35` }}>{r.status}</span>
                     {r.auto_verified && <span className="font-inter text-xs text-muted-foreground">auto-verified</span>}
                   </div>
                   <div className="grid grid-cols-2 gap-1 text-xs mb-2">
@@ -214,7 +214,7 @@ function UsersTab() {
                 <p className="font-inter text-xs text-muted-foreground truncate">{u.email}</p>
               </div>
               <span className="font-inter text-xs px-2 py-0.5 rounded-full capitalize"
-                style={{ background: u.role === 'admin' ? 'rgba(255,170,0,0.1)' : (u.role === 'reseller' ? 'rgba(170,68,255,0.1)' : 'rgba(0,212,255,0.08)'), color: u.role === 'admin' ? '#ffaa00' : (u.role === 'reseller' ? '#aa44ff' : '#00d4ff'), border: 1px solid  }}>
+                style={{ background: u.role === 'admin' ? 'rgba(255,170,0,0.1)' : (u.role === 'reseller' ? 'rgba(170,68,255,0.1)' : 'rgba(0,212,255,0.08)'), color: u.role === 'admin' ? '#ffaa00' : (u.role === 'reseller' ? '#aa44ff' : '#00d4ff'), border: '1px solid rgba(255,255,255,0.05)' }}>
                 {u.role || 'user'}
               </span>
             </div>
