@@ -96,7 +96,7 @@ export default function Dashboard() {
 
           {/* Profile Editor */}
           <div className="mb-8">
-            <ProfileEditor currentUser={currentUser} onUpdate={setCurrentUser} />
+            <ProfileEditor currentUser={currentUser} />
           </div>
 
           {/* Footer banner */}
