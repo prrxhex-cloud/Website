@@ -4,6 +4,11 @@ import { db } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, Check, X, User, Trash2, RefreshCw, LogOut, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import CommunityLinksTab from './CommunityLinksTab';
+import DiscordSettingsTab from './DiscordSettingsTab';
+import DiscountsTab from './DiscountsTab';
+import FreebiesTab from './FreebiesTab';
+import StatusTab from './StatusTab';
 
 function ReceiptsTab() {
   const [receipts, setReceipts] = useState([]);
@@ -402,6 +407,11 @@ function AdminPanel({ adminUser, onLogout }) {
     { id: 'receipts', label: 'Receipts' },
     { id: 'users', label: 'Users' },
     { id: 'admins', label: 'Admins' },
+    { id: 'discounts', label: 'Discounts' },
+    { id: 'freebies', label: 'Freebies' },
+    { id: 'status', label: 'Service Status' },
+    { id: 'community', label: 'Community Links' },
+    { id: 'discord', label: 'Discord Settings' },
   ];
 
   return (
@@ -427,6 +437,11 @@ function AdminPanel({ adminUser, onLogout }) {
             {tab === 'receipts' && <ReceiptsTab />}
             {tab === 'users' && <UsersTab />}
             {tab === 'admins' && <AdminsTab />}
+            {tab === 'discounts' && <DiscountsTab />}
+            {tab === 'freebies' && <FreebiesTab />}
+            {tab === 'status' && <StatusTab />}
+            {tab === 'community' && <CommunityLinksTab />}
+            {tab === 'discord' && <DiscordSettingsTab />}
           </motion.div>
         </AnimatePresence>
       </div>
