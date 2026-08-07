@@ -5,6 +5,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Check, Minus, Settings, LayoutGrid, SlidersHorizontal, Image as ImageIcon, Lock, Keyboard } from 'lucide-react';
 import ScrollReveal from '@/components/effects/ScrollReveal';
+import InteractiveCard from '@/components/effects/InteractiveCard';
 
 export default function FunctionsSection() {
   const location = useLocation();
