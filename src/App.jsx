@@ -17,6 +17,8 @@ import Status from '@/pages/Status';
 import Admin from '@/pages/Admin';
 import Freebies from '@/pages/Freebies';
 import Login from '@/pages/Login';
+import LiquidLoader from '@/components/ui/LiquidLoader';
+import React from 'react';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -62,6 +64,7 @@ const AuthenticatedApp = () => {
 
 
 function App() {
+  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
   return (
     <ThemeProvider>
@@ -69,7 +72,11 @@ function App() {
         <SoundProvider>
           <QueryClientProvider client={queryClientInstance}>
             <Router>
-              <AuthenticatedApp />
+              {isInitialLoad ? (
+                <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
+              ) : (
+                <AuthenticatedApp />
+              )}
             </Router>
             <Toaster />
           </QueryClientProvider>

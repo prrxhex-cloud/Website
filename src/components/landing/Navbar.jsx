@@ -48,14 +48,7 @@ export default function Navbar() {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: 'easeOut' }}
-      className="fixed top-0 left-0 right-0 z-50"
-      style={{
-        background: 'rgba(2, 8, 20, 0.8)',
-        backdropFilter: 'blur(20px) saturate(150%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(150%)',
-        borderBottom: '1px solid rgba(0,212,255,0.1)',
-        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.5)',
-      }}
+      className="fixed top-4 left-4 right-4 z-50 liquid-glass"
     >
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
         
@@ -65,15 +58,16 @@ export default function Navbar() {
           className="flex items-center gap-3 cursor-pointer select-none"
           onClick={() => navigate('/')}
         >
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-[#00d4ff] to-[#0077ff] shadow-[0_0_15px_rgba(0,212,255,0.4)]">
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-[#00d4ff] to-[#ff00ff] shadow-[0_0_15px_rgba(0,212,255,0.4)] overflow-hidden">
+             <div className="absolute inset-0 bg-white/10 shimmer mix-blend-overlay"></div>
              <Hexagon className="absolute text-white/20 w-8 h-8" strokeWidth={1} />
              <Settings className="text-white w-5 h-5 animate-[spin_6s_linear_infinite]" />
           </div>
           <div className="flex flex-col">
-            <h1 className="font-orbitron font-bold text-xl text-white tracking-wide leading-tight">
-              PRRX <span className="text-[#00d4ff]">HEX</span>
+            <h1 className="font-orbitron font-bold text-xl text-white tracking-wide leading-tight glow-cyan">
+              PRRX <span className="text-[#ff00ff] glow-magenta">HEX</span>
             </h1>
-            <span className="text-[0.65rem] font-inter text-gray-400 tracking-[0.15em] uppercase font-semibold">
+            <span className="text-[0.65rem] font-inter text-gray-300 tracking-[0.15em] uppercase font-semibold">
               Premium FF Cheatz
             </span>
           </div>
@@ -99,15 +93,8 @@ export default function Navbar() {
 
           {/* VIP Button */}
           <motion.button
-            whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0,212,255,0.6)' }}
-            whileTap={{ scale: 0.95 }}
             onClick={() => { navigate('/'); setTimeout(() => document.getElementById('download')?.scrollIntoView({ behavior: 'smooth' }), 100); }}
-            className="hidden sm:flex items-center gap-2 font-orbitron font-bold text-[0.8rem] px-5 py-2.5 rounded-full transition-all"
-            style={{
-              background: 'linear-gradient(135deg, #00d4ff, #0088cc)',
-              color: '#020810',
-              boxShadow: '0 4px 15px rgba(0,212,255,0.3)',
-            }}
+            className="hidden sm:flex items-center gap-2 font-orbitron font-bold text-[0.8rem] px-5 py-2.5 liquid-btn"
           >
             <Zap size={14} className="fill-current" /> BUY VIP KEY
           </motion.button>
@@ -116,11 +103,11 @@ export default function Navbar() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg font-inter font-medium text-sm transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-full font-inter font-medium text-sm transition-colors"
             style={{ 
-              background: mobileOpen ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: mobileOpen ? '#00d4ff' : 'white'
+              background: mobileOpen ? 'rgba(0,212,255,0.2)' : 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(0,212,255,0.2)',
+              color: mobileOpen ? '#ffffff' : 'white'
             }}
           >
             <Menu size={18} /> <span className="hidden sm:block">Menu</span>
@@ -134,15 +121,9 @@ export default function Navbar() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="absolute top-14 right-0 w-64 rounded-xl overflow-hidden shadow-2xl z-50"
-                style={{
-                  background: 'rgba(5, 12, 25, 0.95)',
-                  backdropFilter: 'blur(30px)',
-                  border: '1px solid rgba(0,212,255,0.15)',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,255,0.05)',
-                }}
+                className="absolute top-14 right-0 w-64 liquid-glass z-50 overflow-hidden p-2"
               >
-                <div className="flex flex-col py-2">
+                <div className="flex flex-col">
                   <div className="px-4 py-2 mb-1 border-b border-white/5">
                     <span className="text-xs font-orbitron font-bold text-[#00d4ff] tracking-wider uppercase">Menu</span>
                   </div>

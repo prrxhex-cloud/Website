@@ -4,8 +4,36 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/jpeg" href="/logo.jpeg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://* wss://*; img-src 'self' data: https://*; font-src 'self' data: https://*;" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
     <link rel="manifest" href="/manifest.json" />
     <title>PRRX HEX</title>
+    <script>
+      // Global Anti-Tamper & Security Script
+      (function() {
+        // Disable right click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        
+        // Disable common developer tools keyboard shortcuts (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
+        document.onkeydown = function(e) {
+          if (e.keyCode == 123 || 
+             (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) ||
+             (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+            return false;
+          }
+        };
+
+        // Basic debugger trap
+        setInterval(() => {
+          const before = new Date().getTime();
+          debugger;
+          const after = new Date().getTime();
+          if (after - before > 100) {
+            document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20vh;'>Security Violation Detected</h1>";
+          }
+        }, 4000);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
