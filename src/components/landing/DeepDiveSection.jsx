@@ -182,17 +182,17 @@ export default function DeepDiveSection() {
                  { 
                    name: 'BlueStacks 5', 
                    sub: 'Pie 64-bit / Nougat 32 & 64-bit', 
-                   icon: "https://logo.clearbit.com/bluestacks.com"
+                   icon: "https://www.google.com/s2/favicons?domain=bluestacks.com&sz=128"
                  },
                  { 
                    name: 'MSI App Player', 
                    sub: 'High FPS & Low Latency', 
-                   icon: "https://logo.clearbit.com/msi.com"
+                   icon: "https://www.google.com/s2/favicons?domain=msi.com&sz=128"
                  },
                  { 
                    name: 'Windows 10 / 11', 
                    sub: 'Full 64-bit Kernel Support', 
-                   icon: "https://cdn.simpleicons.org/windows/00a4ef"
+                   icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/windows8/windows8-original.svg"
                  }
                ].map((plat) => (
                  <div key={plat.name} className="p-6 rounded-2xl flex items-center gap-5 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors shadow-lg">
