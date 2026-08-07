@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Zap, Volume2, VolumeX } from 'lucide-react';
+import { Menu, X, Zap, Volume2, VolumeX, Sun, Hexagon, Settings } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSound } from '../../context/SoundContext';
 import logoImg from '../../assets/logo.jpeg';
 
 const navLinks = [
   { label: 'Home', type: 'scroll', id: 'hero', path: '/' },
-  { label: 'Price', type: 'page', path: '/prices' },
-  { label: 'Functions', type: 'page', path: '/functions' },
-  { label: 'Resellers', type: 'page', path: '/resellers', badge: 'NEW' },
-  { label: 'Freebies', type: 'page', path: '/freebies', badge: 'FREE' },
   { label: 'Status', type: 'page', path: '/status' },
-  { label: 'Admin', type: 'page', path: '/admin', badge: 'STAFF' },
+  { label: 'Live Demo', type: 'page', path: '/live-demo', badge: 'HOT', badgeColor: '#ef4444' },
+  { label: 'Functions', type: 'page', path: '/functions' },
+  { label: 'Chat', type: 'page', path: '/chat' },
+  { label: 'Resellers', type: 'page', path: '/resellers' },
+  { label: 'Freebies', type: 'page', path: '/freebies', badge: 'FREE', badgeColor: '#10b981' },
+  { label: 'Prices', type: 'page', path: '/prices' },
+  { label: 'Admin', type: 'page', path: '/admin', badge: 'STAFF', badgeColor: '#f59e0b' },
   { label: 'Dashboard', type: 'page', path: '/dashboard' },
 ];
 
@@ -46,152 +48,149 @@ export default function Navbar() {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: 'easeOut' }}
-      className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-5 px-4"
-      style={{ pointerEvents: 'none' }}
+      className="fixed top-0 left-0 right-0 z-50"
+      style={{
+        background: 'rgba(2, 8, 20, 0.8)',
+        backdropFilter: 'blur(20px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+        borderBottom: '1px solid rgba(0,212,255,0.1)',
+        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.5)',
+      }}
     >
-      {/* Pill navbar */}
-      <div
-        className="flex items-center gap-2 px-4 py-2.5 rounded-full"
-        style={{
-          pointerEvents: 'auto',
-          background: 'rgba(2, 12, 30, 0.55)',
-          backdropFilter: 'blur(30px) saturate(200%)',
-          WebkitBackdropFilter: 'blur(30px) saturate(200%)',
-          border: '1px solid rgba(0,212,255,0.18)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px rgba(0,212,255,0.05)',
-        }}
-      >
-        {/* Logo */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
+        
+        {/* Logo Section */}
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          className="cursor-pointer select-none flex items-center mr-2"
+          whileHover={{ scale: 1.02 }}
+          className="flex items-center gap-3 cursor-pointer select-none"
           onClick={() => navigate('/')}
         >
-          <img src={logoImg} alt="PRRX Logo" className="w-8 h-8 object-contain" />
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-[#00d4ff] to-[#0077ff] shadow-[0_0_15px_rgba(0,212,255,0.4)]">
+             <Hexagon className="absolute text-white/20 w-8 h-8" strokeWidth={1} />
+             <Settings className="text-white w-5 h-5 animate-[spin_6s_linear_infinite]" />
+          </div>
+          <div className="flex flex-col">
+            <h1 className="font-orbitron font-bold text-xl text-white tracking-wide leading-tight">
+              PRRX <span className="text-[#00d4ff]">HEX</span>
+            </h1>
+            <span className="text-[0.65rem] font-inter text-gray-400 tracking-[0.15em] uppercase font-semibold">
+              Premium FF Cheatz
+            </span>
+          </div>
         </motion.div>
 
-        {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((item) => (
-            <motion.button
-              key={item.label}
-              onClick={() => handleNav(item)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-              className="relative font-inter font-medium text-sm px-4 py-1.5 rounded-full transition-all duration-200 flex items-center gap-1.5"
-              style={{
-                color: isActive(item) ? '#020810' : 'rgba(180,210,230,0.75)',
-                background: isActive(item)
-                  ? 'linear-gradient(135deg, #00d4ff, #0099cc)'
-                  : 'transparent',
-                boxShadow: isActive(item) ? '0 0 16px rgba(0,212,255,0.4)' : 'none',
-              }}
-            >
-              {item.label}
-              {item.badge && (
-                <span className="text-xs font-orbitron font-bold px-1.5 py-0.5 rounded-full"
-                  style={{
-                    background: isActive(item) ? 'rgba(0,0,0,0.25)' : 'rgba(0,212,255,0.15)',
-                    color: isActive(item) ? '#020810' : '#00d4ff',
-                    fontSize: '8px',
-                    border: `1px solid ${isActive(item) ? 'rgba(0,0,0,0.1)' : 'rgba(0,212,255,0.3)'}`,
-                  }}>
-                  {item.badge}
-                </span>
-              )}
-            </motion.button>
-          ))}
-        </div>
+        {/* Desktop & Actions Right Side */}
+        <div className="flex items-center gap-3 md:gap-4 relative">
+          
+          {/* Theme Toggle (Placeholder) */}
+          <button className="hidden sm:flex items-center justify-center w-9 h-9 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+            <Sun size={18} />
+          </button>
 
-        {/* GET NOW button */}
-        <motion.button
-          whileHover={{ scale: 1.05, boxShadow: '0 0 24px rgba(0,212,255,0.5)' }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => { navigate('/'); setTimeout(() => document.getElementById('download')?.scrollIntoView({ behavior: 'smooth' }), 100); }}
-          className="hidden md:block font-orbitron font-bold text-xs tracking-widest px-5 py-2 rounded-full ml-2 transition-all"
-          style={{
-            background: 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,100,200,0.1))',
-            border: '1px solid rgba(0,212,255,0.5)',
-            color: '#00d4ff',
-            boxShadow: '0 0 16px rgba(0,212,255,0.15)',
-          }}
-        >
-          ⚡ GET NOW
-        </motion.button>
-
-        {/* Sound toggle button */}
-        <button
-          id="sound-toggle"
-          onClick={toggleSound}
-          className="hidden md:flex items-center justify-center w-8 h-8 rounded-full ml-2 transition-colors hover:bg-white/10"
-          style={{ color: soundEnabled ? '#00d4ff' : 'rgba(180,210,230,0.5)' }}
-        >
-          {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-        </button>
-
-        {/* Mobile hamburger */}
-        <div className="md:hidden flex items-center ml-1 gap-2" style={{ pointerEvents: 'auto' }}>
+          {/* Sound toggle button */}
           <button
-            id="sound-toggle-mobile"
+            id="sound-toggle"
             onClick={toggleSound}
-            className="flex items-center justify-center w-8 h-8 rounded-full transition-colors"
-            style={{ color: soundEnabled ? '#00d4ff' : 'rgba(180,210,230,0.5)' }}
+            className="flex items-center justify-center w-9 h-9 rounded-full transition-colors hover:bg-white/10"
+            style={{ color: soundEnabled ? '#00d4ff' : 'rgba(156,163,175,0.8)' }}
           >
             {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
           </button>
-          <button
-            className="text-primary"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
 
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-20 left-4 right-4 rounded-2xl overflow-hidden"
+          {/* VIP Button */}
+          <motion.button
+            whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0,212,255,0.6)' }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => { navigate('/'); setTimeout(() => document.getElementById('download')?.scrollIntoView({ behavior: 'smooth' }), 100); }}
+            className="hidden sm:flex items-center gap-2 font-orbitron font-bold text-[0.8rem] px-5 py-2.5 rounded-full transition-all"
             style={{
-              pointerEvents: 'auto',
-              background: 'rgba(2,10,28,0.92)',
-              backdropFilter: 'blur(30px) saturate(200%)',
-              WebkitBackdropFilter: 'blur(30px) saturate(200%)',
-              border: '1px solid rgba(0,212,255,0.15)',
-              boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
+              background: 'linear-gradient(135deg, #00d4ff, #0088cc)',
+              color: '#020810',
+              boxShadow: '0 4px 15px rgba(0,212,255,0.3)',
             }}
           >
-            <div className="p-3 space-y-1">
-              {navLinks.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => handleNav(item)}
-                  className="block w-full text-left text-sm font-inter py-3 px-4 rounded-xl transition-all"
-                  style={{
-                    color: isActive(item) ? '#00d4ff' : 'rgba(180,200,220,0.75)',
-                    background: isActive(item) ? 'rgba(0,212,255,0.08)' : 'transparent',
-                    border: isActive(item) ? '1px solid rgba(0,212,255,0.2)' : '1px solid transparent',
-                  }}
-                >
-                  {item.label}
-                </button>
-              ))}
-              <button
-                onClick={() => { setMobileOpen(false); navigate('/'); setTimeout(() => document.getElementById('download')?.scrollIntoView({ behavior: 'smooth' }), 100); }}
-                className="w-full font-orbitron font-bold text-xs tracking-widest px-6 py-3 rounded-xl mt-1"
-                style={{ borderColor: 'rgba(0,212,255,0.4)', color: '#00d4ff', background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.3)' }}
+            <Zap size={14} className="fill-current" /> BUY VIP KEY
+          </motion.button>
+
+          {/* Menu Dropdown Toggle */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg font-inter font-medium text-sm transition-colors"
+            style={{ 
+              background: mobileOpen ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: mobileOpen ? '#00d4ff' : 'white'
+            }}
+          >
+            <Menu size={18} /> <span className="hidden sm:block">Menu</span>
+          </motion.button>
+
+          {/* Dropdown Menu Panel */}
+          <AnimatePresence>
+            {mobileOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="absolute top-14 right-0 w-64 rounded-xl overflow-hidden shadow-2xl z-50"
+                style={{
+                  background: 'rgba(5, 12, 25, 0.95)',
+                  backdropFilter: 'blur(30px)',
+                  border: '1px solid rgba(0,212,255,0.15)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,255,0.05)',
+                }}
               >
-                ⚡ GET NOW
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <div className="flex flex-col py-2">
+                  <div className="px-4 py-2 mb-1 border-b border-white/5">
+                    <span className="text-xs font-orbitron font-bold text-[#00d4ff] tracking-wider uppercase">Menu</span>
+                  </div>
+                  {navLinks.map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => handleNav(item)}
+                      className="group flex items-center justify-between px-5 py-2.5 text-left font-inter text-sm transition-all hover:bg-white/5"
+                      style={{
+                        color: isActive(item) ? '#00d4ff' : 'rgba(200,210,220,0.85)',
+                        borderLeft: isActive(item) ? '2px solid #00d4ff' : '2px solid transparent'
+                      }}
+                    >
+                      <span className="group-hover:text-white transition-colors">{item.label}</span>
+                      {item.badge && (
+                        <span 
+                          className="text-[0.6rem] font-bold px-2 py-0.5 rounded-full"
+                          style={{
+                            background: `${item.badgeColor}20`,
+                            color: item.badgeColor,
+                            border: `1px solid ${item.badgeColor}40`
+                          }}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                  
+                  {/* Mobile-only CTA */}
+                  <div className="sm:hidden px-4 mt-2 pt-3 border-t border-white/5">
+                     <button
+                        onClick={() => { setMobileOpen(false); navigate('/'); setTimeout(() => document.getElementById('download')?.scrollIntoView({ behavior: 'smooth' }), 100); }}
+                        className="w-full flex justify-center items-center gap-2 font-orbitron font-bold text-[0.8rem] px-5 py-2.5 rounded-lg transition-all"
+                        style={{
+                          background: 'linear-gradient(135deg, #00d4ff, #0088cc)',
+                          color: '#020810',
+                        }}
+                      >
+                        <Zap size={14} className="fill-current" /> BUY VIP KEY
+                      </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     </motion.div>
   );
 }
