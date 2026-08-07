@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -96,7 +96,7 @@ function ReceiptsTab() {
             className="font-inter text-xs px-3 py-1.5 rounded-lg capitalize transition-all"
             style={{
               background: filter === f ? 'rgba(0,212,255,0.12)' : 'rgba(0,15,35,0.5)',
-              border: 1px solid ,
+              border: filter === f ? '1px solid rgba(0,212,255,0.2)' : '1px solid rgba(255,255,255,0.05)',
               color: filter === f ? '#00d4ff' : 'rgba(180,200,220,0.5)',
             }}>{f}</button>
         ))}
