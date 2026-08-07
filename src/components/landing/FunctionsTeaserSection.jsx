@@ -68,7 +68,7 @@ export default function FunctionsTeaserSection() {
               {/* Image Preview */}
               <div className="w-full rounded-2xl overflow-hidden bg-slate-900 aspect-[16/9] border border-slate-200 relative flex items-center justify-center">
                 {images.external_image_url ? (
-                  <img src={images.external_image_url} alt="External Panel" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img src={images.external_image_url} alt="External Panel" className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                   <div className="text-center text-slate-500 font-outfit text-xs font-bold">
                     External Panel Overlay Build
@@ -106,7 +106,7 @@ export default function FunctionsTeaserSection() {
               {/* Image Preview */}
               <div className="w-full rounded-2xl overflow-hidden bg-slate-900 aspect-[16/9] border border-slate-200 relative flex items-center justify-center">
                 {images.internal_image_url ? (
-                  <img src={images.internal_image_url} alt="Internal Panel" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img src={images.internal_image_url} alt="Internal Panel" className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                   <div className="text-center text-slate-500 font-outfit text-xs font-bold">
                     Internal Injected APK Build

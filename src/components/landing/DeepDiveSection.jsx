@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import ScrollReveal from '@/components/effects/ScrollReveal';
-import { Lock } from 'lucide-react';
+import { Lock, Maximize2, X } from 'lucide-react';
 
 export default function DeepDiveSection() {
+  const [selectedImage, setSelectedImage] = useState(null);
   const [panelImages, setPanelImages] = useState(() => {
     const cached = localStorage.getItem('prrx_panel_images');
     return cached ? JSON.parse(cached) : { external_image_url: '', internal_image_url: '' };
@@ -50,7 +51,7 @@ export default function DeepDiveSection() {
           {/* External Bypass Row */}
           <ScrollReveal variant="fadeLeft">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div className="clean-card p-8 bg-white border border-slate-200 space-y-6">
+              <div className="clean-card p-8 bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-md space-y-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-50 text-[#06b6d4] border border-cyan-200 rounded-full font-outfit text-xs font-bold">
                   OFFICIAL — EXTERNAL
                 </div>
@@ -76,14 +77,22 @@ export default function DeepDiveSection() {
               </div>
 
               {/* Preview Window */}
-              <div className="clean-card p-3 bg-white border border-slate-200">
+              <div className="clean-card p-3 bg-white border border-slate-200 shadow-md">
                 <div className="px-4 py-2 bg-slate-100 rounded-xl flex items-center justify-between text-xs text-slate-500 font-mono mb-2">
                   <span>ext.prrx.local</span>
                   <Lock className="w-3.5 h-3.5 text-slate-400" />
                 </div>
-                <div className="bg-slate-900 rounded-xl overflow-hidden min-h-[280px] flex items-center justify-center">
+                <div 
+                  className="bg-slate-950 rounded-xl overflow-hidden min-h-[300px] p-2 flex items-center justify-center relative group cursor-pointer"
+                  onClick={() => panelImages.external_image_url && setSelectedImage(panelImages.external_image_url)}
+                >
                   {panelImages.external_image_url ? (
-                    <img src={panelImages.external_image_url} alt="External Panel" className="w-full h-auto object-contain" />
+                    <>
+                      <img src={panelImages.external_image_url} alt="External Panel" className="w-full h-auto max-h-[360px] object-contain rounded-lg" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
+                        <Maximize2 className="w-4 h-4" /> Full View
+                      </div>
+                    </>
                   ) : (
                     <div className="text-center p-6 text-slate-500 font-outfit text-sm">
                       External Overlay HUD Active
@@ -97,14 +106,22 @@ export default function DeepDiveSection() {
           {/* Internal Injection Row */}
           <ScrollReveal variant="fadeRight">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div className="clean-card p-3 bg-white border border-slate-200 lg:order-1 order-2">
+              <div className="clean-card p-3 bg-white border border-slate-200 shadow-md lg:order-1 order-2">
                 <div className="px-4 py-2 bg-slate-100 rounded-xl flex items-center justify-between text-xs text-slate-500 font-mono mb-2">
                   <span>int.prrx.local</span>
                   <Lock className="w-3.5 h-3.5 text-slate-400" />
                 </div>
-                <div className="bg-slate-900 rounded-xl overflow-hidden min-h-[280px] flex items-center justify-center">
+                <div 
+                  className="bg-slate-950 rounded-xl overflow-hidden min-h-[300px] p-2 flex items-center justify-center relative group cursor-pointer"
+                  onClick={() => panelImages.internal_image_url && setSelectedImage(panelImages.internal_image_url)}
+                >
                   {panelImages.internal_image_url ? (
-                    <img src={panelImages.internal_image_url} alt="Internal Panel" className="w-full h-auto object-contain" />
+                    <>
+                      <img src={panelImages.internal_image_url} alt="Internal Panel" className="w-full h-auto max-h-[360px] object-contain rounded-lg" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
+                        <Maximize2 className="w-4 h-4" /> Full View
+                      </div>
+                    </>
                   ) : (
                     <div className="text-center p-6 text-slate-500 font-outfit text-sm">
                       Internal Injected Menu Active
@@ -113,7 +130,7 @@ export default function DeepDiveSection() {
                 </div>
               </div>
 
-              <div className="clean-card p-8 bg-white border border-slate-200 space-y-6 lg:order-2 order-1">
+              <div className="clean-card p-8 bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-md space-y-6 lg:order-2 order-1">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-violet-50 text-violet-700 border border-violet-200 rounded-full font-outfit text-xs font-bold">
                   BETA X V7A — INTERNAL
                 </div>
@@ -211,6 +228,28 @@ export default function DeepDiveSection() {
         </ScrollReveal>
 
       </div>
+
+      {/* Lightbox Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[1000] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-5xl max-h-[90vh] w-full flex flex-col items-center">
+            <button 
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-12 right-0 text-white bg-slate-800 hover:bg-slate-700 p-2 rounded-full shadow-lg border border-slate-600"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <img 
+              src={selectedImage} 
+              alt="Full Resolution View" 
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-slate-700" 
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 }

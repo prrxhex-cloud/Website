@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Check, Settings, LayoutGrid, SlidersHorizontal, Image as ImageIcon, Lock, Keyboard } from 'lucide-react';
+import { Check, Settings, LayoutGrid, SlidersHorizontal, Image as ImageIcon, Lock, Keyboard, X, Maximize2 } from 'lucide-react';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 
 export default function FunctionsSection() {
   const location = useLocation();
   const [activePanel, setActivePanel] = useState(location.state?.tab || 'internal');
+  const [selectedImage, setSelectedImage] = useState(null);
+
   const [images, setImages] = useState(() => {
     const cached = localStorage.getItem('prrx_functions_screenshots');
     return cached ? JSON.parse(cached) : {
@@ -64,13 +66,13 @@ export default function FunctionsSection() {
         
         {/* Toggle Switch */}
         <div className="flex justify-center mb-10">
-          <div className="bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm flex items-center gap-2">
+          <div className="bg-white/90 backdrop-blur-md border border-slate-200 p-1.5 rounded-2xl shadow-md flex items-center gap-2">
             <button 
               onClick={() => setActivePanel('external')}
               className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-xs tracking-wider transition-all flex items-center gap-2 ${
                 !isInternal
                   ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
               <LayoutGrid className="w-4 h-4" />
@@ -82,7 +84,7 @@ export default function FunctionsSection() {
               className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-xs tracking-wider transition-all flex items-center gap-2 ${
                 isInternal
                   ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
               <Settings className="w-4 h-4" />
@@ -93,7 +95,7 @@ export default function FunctionsSection() {
 
         {/* Hero Banner */}
         <ScrollReveal variant="fadeUp">
-          <div className="clean-card p-8 sm:p-10 mb-10 bg-white border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+          <div className="clean-card p-8 sm:p-10 mb-10 bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
             <div>
               <div className="sub-heading mb-2">FEATURES OVERVIEW</div>
               <h2 className="font-outfit font-extrabold text-3xl sm:text-4xl text-slate-900 flex items-center gap-3">
@@ -123,8 +125,8 @@ export default function FunctionsSection() {
         <ScrollReveal variant="fadeUp">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
             
-            {/* Left Large Preview */}
-            <div className="lg:col-span-2 clean-card p-4 bg-white border border-slate-200 flex flex-col">
+            {/* Left Large Preview Container */}
+            <div className="lg:col-span-2 clean-card p-4 bg-white border border-slate-200 shadow-md flex flex-col">
               {/* Window Header */}
               <div className="px-4 py-2.5 bg-slate-100 rounded-xl flex items-center gap-2 mb-3 border border-slate-200">
                 <div className="flex gap-1.5">
@@ -137,10 +139,20 @@ export default function FunctionsSection() {
                 </div>
               </div>
 
-              {/* Preview Image */}
-              <div className="flex-1 bg-slate-900 rounded-xl overflow-hidden min-h-[340px] relative flex items-center justify-center">
+              {/* Preview Image Viewport - Full View Object Contain */}
+              <div className="flex-1 bg-slate-950 rounded-xl overflow-hidden min-h-[360px] p-2 relative flex items-center justify-center group cursor-pointer"
+                onClick={() => mainPreviewImage && setSelectedImage(mainPreviewImage)}>
                 {mainPreviewImage ? (
-                  <img src={mainPreviewImage} className="w-full h-full object-contain" alt="Live Preview" />
+                  <>
+                    <img 
+                      src={mainPreviewImage} 
+                      className="w-full h-full max-h-[460px] object-contain rounded-lg" 
+                      alt="Full Panel Preview" 
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-2">
+                      <Maximize2 className="w-4 h-4" /> Click to view full image
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center p-8 space-y-2">
                     <ImageIcon className="w-12 h-12 text-slate-600 mx-auto" />
@@ -152,25 +164,25 @@ export default function FunctionsSection() {
 
             {/* Right Side Small Cards */}
             <div className="lg:col-span-1 grid grid-cols-2 gap-4">
-              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center">
+              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center shadow-sm">
                 <LayoutGrid className="w-5 h-5 mb-2 text-[#06b6d4]" />
                 <h3 className="font-outfit font-extrabold text-base text-slate-900">Tabbed</h3>
                 <p className="font-inter text-xs text-slate-500">Layout Style</p>
               </div>
 
-              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center">
+              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center shadow-sm">
                 <SlidersHorizontal className="w-5 h-5 mb-2 text-violet-600" />
                 <h3 className="font-outfit font-extrabold text-base text-slate-900">Sliders</h3>
                 <p className="font-inter text-xs text-slate-500">Smooth FOV</p>
               </div>
 
-              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center">
+              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center shadow-sm">
                 <Keyboard className="w-5 h-5 mb-2 text-indigo-600" />
                 <h3 className="font-outfit font-extrabold text-base text-slate-900">Keybinds</h3>
                 <p className="font-inter text-xs text-slate-500">Custom Binds</p>
               </div>
 
-              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center">
+              <div className="clean-card p-5 bg-white border border-slate-200 flex flex-col justify-center shadow-sm">
                 <Check className="w-5 h-5 mb-2 text-emerald-600" />
                 <h3 className="font-outfit font-extrabold text-2xl text-slate-900">{isInternal ? '51' : '59'}</h3>
                 <p className="font-inter text-xs text-slate-500">Total Features</p>
@@ -179,13 +191,14 @@ export default function FunctionsSection() {
           </div>
         </ScrollReveal>
 
-        {/* Panel Screenshots */}
+        {/* Panel Screenshots Grid - Object Contain */}
         <ScrollReveal variant="fadeUp">
-          <div className="mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <h3 className="font-outfit font-extrabold text-lg text-slate-900">Panel Feature Screenshots</h3>
+            <span className="text-xs text-slate-500 font-medium">Click any screenshot to zoom in full view</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {[
               { key: 'aimbot', label: 'Aimbot Menu' },
               { key: 'visuals', label: 'Visuals / ESP' },
@@ -194,10 +207,22 @@ export default function FunctionsSection() {
               { key: 'keybinds', label: 'Keybind Config' },
               { key: 'settings', label: 'Settings & Security' }
             ].map((cat) => (
-              <div key={cat.key} className="clean-card p-3 bg-white border border-slate-200 space-y-2">
-                <div className="aspect-[16/10] bg-slate-900 rounded-xl overflow-hidden relative flex items-center justify-center">
+              <div key={cat.key} className="clean-card p-3 bg-white border border-slate-200 space-y-2 shadow-sm">
+                <div 
+                  className="aspect-[16/10] bg-slate-950 rounded-xl overflow-hidden relative flex items-center justify-center p-1 group cursor-pointer"
+                  onClick={() => currentImages[cat.key] && setSelectedImage(currentImages[cat.key])}
+                >
                   {currentImages[cat.key] ? (
-                    <img src={currentImages[cat.key]} alt={cat.label} className="w-full h-full object-cover" />
+                    <>
+                      <img 
+                        src={currentImages[cat.key]} 
+                        alt={cat.label} 
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" 
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
+                        <Maximize2 className="w-4 h-4" /> Full View
+                      </div>
+                    </>
                   ) : (
                     <div className="text-center">
                       <ImageIcon className="w-6 h-6 text-slate-600 mx-auto mb-1" />
@@ -211,46 +236,27 @@ export default function FunctionsSection() {
           </div>
         </ScrollReveal>
 
-        {/* Comparison Table */}
-        <ScrollReveal variant="fadeUp">
-          <div className="clean-card p-6 sm:p-8 bg-white border border-slate-200 overflow-x-auto">
-            <div className="mb-6">
-              <h3 className="font-outfit font-extrabold text-xl text-slate-900">External vs Internal Comparison</h3>
+        {/* Full Image Lightbox Modal */}
+        {selectedImage && (
+          <div 
+            className="fixed inset-0 z-[1000] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div className="relative max-w-5xl max-h-[90vh] w-full flex flex-col items-center">
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-12 right-0 text-white bg-slate-800 hover:bg-slate-700 p-2 rounded-full shadow-lg border border-slate-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <img 
+                src={selectedImage} 
+                alt="Full Resolution View" 
+                className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-slate-700" 
+              />
             </div>
-
-            <table className="w-full text-left font-inter text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase">
-                  <th className="py-3">Capability</th>
-                  <th className="py-3 text-center">External Panel</th>
-                  <th className="py-3 text-center">Internal Panel</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                <tr>
-                  <td className="py-3 font-semibold text-slate-900">Total Features</td>
-                  <td className="py-3 text-center font-bold">59</td>
-                  <td className="py-3 text-center font-bold">51</td>
-                </tr>
-                <tr>
-                  <td className="py-3 font-semibold text-slate-900">Aimbot & Aim Assist</td>
-                  <td className="py-3 text-center text-emerald-600 font-bold">✓ Included</td>
-                  <td className="py-3 text-center text-emerald-600 font-bold">✓ Included</td>
-                </tr>
-                <tr>
-                  <td className="py-3 font-semibold text-slate-900">ESP Wallhack & Skeleton</td>
-                  <td className="py-3 text-center text-slate-600">Basic Overlay</td>
-                  <td className="py-3 text-center text-indigo-600 font-bold">Extended 3D Box</td>
-                </tr>
-                <tr>
-                  <td className="py-3 font-semibold text-slate-900">Stream Mode Stealth</td>
-                  <td className="py-3 text-center text-emerald-600 font-bold">✓ Included</td>
-                  <td className="py-3 text-center text-emerald-600 font-bold">✓ Included</td>
-                </tr>
-              </tbody>
-            </table>
           </div>
-        </ScrollReveal>
+        )}
 
       </div>
     </section>

@@ -17,6 +17,7 @@ import Status from '@/pages/Status';
 import Admin from '@/pages/Admin';
 import Freebies from '@/pages/Freebies';
 import Login from '@/pages/Login';
+import LiveDemo from '@/pages/LiveDemo';
 import LiquidLoader from '@/components/ui/LiquidLoader';
 import React from 'react';
 // Add page imports here
@@ -50,6 +51,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/functions" element={<Functions />} />
+      <Route path="/live-demo" element={<LiveDemo />} />
 
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/prices" element={<Prices />} />
