@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, limit, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 import { Plus, Edit2, Trash2, Megaphone, Newspaper, Zap, AlertTriangle, Pin, X, Loader2 } from 'lucide-react';
@@ -70,11 +71,19 @@ function EditModal({ item, onClose, onSave, authorName }) {
   const handleSave = async () => {
     if (!form.title.trim() || !form.content.trim()) return;
     setLoading(true);
-    const saved = item?.id
-      ? await base44.entities.Announcement.update(item.id, form)
-      : await base44.entities.Announcement.create(form);
+    try {
+      if (item?.id) {
+        const { id, ...dataToUpdate } = form;
+        await updateDoc(doc(db, 'announcements', item.id), dataToUpdate);
+        onSave(form);
+      } else {
+        const newDoc = await addDoc(collection(db, 'announcements'), { ...form, created_date: Date.now() });
+        onSave({ id: newDoc.id, ...form, created_date: Date.now() });
+      }
+    } catch (e) {
+      console.error(e);
+    }
     setLoading(false);
-    onSave(saved);
   };
 
   return (
@@ -141,19 +150,20 @@ export default function AnnouncementsSection({ isAdmin, currentUser }) {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    base44.entities.Announcement.list('-created_date', 20).then(data => {
+    const q = query(collection(db, 'announcements'), orderBy('created_date', 'desc'), limit(20));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       setItems(data.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0)));
     });
-    const unsub = base44.entities.Announcement.subscribe(event => {
-      if (event.type === 'create') setItems(prev => [event.data, ...prev].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0)));
-      if (event.type === 'update') setItems(prev => prev.map(i => i.id === event.id ? event.data : i).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0)));
-      if (event.type === 'delete') setItems(prev => prev.filter(i => i.id !== event.id));
-    });
-    return () => unsub();
+    return () => unsubscribe();
   }, []);
 
   const handleDelete = async (id) => {
-    await base44.entities.Announcement.delete(id);
+    try {
+      await deleteDoc(doc(db, 'announcements', id));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleSave = () => {

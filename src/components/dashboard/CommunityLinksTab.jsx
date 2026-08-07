@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { MessageCircle, Users, Save, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -10,10 +11,16 @@ export default function CommunityLinksTab() {
 
   const load = async () => {
     setLoading(true);
-    const data = await base44.entities.CommunityLink.list('-created_date', 1);
-    if (data?.length > 0) {
-      setLink(data[0]);
-    } else {
+    try {
+      const snapshot = await getDocs(collection(db, 'community_links'));
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (data?.length > 0) {
+        setLink(data[0]);
+      } else {
+        setLink({ whatsapp_url: 'https://chat.whatsapp.com/CsElU5rhsXVDMjjuFHFvgI', discord_url: 'https://discord.gg/EuwhvXXfJC', popup_enabled: true });
+      }
+    } catch (e) {
+      console.error(e);
       setLink({ whatsapp_url: 'https://chat.whatsapp.com/CsElU5rhsXVDMjjuFHFvgI', discord_url: 'https://discord.gg/EuwhvXXfJC', popup_enabled: true });
     }
     setLoading(false);
@@ -24,18 +31,15 @@ export default function CommunityLinksTab() {
   const save = async () => {
     setSaving(true);
     try {
+      const payload = {
+        whatsapp_url: link.whatsapp_url,
+        discord_url: link.discord_url,
+        popup_enabled: link.popup_enabled !== false,
+      };
       if (link.id) {
-        await base44.entities.CommunityLink.update(link.id, {
-          whatsapp_url: link.whatsapp_url,
-          discord_url: link.discord_url,
-          popup_enabled: link.popup_enabled,
-        });
+        await updateDoc(doc(db, 'community_links', link.id), payload);
       } else {
-        await base44.entities.CommunityLink.create({
-          whatsapp_url: link.whatsapp_url,
-          discord_url: link.discord_url,
-          popup_enabled: link.popup_enabled !== false,
-        });
+        await addDoc(collection(db, 'community_links'), payload);
       }
       toast.success('Community links saved!');
       load();

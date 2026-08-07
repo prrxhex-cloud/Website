@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import Navbar from '@/components/landing/Navbar';
 import { Download, CheckCircle, XCircle, Calendar, User, Lock, Smartphone, Gift, RefreshCw } from 'lucide-react';
 
@@ -125,9 +126,9 @@ export default function Freebies() {
     setLoading(true);
     try {
       const [panelData, linkData, dlLinks] = await Promise.all([
-        base44.entities.FreePanel.list(),
-        base44.entities.V7aApkLink.filter({ active: true }),
-        base44.entities.DownloadLink.filter({ active: true }),
+        getDocs(query(collection(db, 'free_panels'))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
+        getDocs(query(collection(db, 'v7a_apk_links'), where('active', '==', true))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
+        getDocs(query(collection(db, 'download_links'), where('active', '==', true))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
       ]);
       const panelMap = {};
       panelData.forEach(p => { panelMap[p.panel_type] = p; });
@@ -139,7 +140,9 @@ export default function Freebies() {
         external: ext?.url || FALLBACK_EXTERNAL,
         internal: int_?.url || FALLBACK_INTERNAL,
       });
-    } catch (e) {}
+    } catch (e) {
+      console.error(e);
+    }
     setLoading(false);
   };
 

@@ -1,29 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 import Navbar from '@/components/landing/Navbar';
 import ChatTabs from '@/components/chat/ChatTabs';
 import AdminChat from '@/components/chat/AdminChat';
 import WorldChat from '@/components/chat/WorldChat';
 import AiChat from '@/components/chat/AiChat';
-
+import { useAuth } from '@/lib/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function Chat() {
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser, isAuthenticated, isLoadingAuth } = useAuth();
   const [activeTab, setActiveTab] = useState('world');
-  const [keyauthUser, setKeyauthUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const stored = localStorage.getItem('prrx_keyauth_user');
-    if (stored) { try { setKeyauthUser(JSON.parse(stored)); } catch {} }
-  }, []);
+    if (!isLoadingAuth && !isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, isLoadingAuth, navigate]);
 
-  useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {
-      base44.auth.redirectToLogin('/chat');
-    });
-  }, []);
-
-  if (!currentUser) return (
+  if (isLoadingAuth || !currentUser) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--page-bg)' }}>
       <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
     </div>
@@ -42,7 +37,7 @@ export default function Chat() {
           {/* Chat Content */}
           <div className="flex-1 overflow-hidden" style={{ background: 'rgba(2,8,20,0.5)' }}>
             {activeTab === 'admin' && (
-              <AdminChat currentUser={currentUser} isAdmin={!!keyauthUser} />
+              <AdminChat currentUser={currentUser} isAdmin={currentUser?.role === 'admin'} />
             )}
             {activeTab === 'world' && <WorldChat currentUser={currentUser} />}
             {activeTab === 'ai' && <AiChat currentUser={currentUser} />}

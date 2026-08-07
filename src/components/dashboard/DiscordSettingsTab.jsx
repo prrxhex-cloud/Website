@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { Bell, Check, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { clearDiscordConfigCache } from '@/utils/discordNotifier';
@@ -15,7 +16,8 @@ export default function DiscordSettingsTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await base44.entities.DiscordWebhook.list();
+      const snapshot = await getDocs(collection(db, 'discord_webhooks'));
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       if (data.length > 0) {
         setRecord(data[0]);
         setTicketUrl(data[0].ticket_webhook_url || '');
@@ -34,10 +36,11 @@ export default function DiscordSettingsTab() {
   const save = async () => {
     setSaving(true);
     try {
+      const payload = { ticket_webhook_url: ticketUrl, freebie_webhook_url: freebieUrl, receipt_webhook_url: receiptUrl };
       if (record) {
-        await base44.entities.DiscordWebhook.update(record.id, { ticket_webhook_url: ticketUrl, freebie_webhook_url: freebieUrl, receipt_webhook_url: receiptUrl });
+        await updateDoc(doc(db, 'discord_webhooks', record.id), payload);
       } else {
-        await base44.entities.DiscordWebhook.create({ ticket_webhook_url: ticketUrl, freebie_webhook_url: freebieUrl, receipt_webhook_url: receiptUrl });
+        await addDoc(collection(db, 'discord_webhooks'), payload);
       }
       toast.success('Discord webhook settings saved');
       clearDiscordConfigCache();

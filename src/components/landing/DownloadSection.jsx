@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 import { Download, Shield, Zap, Star, CheckCircle } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const FALLBACK_EXTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
 const FALLBACK_INTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
@@ -23,7 +24,8 @@ export default function DownloadSection() {
   const [internalLabel, setInternalLabel] = useState('🔥 INTERNAL PANEL');
 
   useEffect(() => {
-    base44.entities.DownloadLink.filter({ active: true }).then(links => {
+    getDocs(query(collection(db, 'download_links'), where('active', '==', true))).then(snapshot => {
+      const links = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       const ext = links.find(l => l.type === 'external');
       const int_ = links.find(l => l.type === 'internal');
       if (ext) { setExternalUrl(ext.url); if (ext.label) setExternalLabel(ext.label); }

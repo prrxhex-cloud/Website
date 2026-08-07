@@ -1,37 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { Key, RefreshCw, Copy } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { Key, RefreshCw, Copy, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PRODUCT_COLOR = { external: '#00d4ff', internal: '#aa44ff', both: '#ffaa00' };
 const DURATION_LABEL = { '1_day': '1 Day', '7_days': '7 Days', '30_days': '30 Days', lifetime: 'Lifetime' };
 
-export default function KeyHistory({ account }) {
+export default function SubscriptionHistory({ account }) {
   const [receipts, setReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
     setLoading(true);
-    const data = await base44.entities.ResellerReceipt.filter(
-      { reseller_username: account.username, status: 'approved' },
-      '-created_date',
-      100
-    );
-    setReceipts(data);
+    try {
+      const q = query(
+        collection(db, 'reseller_receipts'),
+        where('reseller_email', '==', account.email),
+        where('status', '==', 'approved')
+      );
+      // Removed orderBy for now because we'd need a composite index for where+orderBy in Firestore
+      // We'll sort them on the client side.
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setReceipts(data);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to load history.');
+    }
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
 
-  const copy = (key) => {
-    navigator.clipboard.writeText(key);
-    toast.success('Key copied!');
+  const copy = (email) => {
+    navigator.clipboard.writeText(email);
+    toast.success('Email copied!');
   };
 
   return (
     <div className="rounded-2xl p-6 space-y-4" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
       <div className="flex items-center justify-between">
-        <p className="font-orbitron text-xs text-primary tracking-wider">LICENSE KEY HISTORY</p>
+        <p className="font-orbitron text-xs text-primary tracking-wider">GRANTED SUBSCRIPTIONS</p>
         <button onClick={load} className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-primary transition-colors">
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -43,13 +54,13 @@ export default function KeyHistory({ account }) {
         </div>
       ) : receipts.length === 0 ? (
         <div className="text-center py-10 space-y-2">
-          <Key className="w-10 h-10 mx-auto text-muted-foreground opacity-30" />
-          <p className="font-inter text-sm text-muted-foreground">No approved keys yet.</p>
-          <p className="font-inter text-xs text-muted-foreground/60">Approved receipts with keys will appear here.</p>
+          <CheckCircle className="w-10 h-10 mx-auto text-muted-foreground opacity-30" />
+          <p className="font-inter text-sm text-muted-foreground">No granted subscriptions yet.</p>
+          <p className="font-inter text-xs text-muted-foreground/60">Approved receipts will appear here once granted.</p>
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="font-inter text-xs text-muted-foreground">{receipts.length} approved key{receipts.length !== 1 ? 's' : ''}</p>
+          <p className="font-inter text-xs text-muted-foreground">{receipts.length} granted subscription{receipts.length !== 1 ? 's' : ''}</p>
           {receipts.map(r => {
             const color = PRODUCT_COLOR[r.product_type] || '#00d4ff';
             return (
@@ -59,7 +70,7 @@ export default function KeyHistory({ account }) {
                 <div className="flex items-center gap-3 flex-wrap">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{ background: `${color}12`, border: `1px solid ${color}30` }}>
-                    <Key className="w-4 h-4" style={{ color }} />
+                    <CheckCircle className="w-4 h-4" style={{ color }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -78,26 +89,23 @@ export default function KeyHistory({ account }) {
                       )}
                     </div>
                     <p className="font-inter text-xs text-muted-foreground mt-0.5">
-                      {new Date(r.created_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      {new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </p>
                   </div>
                 </div>
 
-                {/* Key display */}
-                {r.generated_key ? (
-                  <div className="flex items-center gap-2 p-3 rounded-lg"
-                    style={{ background: 'rgba(0,255,100,0.05)', border: '1px solid rgba(0,255,100,0.18)' }}>
-                    <p className="font-orbitron font-bold text-sm flex-1 break-all" style={{ color: '#00ff64' }}>
-                      {r.generated_key}
-                    </p>
-                    <button onClick={() => copy(r.generated_key)}
-                      className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-green-400 transition-colors flex-shrink-0">
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <p className="font-inter text-xs text-muted-foreground italic">Key not yet assigned by admin.</p>
-                )}
+                {/* Target User */}
+                <div className="flex items-center gap-2 p-3 rounded-lg"
+                  style={{ background: 'rgba(0,255,100,0.05)', border: '1px solid rgba(0,255,100,0.18)' }}>
+                  <p className="font-inter text-xs text-muted-foreground">Granted To:</p>
+                  <p className="font-orbitron font-bold text-sm flex-1 break-all" style={{ color: '#00ff64' }}>
+                    {r.customer_email}
+                  </p>
+                  <button onClick={() => copy(r.customer_email)}
+                    className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-green-400 transition-colors flex-shrink-0">
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                </div>
 
                 {/* OCR details */}
                 {(r.extracted_amount || r.extracted_reference) && (

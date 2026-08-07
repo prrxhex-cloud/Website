@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 import Navbar from '@/components/landing/Navbar';
 import { Download, MessageCircle, DollarSign, Activity, Store, Shield, LogOut, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -8,18 +7,19 @@ import ProfileEditor from '@/components/dashboard/ProfileEditor';
 import DashboardLicenseCard from '@/components/dashboard/DashboardLicenseCard';
 import DashboardAnnouncements from '@/components/dashboard/DashboardAnnouncements';
 import DashboardServiceStatus from '@/components/dashboard/DashboardServiceStatus';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Dashboard() {
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser, isAuthenticated, isLoadingAuth, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {
-      base44.auth.redirectToLogin('/dashboard');
-    });
-  }, []);
+    if (!isLoadingAuth && !isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, isLoadingAuth, navigate]);
 
-  if (!currentUser) return (
+  if (isLoadingAuth || !currentUser) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--page-bg)' }}>
       <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
     </div>
@@ -49,7 +49,7 @@ export default function Dashboard() {
               <p className="font-inter text-sm text-muted-foreground mt-1">{currentUser.email}</p>
             </div>
             <button
-              onClick={() => base44.auth.logout('/')}
+              onClick={() => logout(true)}
               className="flex items-center gap-2 font-inter text-xs text-muted-foreground hover:text-destructive transition-colors px-4 py-2 rounded-lg border"
               style={{ borderColor: 'rgba(255,80,80,0.2)', background: 'rgba(255,80,80,0.05)' }}
             >

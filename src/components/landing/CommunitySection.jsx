@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, MessageCircle, Zap, Radio, Star } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, getDocs, limit, orderBy } from 'firebase/firestore';
 
 const TESTIMONIALS_STATIC = [
   { name: 'Rivan_FF',    avatar: 'R', text: 'Best panel I\'ve ever used. Aimbot is insane 🔥',         time: '2m ago',  accent: '#00d4ff' },
@@ -42,10 +43,11 @@ export default function CommunitySection() {
 
   // Fetch world message count as proxy for active community size
   useEffect(() => {
-    base44.entities.WorldMessage.list('-created_date', 50)
-      .then((msgs) => {
+    const q = query(collection(db, 'world_messages'), orderBy('created_date', 'desc'), limit(50));
+    getDocs(q)
+      .then((snapshot) => {
         // base count + realistic offset
-        setActiveUsers(1200 + (msgs?.length || 0) * 3);
+        setActiveUsers(1200 + (snapshot.docs.length || 0) * 3);
       })
       .catch(() => setActiveUsers(1247));
   }, []);

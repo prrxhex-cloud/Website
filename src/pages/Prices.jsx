@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import ScrollReveal from '@/components/effects/ScrollReveal';
@@ -181,8 +182,8 @@ export default function Prices() {
 
   useEffect(() => {
     Promise.all([
-      base44.entities.PricePlan.list('sort_order', 100),
-      base44.entities.Discount.list('-created_date', 50),
+      getDocs(query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
+      getDocs(query(collection(db, 'discounts'), orderBy('created_date', 'desc'))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() })))
     ]).then(([planData, discountData]) => {
       if (planData?.length) {
         setPlans({
@@ -191,7 +192,7 @@ export default function Prices() {
         });
       }
       setDiscounts(discountData || []);
-    }).finally(() => setLoading(false));
+    }).catch(console.error).finally(() => setLoading(false));
   }, []);
 
   const current = plans[panel] || [];

@@ -1,4 +1,5 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, getDocs, where } from 'firebase/firestore';
 
 const DEFAULT_RECEIPT_WEBHOOK = 'https://ptb.discord.com/api/webhooks/1522773386483466331/XQuU4n2bP7NbJdhFe2tG-K74q-EkcbMaudmabGePF-r6Z_TWqT5FENC8HYt7gTprxpZz';
 
@@ -7,7 +8,8 @@ let cachedConfig = null;
 async function getConfig() {
   if (cachedConfig) return cachedConfig;
   try {
-    const data = await base44.entities.DiscordWebhook.list();
+    const snapshot = await getDocs(collection(db, 'discord_webhooks'));
+    const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     cachedConfig = data[0] || null;
     return cachedConfig;
   } catch (e) {
@@ -143,7 +145,9 @@ export async function sendLowStockWarning({ productType, duration, remaining }) 
 
 export async function checkAndWarnLowStock(productType, duration) {
   try {
-    const available = await base44.entities.LicenseKey.filter({ product_type: productType, status: 'available', duration });
+    const q = query(collection(db, 'license_keys'), where('product_type', '==', productType), where('status', '==', 'available'), where('duration', '==', duration));
+    const snapshot = await getDocs(q);
+    const available = snapshot.docs.map(d => d.data());
     const remaining = available.length;
     const key = `prrx_lowstock_${productType}_${duration}`;
     if (remaining <= 10) {

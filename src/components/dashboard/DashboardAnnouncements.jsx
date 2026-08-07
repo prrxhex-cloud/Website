@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Megaphone, Pin, RefreshCw } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 
 const TYPE_COLOR = {
@@ -16,10 +17,15 @@ export default function DashboardAnnouncements() {
 
   const load = async () => {
     setLoading(true);
-    const data = await base44.entities.Announcement.list('-created_date', 5);
-    // Sort pinned first
-    const sorted = [...data].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
-    setAnnouncements(sorted);
+    try {
+      const q = query(collection(db, 'announcements'), orderBy('created_date', 'desc'), limit(5));
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      const sorted = [...data].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+      setAnnouncements(sorted);
+    } catch (e) {
+      console.error(e);
+    }
     setLoading(false);
   };
 

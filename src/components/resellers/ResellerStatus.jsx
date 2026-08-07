@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { motion } from 'framer-motion';
-import { Clock, CheckCircle, XCircle, RefreshCw, Key } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, RefreshCw, User } from 'lucide-react';
 
 const STATUS_CONFIG = {
   pending:  { icon: Clock,         color: '#ffaa00', label: 'Pending' },
@@ -18,8 +19,15 @@ export default function ResellerStatus({ account }) {
 
   const load = async () => {
     setLoading(true);
-    const data = await base44.entities.ResellerReceipt.filter({ reseller_username: account.username }, '-created_date', 30);
-    setReceipts(data);
+    try {
+      const q = query(collection(db, 'reseller_receipts'), where('reseller_email', '==', account.email));
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setReceipts(data.slice(0, 30));
+    } catch (error) {
+      console.error(error);
+    }
     setLoading(false);
   };
 
@@ -74,14 +82,14 @@ export default function ResellerStatus({ account }) {
                     {r.admin_note && (
                       <p className="font-inter text-xs text-yellow-400 mt-1">Note: {r.admin_note}</p>
                     )}
-                    {r.generated_key && (
-                      <div className="flex items-center gap-2 mt-2 p-2 rounded-lg" style={{ background: 'rgba(0,255,100,0.08)', border: '1px solid rgba(0,255,100,0.2)' }}>
-                        <Key className="w-3.5 h-3.5 text-green-400" />
-                        <span className="font-orbitron font-bold text-xs" style={{ color: '#00ff64' }}>{r.generated_key}</span>
+                    {r.customer_email && (
+                      <div className="flex items-center gap-2 mt-2 p-2 rounded-lg" style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)' }}>
+                        <User className="w-3.5 h-3.5 text-primary" />
+                        <span className="font-inter text-xs text-primary">Target: <strong className="font-bold">{r.customer_email}</strong></span>
                       </div>
                     )}
                   </div>
-                  <p className="font-inter text-xs text-muted-foreground flex-shrink-0">{new Date(r.created_date).toLocaleDateString()}</p>
+                  <p className="font-inter text-xs text-muted-foreground flex-shrink-0">{new Date(r.created_at).toLocaleDateString()}</p>
                 </div>
               </motion.div>
             );

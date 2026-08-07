@@ -1,4 +1,5 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 
 const DURATION_TO_LABEL = {
   '1_day': '1 Day',
@@ -12,7 +13,9 @@ let cachedPlans = null;
 export async function getPricePlans() {
   if (cachedPlans) return cachedPlans;
   try {
-    const data = await base44.entities.PricePlan.list('sort_order', 100);
+    const q = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'));
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     cachedPlans = data;
     return data;
   } catch (e) {

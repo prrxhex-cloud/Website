@@ -1,11 +1,14 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, getDocs, where } from 'firebase/firestore';
 
 let cachedAccounts = null;
 
 export async function getBeneficiaryAccounts() {
   if (cachedAccounts) return cachedAccounts;
   try {
-    const data = await base44.entities.BeneficiaryAccount.filter({ active: true });
+    const q = query(collection(db, 'beneficiary_accounts'), where('active', '==', true));
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     cachedAccounts = data;
     return cachedAccounts;
   } catch (e) {

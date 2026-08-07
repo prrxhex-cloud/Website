@@ -15,6 +15,7 @@ import Resellers from '@/pages/Resellers';
 import Status from '@/pages/Status';
 import Admin from '@/pages/Admin';
 import Freebies from '@/pages/Freebies';
+import Login from '@/pages/Login';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -44,6 +45,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/functions" element={<Functions />} />
       <Route path="/chat" element={<Chat />} />
       <Route path="/dashboard" element={<Dashboard />} />

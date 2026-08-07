@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Clock, MessageCircle, LogOut, Store, Key } from 'lucide-react';
+import { Upload, Clock, MessageCircle, LogOut, Store, CheckCircle } from 'lucide-react';
 import ReceiptUpload from './ReceiptUpload';
 import ResellerStatus from './ResellerStatus';
 import ResellerSupport from './ResellerSupport';
-import KeyHistory from './KeyHistory';
+import SubscriptionHistory from './SubscriptionHistory';
 
 const tabs = [
   { key: 'upload', label: 'Upload Receipt', icon: Upload },
   { key: 'status', label: 'My Orders', icon: Clock },
-  { key: 'keys', label: 'Key History', icon: Key },
+  { key: 'history', label: 'Sub History', icon: CheckCircle },
   { key: 'support', label: 'Support', icon: MessageCircle },
 ];
 
@@ -27,7 +27,7 @@ export default function ResellerPortal({ account, onLogout }) {
           </div>
           <div>
             <h1 className="font-orbitron font-black text-lg tracking-widest" style={{ color: '#00d4ff' }}>RESELLER PORTAL</h1>
-            <p className="font-inter text-xs text-muted-foreground">Welcome, {account.display_name || account.username}</p>
+            <p className="font-inter text-xs text-muted-foreground">Welcome, {account.display_name || account.email}</p>
           </div>
         </div>
         <button onClick={onLogout}
@@ -61,7 +61,7 @@ export default function ResellerPortal({ account, onLogout }) {
         <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
           {tab === 'upload' && <ReceiptUpload account={account} />}
           {tab === 'status' && <ResellerStatus account={account} />}
-          {tab === 'keys' && <KeyHistory account={account} />}
+          {tab === 'history' && <SubscriptionHistory account={account} />}
           {tab === 'support' && <ResellerSupport account={account} />}
         </motion.div>
       </AnimatePresence>

@@ -1,4 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { auth, signOut } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -6,47 +8,40 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
-  const [authError, setAuthError] = useState(null);
-  const [appPublicSettings, setAppPublicSettings] = useState(null);
 
   useEffect(() => {
-    checkAppState();
-  }, []);
-
-  const checkAppState = async () => {
-    // In the standalone version, we check the KeyAuth local storage instead of Base44
-    setIsLoadingPublicSettings(false);
-    setIsLoadingAuth(true);
-    
-    try {
-      const storedUser = localStorage.getItem('prrx_keyauth_user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          displayName: currentUser.displayName,
+          role: 'admin' // In a real app, you might fetch role from Firestore
+        });
         setIsAuthenticated(true);
       } else {
+        setUser(null);
         setIsAuthenticated(false);
       }
-    } catch (error) {
-      console.error('Local auth check failed:', error);
-      setIsAuthenticated(false);
-    } finally {
       setIsLoadingAuth(false);
-    }
-  };
+    });
 
-  const logout = (shouldRedirect = true) => {
-    localStorage.removeItem('prrx_keyauth_user');
-    setUser(null);
-    setIsAuthenticated(false);
-    if (shouldRedirect) {
-      window.location.reload();
+    return () => unsubscribe();
+  }, []);
+
+  const logout = async (shouldRedirect = true) => {
+    try {
+      await signOut(auth);
+      if (shouldRedirect) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
   const navigateToLogin = () => {
-    // Usually handled by router or KeyAuth wrapper
-    window.location.reload();
+    window.location.hash = '#/login';
   };
 
   return (
@@ -54,12 +49,8 @@ export const AuthProvider = ({ children }) => {
       user, 
       isAuthenticated, 
       isLoadingAuth,
-      isLoadingPublicSettings,
-      authError,
-      appPublicSettings,
       logout,
-      navigateToLogin,
-      checkAppState
+      navigateToLogin
     }}>
       {children}
     </AuthContext.Provider>
@@ -73,3 +64,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

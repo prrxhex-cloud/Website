@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
+import { auth, db } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Shield, User, Lock, Eye, EyeOff, Store, AlertTriangle, Clock } from 'lucide-react';
 import { isLocked, getRemainingLockout, recordFailedAttempt, recordSuccess, formatMs } from '@/components/security/SecurityGuard';
 
 const STORE_KEY = 'reseller';
 
 export default function ResellerLogin({ onLogin }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
@@ -15,7 +17,6 @@ export default function ResellerLogin({ onLogin }) {
   const [locked, setLocked] = useState(false);
   const [lockRemaining, setLockRemaining] = useState(0);
 
-  // Check lockout state every second
   useEffect(() => {
     const tick = () => {
       if (isLocked(STORE_KEY)) {
@@ -36,18 +37,40 @@ export default function ResellerLogin({ onLogin }) {
     if (isLocked(STORE_KEY)) return;
     setError('');
     setLoading(true);
-    const accounts = await base44.entities.ResellerAccount.filter({ username });
-    const match = accounts.find(a => a.username === username && a.password === password && a.status === 'active');
-    if (match) {
-      recordSuccess(STORE_KEY, username);
-      onLogin(match);
-    } else {
-      const { attempts, lockedUntil } = recordFailedAttempt(STORE_KEY, username);
+
+    try {
+      // 1. Sign in with Firebase Auth
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // 2. Check if user is a reseller
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', user.email.toLowerCase()), where('role', '==', 'reseller'));
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        recordSuccess(STORE_KEY, email);
+        const userData = snapshot.docs[0].data();
+        onLogin({ ...userData, uid: user.uid });
+      } else {
+        // Not a reseller, sign them out
+        await auth.signOut();
+        const { attempts, lockedUntil } = recordFailedAttempt(STORE_KEY, email);
+        if (lockedUntil) {
+          setError(`Too many failed attempts. Locked for 15 minutes.`);
+          setLocked(true);
+        } else {
+          setError(`Access denied. This account is not a reseller. (${5 - attempts} attempts remaining)`);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      const { attempts, lockedUntil } = recordFailedAttempt(STORE_KEY, email);
       if (lockedUntil) {
         setError(`Too many failed attempts. Locked for 15 minutes.`);
         setLocked(true);
       } else {
-        setError(`Invalid credentials or account suspended. (${5 - attempts} attempts remaining)`);
+        setError(`Invalid credentials. (${5 - attempts} attempts remaining)`);
       }
     }
     setLoading(false);
@@ -66,7 +89,6 @@ export default function ResellerLogin({ onLogin }) {
           boxShadow: '0 20px 80px rgba(0,0,0,0.6)',
         }}
       >
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
             style={{ background: locked ? 'rgba(255,68,68,0.1)' : 'rgba(0,212,255,0.1)', border: `1px solid ${locked ? 'rgba(255,68,68,0.3)' : 'rgba(0,212,255,0.3)'}` }}>
@@ -80,7 +102,6 @@ export default function ResellerLogin({ onLogin }) {
           </p>
         </div>
 
-        {/* Lockout countdown */}
         {locked && (
           <div className="mb-6 rounded-xl p-4 flex items-center gap-3"
             style={{ background: 'rgba(255,68,68,0.08)', border: '1px solid rgba(255,68,68,0.25)' }}>
@@ -97,7 +118,7 @@ export default function ResellerLogin({ onLogin }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} required
+            <input type="email" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} required
               disabled={locked}
               className="w-full pl-10 pr-4 py-3 rounded-xl font-inter text-sm text-foreground placeholder-muted-foreground outline-none transition-all disabled:opacity-40"
               style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.15)', caretColor: '#00d4ff' }}

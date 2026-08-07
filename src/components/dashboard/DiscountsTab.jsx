@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, limit, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { Plus, Trash2, Check, X, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -22,8 +23,15 @@ export default function DiscountsTab() {
 
   const load = async () => {
     setLoading(true);
-    const data = await base44.entities.Discount.list('-created_date', 50);
-    setDiscounts(data);
+    try {
+      const q = query(collection(db, 'discounts'), orderBy('created_date', 'desc'), limit(50));
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setDiscounts(data);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to load discounts');
+    }
     setLoading(false);
   };
 
@@ -39,29 +47,47 @@ export default function DiscountsTab() {
       promo_code: form.promo_code || null,
       badge_text: form.badge_text || null,
       expires_at: form.expires_at || null,
+      created_date: form.created_date || Date.now(),
     };
-    if (form.id) {
-      await base44.entities.Discount.update(form.id, payload);
-      toast.success('Discount updated');
-    } else {
-      await base44.entities.Discount.create(payload);
-      toast.success('Discount created');
+    try {
+      if (form.id) {
+        const docRef = doc(db, 'discounts', form.id);
+        const { id, ...dataToUpdate } = payload;
+        await updateDoc(docRef, dataToUpdate);
+        toast.success('Discount updated');
+      } else {
+        await addDoc(collection(db, 'discounts'), payload);
+        toast.success('Discount created');
+      }
+      setForm(null);
+      load();
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to save discount');
     }
-    setForm(null);
-    load();
     setSaving(false);
   };
 
   const remove = async (id) => {
-    await base44.entities.Discount.delete(id);
-    setDiscounts(prev => prev.filter(d => d.id !== id));
-    toast.success('Discount removed');
+    try {
+      await deleteDoc(doc(db, 'discounts', id));
+      setDiscounts(prev => prev.filter(d => d.id !== id));
+      toast.success('Discount removed');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to remove discount');
+    }
   };
 
   const toggle = async (d) => {
-    await base44.entities.Discount.update(d.id, { active: !d.active });
-    toast.success(d.active ? 'Discount paused' : 'Discount activated');
-    load();
+    try {
+      await updateDoc(doc(db, 'discounts', d.id), { active: !d.active });
+      toast.success(d.active ? 'Discount paused' : 'Discount activated');
+      load();
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to toggle discount');
+    }
   };
 
   const panelColor = (t) => t === 'external' ? '#00d4ff' : t === 'internal' ? '#aa44ff' : '#ffaa00';

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import Navbar from '@/components/landing/Navbar';
 import { Globe, Cpu, Shield, Activity, CheckCircle, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -62,7 +63,9 @@ export default function Status() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await base44.entities.ServiceStatus.list('sort_order', 50);
+      const q = query(collection(db, 'service_status'), orderBy('sort_order', 'asc'), limit(50));
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       setServices(data);
     } catch (e) {
       console.error('Failed to load status:', e);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { Check, Calendar, User, Lock, Link2, Trash2 } from 'lucide-react';
 import { sendFreePanelNotification } from '@/utils/discordNotifier';
 import { toast } from 'sonner';
@@ -13,7 +14,9 @@ function PanelEditor({ panelType, label, color }) {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await base44.entities.FreePanel.filter({ panel_type: panelType });
+      const q = query(collection(db, 'free_panels'), where('panel_type', '==', panelType));
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       if (data.length > 0) {
         setRecord(data[0]);
         setForm({
@@ -24,7 +27,8 @@ function PanelEditor({ panelType, label, color }) {
           custom_message: data[0].custom_message || '',
         });
       }
-    } catch (e) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to load panel data');
     } finally {
       setLoading(false);
@@ -37,9 +41,9 @@ function PanelEditor({ panelType, label, color }) {
     setSaving(true);
     try {
       if (record) {
-        await base44.entities.FreePanel.update(record.id, form);
+        await updateDoc(doc(db, 'free_panels', record.id), form);
       } else {
-        await base44.entities.FreePanel.create({ panel_type: panelType, ...form });
+        await addDoc(collection(db, 'free_panels'), { panel_type: panelType, ...form, created_date: Date.now() });
       }
       toast.success(`${label} saved — card is now ONLINE`);
       const allFilled = form.start_day && form.end_day && form.username && form.password;
@@ -54,7 +58,8 @@ function PanelEditor({ panelType, label, color }) {
         });
       }
       load();
-    } catch (e) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to save');
     } finally {
       setSaving(false);
@@ -65,12 +70,13 @@ function PanelEditor({ panelType, label, color }) {
     setSaving(true);
     try {
       if (record) {
-        await base44.entities.FreePanel.update(record.id, { start_day: '', end_day: '', username: '', password: '' });
+        await updateDoc(doc(db, 'free_panels', record.id), { start_day: '', end_day: '', username: '', password: '' });
       }
       setForm(prev => ({ ...prev, start_day: '', end_day: '', username: '', password: '' }));
       toast.success(`${label} cleared — card is now OFFLINE`);
       load();
-    } catch (e) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to clear');
     }
     setSaving(false);
@@ -149,12 +155,15 @@ function V7aApkEditor() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await base44.entities.V7aApkLink.filter({ active: true });
+      const q = query(collection(db, 'v7a_apk_links'), where('active', '==', true));
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       if (data.length > 0) {
         setRecord(data[0]);
         setUrl(data[0].url || '');
       }
-    } catch (e) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to load V7a Apk link');
     } finally {
       setLoading(false);
@@ -167,13 +176,14 @@ function V7aApkEditor() {
     setSaving(true);
     try {
       if (record) {
-        await base44.entities.V7aApkLink.update(record.id, { url });
+        await updateDoc(doc(db, 'v7a_apk_links', record.id), { url });
       } else {
-        await base44.entities.V7aApkLink.create({ url, active: true });
+        await addDoc(collection(db, 'v7a_apk_links'), { url, active: true, created_date: Date.now() });
       }
       toast.success('V7a Apk download link saved');
       load();
-    } catch (e) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to save');
     } finally {
       setSaving(false);

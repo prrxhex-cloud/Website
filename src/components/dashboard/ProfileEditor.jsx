@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { auth, storage, db } from '@/lib/firebase';
+import { updateProfile } from 'firebase/auth';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, setDoc } from 'firebase/firestore';
 import { User, Camera, Loader2, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -13,10 +16,10 @@ const GENDERS = [
 
 export default function ProfileEditor({ currentUser, onUpdate }) {
   const [form, setForm] = useState({
-    display_name: currentUser.display_name || currentUser.full_name || '',
+    display_name: currentUser.displayName || currentUser.full_name || '',
     gender: currentUser.gender || '',
     bio: currentUser.bio || '',
-    avatar_url: currentUser.avatar_url || '',
+    avatar_url: currentUser.photoURL || currentUser.avatar_url || '',
   });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -26,7 +29,9 @@ export default function ProfileEditor({ currentUser, onUpdate }) {
     if (!file) return;
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const storageRef = ref(storage, `avatars/${currentUser.uid}_${Date.now()}`);
+      await uploadBytes(storageRef, file);
+      const file_url = await getDownloadURL(storageRef);
       setForm(f => ({ ...f, avatar_url: file_url }));
     } catch {
       toast.error('Failed to upload image');
@@ -37,10 +42,29 @@ export default function ProfileEditor({ currentUser, onUpdate }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.auth.updateMe(form);
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, {
+          displayName: form.display_name,
+          photoURL: form.avatar_url
+        });
+      }
+      
+      const userRef = doc(db, 'users', currentUser.uid);
+      await setDoc(userRef, {
+        display_name: form.display_name,
+        gender: form.gender,
+        bio: form.bio,
+        avatar_url: form.avatar_url
+      }, { merge: true });
+
       toast.success('Profile updated!');
-      onUpdate?.({ ...currentUser, ...form });
-    } catch {
+      if (typeof onUpdate === 'function') {
+        onUpdate({ ...currentUser, ...form, displayName: form.display_name, photoURL: form.avatar_url });
+      } else {
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to save profile');
     }
     setSaving(false);
@@ -73,9 +97,9 @@ export default function ProfileEditor({ currentUser, onUpdate }) {
             </label>
           </div>
           <div>
-            <p className="font-orbitron font-bold text-sm text-foreground">{currentUser.full_name}</p>
+            <p className="font-orbitron font-bold text-sm text-foreground">{currentUser.displayName || currentUser.full_name || 'User'}</p>
             <p className="font-inter text-xs text-muted-foreground">{currentUser.email}</p>
-            <p className="font-inter text-xs text-primary mt-1">{currentUser.role}</p>
+            <p className="font-inter text-xs text-primary mt-1">{currentUser.role || 'Member'}</p>
           </div>
         </div>
 

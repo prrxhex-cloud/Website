@@ -17,7 +17,7 @@ export default function FeaturesSection() {
             style={{ boxShadow: '0 0 40px rgba(0,212,255,0.07)' }}
           >
             <img
-              src="https://media.base44.com/images/public/69bd74c0973937068f242843/8dc2dc44d_Screenshot464.png"
+              src="https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&q=80"
               alt="PRRX Login Panel"
               className="w-full h-auto"
             />
@@ -70,7 +70,7 @@ export default function FeaturesSection() {
             style={{ boxShadow: '0 0 40px rgba(0,212,255,0.07)' }}
           >
             <img
-              src="https://media.base44.com/images/public/69bd74c0973937068f242843/8c61623a7_Screenshot465.png"
+              src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80"
               alt="PRRX App Panel"
               className="w-full h-auto"
             />

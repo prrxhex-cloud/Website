@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, limit, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { RefreshCw, Plus, Trash2, Globe, Cpu } from 'lucide-react';
 
@@ -18,32 +19,51 @@ export default function StatusTab() {
 
   const load = async () => {
     setLoading(true);
-    const data = await base44.entities.ServiceStatus.list('sort_order', 50);
-    setServices(data);
+    try {
+      const q = query(collection(db, 'service_status'), orderBy('sort_order', 'asc'), limit(50));
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setServices(data);
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to load services');
+    }
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
 
   const update = async (id, field, value) => {
-    await base44.entities.ServiceStatus.update(id, { [field]: value });
-    setServices(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
+    try {
+      await updateDoc(doc(db, 'service_status', id), { [field]: value });
+      setServices(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
+    } catch (e) {
+      toast.error('Failed to update');
+    }
   };
 
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
-    await base44.entities.ServiceStatus.create(form);
-    toast.success('Service added');
-    setForm({ name: '', description: '', status: 'online', category: 'panel', uptime_elapsed: '', sort_order: 0 });
-    setAdding(false);
-    load();
+    try {
+      await addDoc(collection(db, 'service_status'), { ...form, created_date: Date.now() });
+      toast.success('Service added');
+      setForm({ name: '', description: '', status: 'online', category: 'panel', uptime_elapsed: '', sort_order: 0 });
+      setAdding(false);
+      load();
+    } catch (e) {
+      toast.error('Failed to add');
+    }
   };
 
   const handleDelete = async (id) => {
-    await base44.entities.ServiceStatus.delete(id);
-    toast.success('Service removed');
-    setServices(prev => prev.filter(s => s.id !== id));
+    try {
+      await deleteDoc(doc(db, 'service_status', id));
+      toast.success('Service removed');
+      setServices(prev => prev.filter(s => s.id !== id));
+    } catch (e) {
+      toast.error('Failed to remove');
+    }
   };
 
   const renderCard = (s) => (

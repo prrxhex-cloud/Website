@@ -6,17 +6,17 @@ import InteractiveCard from '@/components/effects/InteractiveCard';
 
 const entries = [
   {
-    img: 'https://media.base44.com/images/public/69bd74c0973937068f242843/8dc2dc44d_Screenshot464.png',
+    img: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&q=80',
     title: 'Login System',
     desc: 'A secure and encrypted login system that protects user data while delivering fast and reliable access.',
   },
   {
-    img: 'https://media.base44.com/images/public/69bd74c0973937068f242843/8c61623a7_Screenshot465.png',
+    img: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80',
     title: 'Main Menu',
     desc: 'Designed with a modern dark UI, the control center ensures fast navigation, clarity, and reliability.',
   },
   {
-    img: 'https://media.base44.com/images/public/69bd74c0973937068f242843/8c61623a7_Screenshot465.png',
+    img: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80',
     title: 'Functions Panel',
     desc: 'Everything you need to manage, play, and stay connected — all in one fast, minimal, user-friendly interface.',
   },
