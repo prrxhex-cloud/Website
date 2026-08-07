@@ -20,7 +20,7 @@ export default function Dashboard() {
   }, [isAuthenticated, isLoadingAuth, navigate]);
 
   if (isLoadingAuth || !currentUser) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)]">
       <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin" />
     </div>
   );
@@ -35,31 +35,31 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-inter">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter transition-colors duration-300">
       <Navbar />
 
       <main className="max-w-[1240px] mx-auto px-4 sm:px-6 py-10 space-y-10">
         
         {/* User Welcome Banner */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 text-left">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-cyan-50 border border-cyan-200 text-[#06b6d4] flex items-center justify-center flex-shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-[#06b6d4]/15 border border-[#06b6d4]/30 text-[#06b6d4] flex items-center justify-center flex-shrink-0">
               <User className="w-8 h-8" />
             </div>
             <div>
               <span className="text-[10px] font-extrabold tracking-widest uppercase text-[#06b6d4]">
                 USER CONTROL PANEL
               </span>
-              <h1 className="font-outfit font-extrabold text-3xl text-slate-900">
+              <h1 className="font-outfit font-extrabold text-3xl text-[var(--text-heading)]">
                 Welcome back, {currentUser.full_name?.split(' ')[0] || 'User'}!
               </h1>
-              <p className="font-inter text-xs text-slate-500 mt-0.5">{currentUser.email}</p>
+              <p className="font-inter text-xs text-[var(--text-muted)] mt-0.5">{currentUser.email}</p>
             </div>
           </div>
 
           <button
             onClick={() => logout(true)}
-            className="btn-secondary-white px-5 py-2.5 font-inter font-bold text-xs text-rose-600 border-rose-200 hover:bg-rose-50 flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl font-inter font-bold text-xs text-rose-500 bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 flex items-center gap-2 transition-colors"
           >
             <LogOut className="w-4 h-4" />
             <span>Sign Out</span>
@@ -73,20 +73,20 @@ export default function Dashboard() {
           </div>
 
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {quickActions.map((qa, i) => {
+            {quickActions.map((qa) => {
               const Icon = qa.icon;
               return (
                 <button
                   key={qa.label}
                   onClick={qa.action}
-                  className="clean-card p-5 text-left bg-white border border-slate-200 hover:border-[#06b6d4] transition-all flex flex-col justify-between group"
+                  className="clean-card p-5 text-left bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[#06b6d4] transition-all flex flex-col justify-between group shadow-sm rounded-2xl"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 text-[#06b6d4] flex items-center justify-center mb-4 group-hover:bg-cyan-50 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[#06b6d4] flex items-center justify-center mb-4 group-hover:bg-[#06b6d4]/15 transition-colors">
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-outfit font-bold text-slate-900 text-base group-hover:text-[#06b6d4] transition-colors">{qa.label}</h3>
-                    <p className="font-inter text-xs text-slate-500 mt-0.5">{qa.desc}</p>
+                    <h3 className="font-outfit font-bold text-[var(--text-heading)] text-base group-hover:text-[#06b6d4] transition-colors">{qa.label}</h3>
+                    <p className="font-inter text-xs text-[var(--text-muted)] mt-0.5">{qa.desc}</p>
                   </div>
                 </button>
               );

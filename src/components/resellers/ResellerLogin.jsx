@@ -53,7 +53,7 @@ export default function ResellerLogin({ onLogin }) {
         onLogin({ ...userData, uid: user.uid });
       } else {
         await auth.signOut();
-        const { attempts, lockedUntil } = recordFailedAttempt(STORE_KEY, email);
+        const { lockedUntil } = recordFailedAttempt(STORE_KEY, email);
         if (lockedUntil) {
           setError(`Too many failed attempts. Locked for 15 minutes.`);
           setLocked(true);
@@ -61,8 +61,8 @@ export default function ResellerLogin({ onLogin }) {
           setError(`Access denied. Account is not authorized as reseller.`);
         }
       }
-    } catch (err) {
-      const { attempts, lockedUntil } = recordFailedAttempt(STORE_KEY, email);
+    } catch {
+      const { lockedUntil } = recordFailedAttempt(STORE_KEY, email);
       if (lockedUntil) {
         setError(`Too many failed attempts. Locked for 15 minutes.`);
         setLocked(true);
@@ -79,7 +79,7 @@ export default function ResellerLogin({ onLogin }) {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md clean-card p-8 shadow-2xl space-y-6"
+        className="w-full max-w-md clean-card p-8 shadow-2xl space-y-6 bg-[var(--bg-card)] border border-[var(--border-color)] text-left rounded-3xl"
       >
         <div className="text-center space-y-2">
           <div className="w-16 h-16 rounded-2xl bg-slate-900/60 border border-cyan-500/40 p-1.5 shadow-[0_0_20px_rgba(6,182,212,0.3)] mx-auto mb-3 flex items-center justify-center">
@@ -90,8 +90,8 @@ export default function ResellerLogin({ onLogin }) {
         </div>
 
         {locked && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl p-3.5 flex items-center gap-3">
-            <Clock className="w-5 h-5 text-rose-500 flex-shrink-0" />
+          <div className="bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs rounded-xl p-3.5 flex items-center gap-3">
+            <Clock className="w-5 h-5 text-rose-400 flex-shrink-0" />
             <div>
               <p className="font-bold">Locked Out</p>
               <p>Try again in {formatMs(lockRemaining)}</p>
@@ -101,9 +101,9 @@ export default function ResellerLogin({ onLogin }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Reseller Email</label>
+            <label className="block text-xs font-bold text-[var(--text-heading)] mb-1.5 uppercase">Reseller Email</label>
             <div className="relative">
-              <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <User className="w-4 h-4 text-[var(--text-muted)] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
                 placeholder="reseller@prrxhex.com"
@@ -111,28 +111,28 @@ export default function ResellerLogin({ onLogin }) {
                 onChange={e => setEmail(e.target.value)}
                 required
                 disabled={locked}
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-inter text-slate-900 focus:outline-none focus:border-[#06b6d4] transition-colors"
+                className="w-full pl-10 pr-4 py-3 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-xl text-sm font-inter text-[var(--text-heading)] focus:outline-none focus:border-[#06b6d4] transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase">Password</label>
+            <label className="block text-xs font-bold text-[var(--text-heading)] mb-1.5 uppercase">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-[var(--text-muted)] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type={showPass ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={e => setShowPass(e.target.value)}
                 required
                 disabled={locked}
-                className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-inter text-slate-900 focus:outline-none focus:border-[#06b6d4] transition-colors"
+                className="w-full pl-10 pr-10 py-3 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-xl text-sm font-inter text-[var(--text-heading)] focus:outline-none focus:border-[#06b6d4] transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPass(!showPass)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-heading)]"
               >
                 {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -140,7 +140,7 @@ export default function ResellerLogin({ onLogin }) {
           </div>
 
           {error && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold rounded-xl p-3 flex items-center gap-2">
+            <div className="bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-semibold rounded-xl p-3 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -155,8 +155,8 @@ export default function ResellerLogin({ onLogin }) {
           </button>
         </form>
 
-        <p className="text-center font-inter text-xs text-slate-500">
-          Want to become an official reseller? <span className="font-bold text-slate-900">Contact PRRX Admin</span>
+        <p className="text-center font-inter text-xs text-[var(--text-muted)]">
+          Want to become an official reseller? <span className="font-bold text-[var(--text-heading)]">Contact PRRX Admin</span>
         </p>
       </motion.div>
     </div>

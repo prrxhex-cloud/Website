@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { HashRouter as Router, Route, Routes } from 'react-router-dom';
+import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/ThemeContext';
@@ -20,7 +20,25 @@ import Login from '@/pages/Login';
 import LiveDemo from '@/pages/LiveDemo';
 import LiquidLoader from '@/components/ui/LiquidLoader';
 import React from 'react';
-// Add page imports here
+
+// Protected Route Wrapper Component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoadingAuth } = useAuth();
+
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)]">
+        <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -28,8 +46,8 @@ const AuthenticatedApp = () => {
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      <div className="fixed inset-0 flex items-center justify-center bg-[var(--bg-main)]">
+        <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -39,31 +57,32 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
+  // Render routes with explicit Public vs Protected access
   return (
     <Routes>
+      {/* PUBLIC ROUTES (No login required) */}
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/functions" element={<Functions />} />
-      <Route path="/live-demo" element={<LiveDemo />} />
-
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/prices" element={<Prices />} />
-      <Route path="/resellers" element={<Resellers />} />
       <Route path="/status" element={<Status />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route path="/freebies" element={<Freebies />} />
+      <Route path="/live-demo" element={<LiveDemo />} />
+      <Route path="/functions" element={<Functions />} />
+      <Route path="/login" element={<Login />} />
+
+      {/* PROTECTED ROUTES (Must login to access) */}
+      <Route path="/prices" element={<ProtectedRoute><Prices /></ProtectedRoute>} />
+      <Route path="/resellers" element={<ProtectedRoute><Resellers /></ProtectedRoute>} />
+      <Route path="/freebies" element={<ProtectedRoute><Freebies /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
-
 
 function App() {
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
@@ -85,7 +104,7 @@ function App() {
         </SoundProvider>
       </AuthProvider>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;
