@@ -5,7 +5,7 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   logLevel: 'error', // Suppress warnings, only show errors
-  base: '/Website/', // Useful for GitHub Pages deployment
+  base: '/Website/', // Useful for GitHub Pages deployment - forced re-run
   plugins: [
     react(),
   ],
