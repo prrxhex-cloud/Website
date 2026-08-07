@@ -3,6 +3,7 @@ import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import HeroSection from '@/components/landing/HeroSection';
 import FunctionsTeaserSection from '@/components/landing/FunctionsTeaserSection';
+import DeepDiveSection from '@/components/landing/DeepDiveSection';
 import AnnouncementsSection from '@/components/landing/AnnouncementsSection';
 import DownloadSection from '@/components/landing/DownloadSection';
 import PageLoader from '@/components/effects/PageLoader';
@@ -21,6 +22,7 @@ export default function Home() {
         <div id="functions">
           <FunctionsTeaserSection />
         </div>
+        <DeepDiveSection />
         <div id="download">
           <DownloadSection />
         </div>
