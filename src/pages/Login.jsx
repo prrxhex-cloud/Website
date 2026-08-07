@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Shield, Mail, Lock, Key } from 'lucide-react';
+import { Shield, Mail, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { signInWithEmailAndPassword, signInWithPopup, auth, googleProvider } from '@/lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
+
+import logoImg from '@/assets/logo.jpeg';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -38,22 +40,22 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-inter flex flex-col">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter flex flex-col transition-colors duration-300">
       <Navbar />
 
       <div className="flex-1 flex items-center justify-center p-4 py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-xl space-y-6"
+          className="w-full max-w-md clean-card p-8 shadow-xl space-y-6"
         >
           {/* Header */}
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-cyan-50 border border-cyan-200 text-[#06b6d4] flex items-center justify-center mx-auto mb-3">
-              <Key className="w-7 h-7" />
+            <div className="w-16 h-16 rounded-2xl bg-slate-900/60 border border-cyan-500/40 p-1.5 shadow-[0_0_20px_rgba(6,182,212,0.3)] mx-auto mb-3 flex items-center justify-center">
+              <img src={logoImg} alt="PRRX Logo" className="w-full h-full object-contain rounded-xl" />
             </div>
-            <h2 className="font-outfit font-extrabold text-2xl text-slate-900">PRRX USER PORTAL</h2>
-            <p className="font-inter text-xs text-slate-500">Sign in to manage your active panel subscriptions</p>
+            <h2 className="font-outfit font-extrabold text-2xl text-[var(--text-heading)]">PRRX USER PORTAL</h2>
+            <p className="font-inter text-xs text-[var(--text-muted)]">Sign in to manage your active panel subscriptions</p>
           </div>
 
           <form onSubmit={handleEmailLogin} className="space-y-4">

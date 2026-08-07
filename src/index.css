@@ -4,8 +4,52 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Color Palette - White Theme */
+/* ── Superior iOS 18 Liquid Glass Theme System ── */
+
+:root, [data-theme="dark"] {
+  --bg-main: #030712;
+  --bg-card: rgba(15, 23, 42, 0.7);
+  --bg-card-hover: rgba(30, 41, 59, 0.85);
+  --bg-subtle: rgba(30, 41, 59, 0.5);
+  --bg-glass: rgba(3, 7, 18, 0.85);
+  --bg-glass-card: rgba(15, 23, 42, 0.75);
+
+  --text-heading: #ffffff;
+  --text-primary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+
+  --accent-cyan: #06b6d4;
+  --accent-cyan-glow: rgba(6, 182, 212, 0.4);
+  --accent-violet: #a855f7;
+  --accent-violet-glow: rgba(168, 85, 247, 0.4);
+  --accent-emerald: #10b981;
+  --accent-emerald-glow: rgba(16, 185, 129, 0.4);
+  --accent-orange: #f97316;
+  --accent-fire: #ef4444;
+
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(6, 182, 212, 0.4);
+  --border-glow: rgba(6, 182, 212, 0.5);
+
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 15px 35px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  --shadow-lg: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(6, 182, 212, 0.2);
+  --shadow-glow-cyan: 0 8px 30px rgba(6, 182, 212, 0.4);
+  --shadow-glow-violet: 0 8px 30px rgba(168, 85, 247, 0.4);
+
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+  --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] {
   --bg-main: #f8fafc;
   --bg-card: #ffffff;
   --bg-card-hover: #ffffff;
@@ -13,13 +57,11 @@
   --bg-glass: rgba(255, 255, 255, 0.88);
   --bg-glass-card: rgba(255, 255, 255, 0.94);
 
-  /* Text Colors */
   --text-heading: #0f172a;
   --text-primary: #334155;
   --text-muted: #64748b;
   --text-light: #94a3b8;
 
-  /* Accent & Brand Colors */
   --accent-cyan: #06b6d4;
   --accent-cyan-glow: rgba(6, 182, 212, 0.35);
   --accent-violet: #8b5cf6;
@@ -29,29 +71,15 @@
   --accent-orange: #f97316;
   --accent-fire: #ef4444;
 
-  /* Borders & Dividers */
   --border-color: #e2e8f0;
   --border-hover: #cbd5e1;
   --border-glow: rgba(6, 182, 212, 0.4);
 
-  /* Shadows */
   --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
   --shadow-lg: 0 20px 35px -10px rgba(15, 23, 42, 0.1), 0 10px 15px -5px rgba(15, 23, 42, 0.05);
   --shadow-glow-cyan: 0 8px 25px rgba(6, 182, 212, 0.28);
   --shadow-glow-violet: 0 8px 25px rgba(139, 92, 246, 0.28);
-
-  /* Typography */
-  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-
-  /* Radii */
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --radius-full: 9999px;
-  --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
@@ -62,6 +90,7 @@
     line-height: 1.6;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -94,8 +123,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem 0.9rem;
-  background: rgba(6, 182, 212, 0.08);
-  border: 1px solid rgba(6, 182, 212, 0.2);
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.3);
   color: var(--accent-cyan);
   font-weight: 700;
   font-size: 0.75rem;
@@ -104,16 +133,18 @@
   border-radius: var(--radius-full);
 }
 
-/* Clean White Card System */
-.clean-card {
+/* iOS 18 Liquid Glass Card System */
+.clean-card, .liquid-glass {
   background: var(--bg-card);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-md);
   transition: var(--transition);
 }
 
-.clean-card:hover {
+.clean-card:hover, .liquid-glass:hover {
   border-color: var(--border-hover);
   box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
@@ -121,8 +152,8 @@
 
 .clean-glass-header {
   background: var(--bg-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -137,7 +168,7 @@
 
 .btn-primary-cyan:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(6, 182, 212, 0.45);
+  box-shadow: 0 12px 30px rgba(6, 182, 212, 0.5);
 }
 
 .btn-secondary-white {
@@ -220,12 +251,12 @@
   height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--bg-main);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--border-color);
   border-radius: 9999px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--accent-cyan);
 }

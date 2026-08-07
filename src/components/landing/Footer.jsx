@@ -1,6 +1,6 @@
 import React from 'react';
 import { Code2, Shield, Server, Crown, MessageCircle, ExternalLink } from 'lucide-react';
-import logoImg from '../../assets/logo.jpeg';
+import logoImg from '@/assets/logo.jpeg';
 
 const devRoles = [
   { icon: Crown,         label: 'PRRX Official Seller' },
@@ -12,24 +12,26 @@ const devRoles = [
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-50 border-t border-slate-200 py-16 font-inter text-slate-800">
+    <footer className="bg-[var(--bg-main)] border-t border-[var(--border-color)] py-16 font-inter text-[var(--text-primary)] transition-colors duration-300">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
 
         {/* Brand */}
         <div className="text-center mb-10">
-          <img src={logoImg} alt="PRRX Logo" className="w-16 h-16 mx-auto mb-3 object-contain rounded-full shadow-md" />
-          <h3 className="font-outfit font-extrabold text-xl text-slate-900">PRRX CHEATS STORE</h3>
+          <div className="w-16 h-16 mx-auto mb-3 p-1 rounded-2xl bg-slate-900/60 border border-cyan-500/40 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+            <img src={logoImg} alt="PRRX Logo" className="w-full h-full object-contain rounded-xl" />
+          </div>
+          <h3 className="font-outfit font-extrabold text-xl text-[var(--text-heading)]">PRRX CHEATS STORE</h3>
           <p className="font-inter text-xs text-[#06b6d4] font-bold tracking-wider uppercase mt-1">Free Fire Undetected Bypass</p>
         </div>
 
         {/* Developer card */}
-        <div className="clean-card p-8 bg-white border border-slate-200 rounded-3xl max-w-4xl mx-auto mb-12 shadow-sm">
-          <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-200">
+        <div className="clean-card p-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl max-w-4xl mx-auto mb-12 shadow-md">
+          <div className="flex items-center justify-between pb-4 mb-6 border-b border-[var(--border-color)]">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#06b6d4] animate-pulse" />
-              <span className="font-outfit font-extrabold text-xs text-slate-900 tracking-wider">DEVELOPER PROFILE</span>
+              <span className="font-outfit font-extrabold text-xs text-[var(--text-heading)] tracking-wider">DEVELOPER PROFILE</span>
             </div>
-            <span className="font-outfit font-extrabold text-xs text-violet-600 tracking-wider">PRRX TEAM</span>
+            <span className="font-outfit font-extrabold text-xs text-violet-500 tracking-wider">PRRX TEAM</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
@@ -37,21 +39,21 @@ export default function Footer() {
             {/* Left — identity */}
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-cyan-50 border border-cyan-200 flex items-center justify-center font-outfit font-black text-2xl text-[#06b6d4]">
+                <div className="w-16 h-16 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center font-outfit font-black text-2xl text-[#06b6d4]">
                   G
                 </div>
                 <div>
-                  <h3 className="font-outfit font-black text-2xl text-slate-900">
+                  <h3 className="font-outfit font-black text-2xl text-[var(--text-heading)]">
                     GAARA
                   </h3>
-                  <p className="font-inter text-xs text-slate-500 font-medium">Created By Gaara · PRRX Lead Developer</p>
+                  <p className="font-inter text-xs text-[var(--text-muted)] font-medium">Created By Gaara · PRRX Lead Developer</p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 {devRoles.map(({ icon: Icon, label }) => (
-                  <div key={label} className="flex items-center gap-3 text-xs text-slate-700">
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-[#06b6d4]">
+                  <div key={label} className="flex items-center gap-3 text-xs text-[var(--text-primary)]">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] flex items-center justify-center text-[#06b6d4]">
                       <Icon className="w-4 h-4" />
                     </div>
                     <span className="font-medium">{label}</span>
@@ -62,7 +64,7 @@ export default function Footer() {
 
             {/* Right — contacts */}
             <div className="space-y-4">
-              <div className="font-outfit font-bold text-xs text-slate-400 uppercase tracking-wider pb-2 border-b border-slate-100">
+              <div className="font-outfit font-bold text-xs text-[var(--text-muted)] uppercase tracking-wider pb-2 border-b border-[var(--border-color)]">
                 DIRECT CONTACT & SUPPORT
               </div>
 
@@ -70,7 +72,7 @@ export default function Footer() {
                 href="https://discord.com/users/prrx2021"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 transition-all group"
+                className="flex items-center gap-4 p-4 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-indigo-500 hover:bg-indigo-500/10 transition-all group"
               >
                 <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -78,17 +80,17 @@ export default function Footer() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <p className="font-outfit font-bold text-xs text-slate-500">DISCORD USER</p>
-                  <p className="font-inter text-sm font-bold text-slate-900">prrx2021</p>
+                  <p className="font-outfit font-bold text-xs text-[var(--text-muted)]">DISCORD USER</p>
+                  <p className="font-inter text-sm font-bold text-[var(--text-heading)]">prrx2021</p>
                 </div>
-                <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
+                <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-indigo-500" />
               </a>
 
               <a
                 href="https://wa.me/94761386077"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all group"
+                className="flex items-center gap-4 p-4 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-emerald-500 hover:bg-emerald-500/10 transition-all group"
               >
                 <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center">
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -96,19 +98,19 @@ export default function Footer() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <p className="font-outfit font-bold text-xs text-slate-500">WHATSAPP SUPPORT</p>
-                  <p className="font-inter text-sm font-bold text-slate-900">+94 761 386 077</p>
+                  <p className="font-outfit font-bold text-xs text-[var(--text-muted)]">WHATSAPP SUPPORT</p>
+                  <p className="font-inter text-sm font-bold text-[var(--text-heading)]">+94 761 386 077</p>
                 </div>
-                <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-emerald-600" />
+                <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-emerald-500" />
               </a>
             </div>
           </div>
         </div>
 
         {/* Bottom copyright */}
-        <div className="text-center space-y-1 text-xs text-slate-500">
+        <div className="text-center space-y-1 text-xs text-[var(--text-muted)]">
           <p className="font-inter">
-            Created By <span className="font-outfit font-bold text-slate-900">Gaara</span> — Lead Developer
+            Created By <span className="font-outfit font-bold text-[var(--text-heading)]">Gaara</span> — Lead Developer
           </p>
           <p className="font-inter">
             © 2026 PRRX TEAM. All Rights Reserved.

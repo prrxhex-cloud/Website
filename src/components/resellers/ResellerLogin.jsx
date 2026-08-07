@@ -3,8 +3,9 @@ import { motion } from 'framer-motion';
 import { auth, db } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { User, Lock, Eye, EyeOff, Store, AlertTriangle, Clock } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, AlertTriangle, Clock } from 'lucide-react';
 import { isLocked, getRemainingLockout, recordFailedAttempt, recordSuccess, formatMs } from '@/components/security/SecurityGuard';
+import logoImg from '@/assets/logo.jpeg';
 
 const STORE_KEY = 'reseller';
 
@@ -61,31 +62,31 @@ export default function ResellerLogin({ onLogin }) {
         }
       }
     } catch (err) {
-      console.error(err);
       const { attempts, lockedUntil } = recordFailedAttempt(STORE_KEY, email);
       if (lockedUntil) {
         setError(`Too many failed attempts. Locked for 15 minutes.`);
         setLocked(true);
       } else {
-        setError(`Invalid reseller credentials.`);
+        setError('Invalid credentials.');
       }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center p-4 font-inter text-[var(--text-primary)] transition-colors duration-300">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-xl space-y-6"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md clean-card p-8 shadow-2xl space-y-6"
       >
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-cyan-50 border border-cyan-200 text-[#06b6d4] flex items-center justify-center mx-auto mb-3">
-            <Store className="w-7 h-7" />
+          <div className="w-16 h-16 rounded-2xl bg-slate-900/60 border border-cyan-500/40 p-1.5 shadow-[0_0_20px_rgba(6,182,212,0.3)] mx-auto mb-3 flex items-center justify-center">
+            <img src={logoImg} alt="PRRX Logo" className="w-full h-full object-contain rounded-xl" />
           </div>
-          <h1 className="font-outfit font-extrabold text-2xl text-slate-900">RESELLER PORTAL</h1>
-          <p className="font-inter text-xs text-slate-500">Sign in with your verified reseller account</p>
+          <h2 className="font-outfit font-extrabold text-2xl text-[var(--text-heading)]">RESELLER PORTAL</h2>
+          <p className="font-inter text-xs text-[var(--text-muted)]">Authorized PRRX Resellers & Bulk Key Managers</p>
         </div>
 
         {locked && (

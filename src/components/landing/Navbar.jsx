@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShieldCheck, Volume2, VolumeX, Crosshair, ChevronRight, Zap } from 'lucide-react';
+import { Menu, X, ShieldCheck, Volume2, VolumeX, ChevronRight, Zap, Sun, Moon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSound } from '../../context/SoundContext';
+import { useTheme } from '@/lib/ThemeContext';
+import logoImg from '@/assets/logo.jpeg';
 
 const navLinks = [
   { label: 'Home', type: 'page', path: '/' },
@@ -21,6 +23,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { soundEnabled, toggleSound } = useSound();
+  const { theme, toggleTheme } = useTheme();
 
   const handleNav = (item) => {
     setMobileOpen(false);
@@ -30,9 +33,9 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="sticky top-0 z-50 w-full">
+    <div className="sticky top-0 z-50 w-full font-inter">
       {/* Top Announcement Bar */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white text-xs py-1.5 px-4 font-inter">
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-white/10 text-white text-xs py-1.5 px-4">
         <div className="max-w-[1240px] mx-auto flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 font-medium">
             <span className="bg-red-500/20 border border-red-500/50 text-red-300 font-extrabold text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -46,24 +49,24 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Main Navigation Header */}
-      <header className="bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
+      {/* Main Navigation Header with iOS Liquid Glass backdrop */}
+      <header className="clean-glass-header transition-all">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 h-[76px] flex items-center justify-between">
           
-          {/* Logo */}
+          {/* Official Logo Brand */}
           <div 
             className="flex items-center gap-3 cursor-pointer select-none group"
             onClick={() => navigate('/')}
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#06b6d4] to-[#8b5cf6] flex items-center justify-center text-white shadow-[0_8px_20px_rgba(6,182,212,0.3)] transition-transform group-hover:scale-105">
-              <Crosshair className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-2xl bg-slate-900/50 border border-cyan-500/40 p-1 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-transform group-hover:scale-105">
+              <img src={logoImg} alt="PRRX Logo" className="w-full h-full object-contain rounded-xl" />
             </div>
             <div className="flex flex-col">
-              <span className="font-outfit font-black text-xl text-slate-900 tracking-tight leading-none">
+              <span className="font-outfit font-black text-xl tracking-tight leading-none text-[var(--text-heading)]">
                 PRRX <span className="text-[#06b6d4]">HEX</span>
               </span>
-              <span className="text-[10px] font-bold tracking-[0.15em] text-slate-500 uppercase mt-0.5">
-                PREMIUM FF CHEATZ
+              <span className="text-[10px] font-bold tracking-[0.15em] text-[var(--text-muted)] uppercase mt-0.5">
+                PREMIUM CHEATS STORE
               </span>
             </div>
           </div>
@@ -75,7 +78,9 @@ export default function Navbar() {
                 key={item.label}
                 onClick={() => handleNav(item)}
                 className={`font-inter text-sm font-semibold transition-colors flex items-center gap-1.5 relative py-1 ${
-                  isActive(item.path) ? 'text-[#06b6d4]' : 'text-slate-700 hover:text-[#06b6d4]'
+                  isActive(item.path) 
+                    ? 'text-[#06b6d4]' 
+                    : 'text-[var(--text-primary)] hover:text-[#06b6d4]'
                 }`}
               >
                 {item.label}
@@ -98,27 +103,38 @@ export default function Navbar() {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            {/* Theme Switcher Toggle (iOS Style) */}
+            <button
+              onClick={toggleTheme}
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Theme`}
+              className="w-9 h-9 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-primary)] flex items-center justify-center hover:border-[#06b6d4] transition-all shadow-sm"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+            </button>
+
+            {/* Sound Toggle */}
             <button
               onClick={toggleSound}
               title="Toggle UI Sounds"
-              className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-200 transition-colors"
+              className="w-9 h-9 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-primary)] flex items-center justify-center hover:border-[#06b6d4] transition-all shadow-sm"
             >
-              {soundEnabled ? <Volume2 className="w-4 h-4 text-[#06b6d4]" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-[#06b6d4]" /> : <VolumeX className="w-4 h-4 opacity-50" />}
             </button>
 
+            {/* VIP Key Button */}
             <button
               onClick={() => navigate('/prices')}
-              className="btn-primary-cyan btn-glow px-5 py-2.5 font-inter font-semibold text-sm flex items-center gap-2 shadow-md"
+              className="btn-primary-cyan btn-glow px-4 py-2 font-inter font-semibold text-xs flex items-center gap-2 shadow-md"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Buy VIP Key</span>
+              <span className="hidden sm:inline">Buy VIP Key</span>
             </button>
 
             {/* Mobile Toggle Button */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              className="lg:hidden p-2 rounded-lg text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors"
             >
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -133,7 +149,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-white border-b border-slate-200 shadow-xl overflow-hidden"
+            className="lg:hidden bg-[var(--bg-glass-card)] backdrop-blur-xl border-b border-[var(--border-color)] shadow-2xl overflow-hidden"
           >
             <div className="px-4 py-4 space-y-2 max-w-[1240px] mx-auto">
               {navLinks.map((item) => (
@@ -142,8 +158,8 @@ export default function Navbar() {
                   onClick={() => handleNav(item)}
                   className={`w-full text-left font-inter font-semibold px-4 py-2.5 rounded-xl flex items-center justify-between ${
                     isActive(item.path) 
-                      ? 'bg-[#06b6d4]/10 text-[#06b6d4]' 
-                      : 'text-slate-700 hover:bg-slate-50'
+                      ? 'bg-[#06b6d4]/15 text-[#06b6d4]' 
+                      : 'text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
                   }`}
                 >
                   <span>{item.label}</span>
