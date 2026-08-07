@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, where, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Check, X, User, Trash2, RefreshCw, LogOut, Shield, Activity, UserPlus, Clock, Store, Key, CreditCard, DollarSign, Tag, Link2, Users, Gift, Bell, MessageCircle, Megaphone, Image as ImageIcon } from 'lucide-react';
+import { Crown, Check, X, User, Trash2, RefreshCw, LogOut, Shield, ShieldAlert, AlertTriangle, Activity, UserPlus, Clock, Store, Key, CreditCard, DollarSign, Tag, Link2, Users, Gift, Bell, MessageCircle, Megaphone, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import CommunityLinksTab from './CommunityLinksTab';
 import DiscordSettingsTab from './DiscordSettingsTab';
