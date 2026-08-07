@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import HeroSection from '@/components/landing/HeroSection';
-import FunctionsSection from '@/components/landing/FunctionsSection';
+import FunctionsTeaserSection from '@/components/landing/FunctionsTeaserSection';
 import AnnouncementsSection from '@/components/landing/AnnouncementsSection';
 import DownloadSection from '@/components/landing/DownloadSection';
 import PageLoader from '@/components/effects/PageLoader';
@@ -19,7 +19,7 @@ export default function Home() {
         <HeroSection />
         <AnnouncementsSection />
         <div id="functions">
-          <FunctionsSection />
+          <FunctionsTeaserSection />
         </div>
         <div id="download">
           <DownloadSection />

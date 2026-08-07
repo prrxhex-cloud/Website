@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Crosshair, Eye, Zap, Shield, Lock, Cpu, Layers, Wind, Map } from 'lucide-react';
 import InteractiveCard from '@/components/effects/InteractiveCard';
@@ -84,7 +85,14 @@ const featureCards = [
 ];
 
 export default function FunctionsSection() {
-  const [activePanel, setActivePanel] = useState('internal');
+  const location = useLocation();
+  const [activePanel, setActivePanel] = useState(location.state?.tab || 'internal');
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActivePanel(location.state.tab);
+    }
+  }, [location.state]);
 
   return (
     <section id="functions" className="py-16 sm:py-24">

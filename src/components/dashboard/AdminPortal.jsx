@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, where, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Check, X, User, Trash2, RefreshCw, LogOut, Shield, Activity, UserPlus, Clock, Store, Key, CreditCard, DollarSign, Tag, Link2, Users, Gift, Bell, MessageCircle, Megaphone } from 'lucide-react';
+import { Crown, Check, X, User, Trash2, RefreshCw, LogOut, Shield, Activity, UserPlus, Clock, Store, Key, CreditCard, DollarSign, Tag, Link2, Users, Gift, Bell, MessageCircle, Megaphone, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import CommunityLinksTab from './CommunityLinksTab';
 import DiscordSettingsTab from './DiscordSettingsTab';
@@ -18,6 +18,7 @@ import DownloadLinksTab from './DownloadLinksTab';
 import AdminOverviewTab from './AdminOverviewTab';
 import AdminMessagesTab from './AdminMessagesTab';
 import AdminAnnouncementsTab from './AdminAnnouncementsTab';
+import PanelImagesTab from './PanelImagesTab';
 
 function ReceiptsTab() {
   const [receipts, setReceipts] = useState([]);
@@ -430,6 +431,7 @@ function AdminPanel({ adminUser, onLogout }) {
     { key: 'users',      label: 'Users',      icon: Users },
     { key: 'messages',   label: 'Messages',   icon: MessageCircle },
     { key: 'announcements', label: 'Posts',   icon: Megaphone },
+    { key: 'panel_images', label: 'Panel Imgs', icon: ImageIcon },
   ];
 
   return (
@@ -491,9 +493,10 @@ function AdminPanel({ adminUser, onLogout }) {
           {tab === 'freebies' && <FreebiesTab />}
           {tab === 'admins' && <AdminsTab />}
           {tab === 'discord' && <DiscordSettingsTab />}
-          {tab === 'users' && <UsersTab />}
-          {tab === 'messages' && <AdminMessagesTab />}
-          {tab === 'announcements' && <AdminAnnouncementsTab />}
+          { tab === 'users' && <UsersTab /> }
+          { tab === 'messages' && <AdminMessagesTab /> }
+          { tab === 'announcements' && <AdminAnnouncementsTab /> }
+          { tab === 'panel_images' && <PanelImagesTab /> }
         </motion.div>
       </AnimatePresence>
     </motion.div>
