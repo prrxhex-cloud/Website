@@ -7,17 +7,25 @@ import ScrollReveal from '@/components/effects/ScrollReveal';
 
 export default function FunctionsTeaserSection() {
   const navigate = useNavigate();
-  const [images, setImages] = useState({ external_image_url: '', internal_image_url: '' });
+  const [images, setImages] = useState(() => {
+    const cached = localStorage.getItem('prrx_panel_images_cache');
+    if (cached) {
+      try { return JSON.parse(cached); } catch(e) {}
+    }
+    return { external_image_url: '', internal_image_url: '' };
+  });
 
   useEffect(() => {
     const fetchImages = async () => {
       try {
         const snap = await getDoc(doc(db, 'public_settings', 'panel_images'));
         if (snap.exists()) {
-          setImages({
+          const newImages = {
             external_image_url: snap.data().external_image_url || '',
             internal_image_url: snap.data().internal_image_url || ''
-          });
+          };
+          setImages(newImages);
+          localStorage.setItem('prrx_panel_images_cache', JSON.stringify(newImages));
         }
       } catch (e) {
         console.error('Failed to load panel images', e);
