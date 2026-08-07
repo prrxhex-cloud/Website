@@ -45,14 +45,12 @@ function ReceiptsTab() {
 
   const approve = async (receipt) => {
     try {
-      // 1. Mark receipt as approved
       await updateDoc(doc(db, 'reseller_receipts', receipt.id), {
         status: 'approved',
         admin_note: 'Approved and subscription granted',
         approved_at: new Date().toISOString()
       });
 
-      // 2. Grant subscription to user (customer_email)
       const usersRef = collection(db, 'users');
       const uq = query(usersRef, where('email', '==', receipt.customer_email?.toLowerCase()));
       const snap = await getDocs(uq);
@@ -69,7 +67,6 @@ function ReceiptsTab() {
           subscriptions: [subData]
         });
       } else {
-        // Create user doc if it doesn't exist
         await setDoc(doc(db, 'users', receipt.customer_email.toLowerCase()), {
           email: receipt.customer_email.toLowerCase(),
           role: 'user',
@@ -105,63 +102,79 @@ function ReceiptsTab() {
   const STATUS_COLOR = { pending: '#ffaa00', approved: '#00ff64', rejected: '#ff4444' };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2 flex-wrap">
+    <div className="space-y-6">
+      <div className="flex gap-2 flex-wrap bg-white/5 p-2 rounded-2xl border border-white/10 w-fit">
         {['pending', 'approved', 'rejected', 'all'].map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className="font-inter text-xs px-3 py-1.5 rounded-lg capitalize transition-all"
+            className="font-orbitron font-bold tracking-widest text-[10px] px-4 py-2 rounded-xl capitalize transition-all"
             style={{
-              background: filter === f ? 'rgba(0,212,255,0.12)' : 'rgba(0,15,35,0.5)',
-              border: filter === f ? '1px solid rgba(0,212,255,0.2)' : '1px solid rgba(255,255,255,0.05)',
+              background: filter === f ? 'rgba(0,212,255,0.15)' : 'transparent',
               color: filter === f ? '#00d4ff' : 'rgba(180,200,220,0.5)',
+              boxShadow: filter === f ? '0 0 15px rgba(0,212,255,0.2)' : 'none'
             }}>{f}</button>
         ))}
-        <button onClick={load} className="ml-auto p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-primary transition-colors">
+        <button onClick={load} className="ml-auto px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
-      {loading ? <div className="flex justify-center py-8"><div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div> : (
-        <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+      {loading ? <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-[#00d4ff]/30 border-t-[#00d4ff] rounded-full animate-spin glow-cyan" /></div> : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
           {displayed.map(r => (
-            <div key={r.id} className="rounded-xl p-4 space-y-3" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div className="flex items-start gap-3">
-                {r.receipt_image_url && (
-                  <a href={r.receipt_image_url} target="_blank" rel="noopener noreferrer">
-                    <img src={r.receipt_image_url} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" style={{ border: '1px solid rgba(0,212,255,0.15)' }} />
+            <div key={r.id} className="rounded-[24px] p-5 space-y-4 liquid-glass border border-white/10 hover:border-[#00d4ff]/30 transition-colors group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#00d4ff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              
+              <div className="flex gap-4 relative z-10">
+                {r.receipt_image_url ? (
+                  <a href={r.receipt_image_url} target="_blank" rel="noopener noreferrer" className="block relative">
+                    <img src={r.receipt_image_url} className="w-20 h-20 rounded-2xl object-cover border border-[#00d4ff]/20 shadow-[0_0_15px_rgba(0,212,255,0.1)]" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl backdrop-blur-sm">
+                      <ImageIcon className="w-6 h-6 text-white" />
+                    </div>
                   </a>
+                ) : (
+                  <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                    <ImageIcon className="w-6 h-6 text-gray-500" />
+                  </div>
                 )}
+                
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-orbitron font-bold text-xs" style={{ color: '#00d4ff' }}>{r.reseller_display_name || r.reseller_username || r.reseller_email}</span>
-                    <span className="font-inter text-xs px-2 py-0.5 rounded-full capitalize" style={{ background: `${STATUS_COLOR[r.status]}15`, color: STATUS_COLOR[r.status], border: `1px solid ${STATUS_COLOR[r.status]}35` }}>{r.status}</span>
-                    {r.auto_verified && <span className="font-inter text-xs text-muted-foreground">auto-verified</span>}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-orbitron font-bold text-sm text-[#00d4ff] truncate">{r.reseller_display_name || r.reseller_username || r.reseller_email}</span>
+                    <span className="font-orbitron font-bold text-[10px] px-2 py-0.5 rounded-full capitalize" style={{ background: `${STATUS_COLOR[r.status]}15`, color: STATUS_COLOR[r.status], border: `1px solid ${STATUS_COLOR[r.status]}35` }}>{r.status}</span>
+                    {r.auto_verified && <span className="font-orbitron font-bold text-[10px] text-gray-500 bg-gray-500/10 px-2 py-0.5 rounded-full">AUTO</span>}
                   </div>
-                  <div className="grid grid-cols-2 gap-1 text-xs mb-2">
-                    <div><span className="text-muted-foreground">Customer: </span><span className="text-white">{r.customer_email || '—'}</span></div>
-                    <div><span className="text-muted-foreground">Amount: </span><span>{r.extracted_amount ?? '—'}</span></div>
-                    <div><span className="text-muted-foreground">Ref: </span><span className="truncate">{r.extracted_reference || '—'}</span></div>
-                    <div><span className="text-muted-foreground">Product: </span><span className="capitalize">{r.product_type}</span></div>
-                    <div><span className="text-muted-foreground">Duration: </span><span>{r.duration?.replace('_', ' ')}</span></div>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div><span className="text-gray-500 block text-[10px] font-orbitron">CUSTOMER</span><span className="text-gray-200 truncate block">{r.customer_email || '—'}</span></div>
+                    <div><span className="text-gray-500 block text-[10px] font-orbitron">AMOUNT</span><span className="text-[#00ff64] font-bold">{r.extracted_amount ?? '—'}</span></div>
+                    <div><span className="text-gray-500 block text-[10px] font-orbitron">REF NO.</span><span className="text-gray-300 truncate block">{r.extracted_reference || '—'}</span></div>
+                    <div><span className="text-gray-500 block text-[10px] font-orbitron">PLAN</span><span className="text-[#00d4ff] capitalize">{r.product_type} / {r.duration?.replace('_', ' ')}</span></div>
                   </div>
-                  {r.admin_note && <p className="font-inter text-xs text-yellow-400">Note: {r.admin_note}</p>}
                 </div>
               </div>
+
+              {r.admin_note && (
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 relative z-10">
+                  <p className="font-inter text-xs text-yellow-200"><span className="font-bold mr-1">Note:</span>{r.admin_note}</p>
+                </div>
+              )}
+
               {r.status === 'pending' && (
-                <div className="flex gap-2">
-                  <button onClick={() => approve(r)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-orbitron text-xs font-bold transition-all"
-                    style={{ background: 'rgba(0,255,100,0.1)', border: '1px solid rgba(0,255,100,0.3)', color: '#00ff64' }}>
-                    <Check className="w-3.5 h-3.5" /> Approve & Grant
+                <div className="flex gap-3 pt-2 relative z-10">
+                  <button onClick={() => approve(r)} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-orbitron font-bold text-[10px] tracking-widest transition-all hover:scale-105"
+                    style={{ background: 'rgba(0,255,100,0.1)', border: '1px solid rgba(0,255,100,0.3)', color: '#00ff64', boxShadow: '0 0 15px rgba(0,255,100,0.1)' }}>
+                    <Check className="w-4 h-4" /> APPROVE
                   </button>
-                  <button onClick={() => setNoteModal(r)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-orbitron text-xs font-bold transition-all"
-                    style={{ background: 'rgba(255,68,68,0.08)', border: '1px solid rgba(255,68,68,0.25)', color: '#ff4444' }}>
-                    <X className="w-3.5 h-3.5" /> Reject
+                  <button onClick={() => setNoteModal(r)} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-orbitron font-bold text-[10px] tracking-widest transition-all hover:scale-105"
+                    style={{ background: 'rgba(255,68,68,0.1)', border: '1px solid rgba(255,68,68,0.3)', color: '#ff4444', boxShadow: '0 0 15px rgba(255,68,68,0.1)' }}>
+                    <X className="w-4 h-4" /> REJECT
                   </button>
                 </div>
               )}
             </div>
           ))}
-          {displayed.length === 0 && <p className="text-center font-inter text-xs text-muted-foreground py-8">No receipts found.</p>}
+          {displayed.length === 0 && <div className="col-span-full py-12 text-center text-gray-500 font-orbitron tracking-widest text-sm">NO RECEIPTS FOUND</div>}
         </div>
       )}
 
@@ -176,18 +189,32 @@ function RejectModal({ receipt, onConfirm, onCancel }) {
   const [note, setNote] = useState('');
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
-      <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="rounded-2xl p-6 w-full max-w-sm space-y-4"
-        style={{ background: 'rgba(0,8,28,0.95)', border: '1px solid rgba(255,68,68,0.3)' }}>
-        <p className="font-orbitron font-bold text-sm" style={{ color: '#ff4444' }}>REJECT RECEIPT</p>
-        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Reason for rejection (optional)"
-          className="w-full px-3 py-2 rounded-lg font-inter text-sm text-foreground placeholder-muted-foreground outline-none resize-none h-24"
-          style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(255,68,68,0.2)' }} />
-        <div className="flex gap-2">
-          <button onClick={onCancel} className="flex-1 py-2 rounded-lg font-inter text-xs text-muted-foreground hover:text-foreground transition-colors border border-white/10">Cancel</button>
-          <button onClick={() => onConfirm(receipt, note)} className="flex-1 py-2 rounded-lg font-orbitron text-xs font-bold"
-            style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.4)', color: '#ff4444' }}>Confirm Reject</button>
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+      <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} 
+        className="rounded-[32px] p-8 w-full max-w-md space-y-6 liquid-glass border border-red-500/30 relative overflow-hidden"
+        style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.5), inset 0 0 30px rgba(255,68,68,0.1)' }}>
+        
+        <div className="absolute top-0 left-0 w-full h-1 bg-red-500 shadow-[0_0_15px_#ff4444]"></div>
+        
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+          </div>
+          <p className="font-orbitron font-black text-lg tracking-widest text-red-400">REJECT RECEIPT</p>
+        </div>
+        
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Provide a reason for rejection (optional)..."
+          className="w-full px-4 py-3 rounded-2xl font-inter text-sm text-white placeholder-gray-500 outline-none resize-none h-32 focus:border-red-500 transition-colors"
+          style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)' }} />
+          
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs tracking-widest text-gray-400 hover:text-white hover:bg-white/5 border border-white/10 transition-all">
+            CANCEL
+          </button>
+          <button onClick={() => onConfirm(receipt, note)} className="flex-1 py-3 rounded-xl font-orbitron font-black text-xs tracking-widest transition-all hover:scale-105"
+            style={{ background: 'rgba(255,68,68,0.2)', border: '1px solid rgba(255,68,68,0.5)', color: '#ffaa44', boxShadow: '0 0 20px rgba(255,68,68,0.2)' }}>
+            CONFIRM REJECT
+          </button>
         </div>
       </motion.div>
     </motion.div>
@@ -213,29 +240,40 @@ function UsersTab() {
   useEffect(() => { load(); }, []);
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
-      <div className="px-4 py-3 border-b flex justify-between" style={{ borderColor: 'rgba(0,212,255,0.08)' }}>
-        <p className="font-orbitron text-xs text-primary tracking-wider">ALL USERS ({users.length})</p>
-        <button onClick={load} className="text-muted-foreground hover:text-primary"><RefreshCw className="w-4 h-4" /></button>
+    <div className="rounded-[32px] overflow-hidden bg-black/40 border border-white/10">
+      <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between bg-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[#00d4ff]/10 flex items-center justify-center">
+            <Users className="w-4 h-4 text-[#00d4ff]" />
+          </div>
+          <p className="font-orbitron font-bold text-sm text-white tracking-widest">USER DATABASE <span className="text-[#00d4ff] ml-1">({users.length})</span></p>
+        </div>
+        <button onClick={load} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors">
+          <RefreshCw className="w-4 h-4" />
+        </button>
       </div>
-      {loading ? <div className="p-8 text-center"><div className="w-5 h-5 mx-auto border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div> : (
-        <div className="divide-y" style={{ borderColor: 'rgba(0,212,255,0.06)' }}>
+      
+      {loading ? <div className="p-12 flex justify-center"><div className="w-8 h-8 border-4 border-[#00d4ff]/30 border-t-[#00d4ff] rounded-full animate-spin glow-cyan" /></div> : (
+        <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto custom-scrollbar">
           {users.map(u => (
-            <div key={u.id} className="flex items-center gap-3 px-4 py-3">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)' }}>
-                {u.avatar_url ? <img src={u.avatar_url} className="w-full h-full rounded-full object-cover" alt="" /> : <User className="w-4 h-4 text-primary opacity-60" />}
+            <div key={u.id} className="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors group">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 relative overflow-hidden" 
+                style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)' }}>
+                {u.avatar_url ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" /> : <User className="w-5 h-5 text-[#00d4ff]" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-inter text-sm font-medium text-foreground truncate">{u.display_name || u.full_name || '—'}</p>
-                <p className="font-inter text-xs text-muted-foreground truncate">{u.email}</p>
+                <p className="font-orbitron font-bold text-sm text-white truncate">{u.display_name || u.full_name || 'UNNAMED_USER'}</p>
+                <p className="font-inter text-xs text-gray-400 truncate">{u.email}</p>
               </div>
-              <span className="font-inter text-xs px-2 py-0.5 rounded-full capitalize"
-                style={{ background: u.role === 'admin' ? 'rgba(255,170,0,0.1)' : (u.role === 'reseller' ? 'rgba(170,68,255,0.1)' : 'rgba(0,212,255,0.08)'), color: u.role === 'admin' ? '#ffaa00' : (u.role === 'reseller' ? '#aa44ff' : '#00d4ff'), border: '1px solid rgba(255,255,255,0.05)' }}>
-                {u.role || 'user'}
-              </span>
+              <div className="flex-shrink-0">
+                <span className="font-orbitron font-bold text-[10px] tracking-widest px-3 py-1 rounded-full uppercase"
+                  style={{ background: u.role === 'admin' ? 'rgba(255,170,0,0.1)' : (u.role === 'reseller' ? 'rgba(170,68,255,0.1)' : 'rgba(0,212,255,0.1)'), color: u.role === 'admin' ? '#ffaa00' : (u.role === 'reseller' ? '#aa44ff' : '#00d4ff'), border: u.role === 'admin' ? '1px solid rgba(255,170,0,0.3)' : (u.role === 'reseller' ? '1px solid rgba(170,68,255,0.3)' : '1px solid rgba(0,212,255,0.3)') }}>
+                  {u.role || 'user'}
+                </span>
+              </div>
             </div>
           ))}
-          {users.length === 0 && <div className="p-8 text-center font-inter text-xs text-muted-foreground">No users found</div>}
+          {users.length === 0 && <div className="p-12 text-center font-orbitron text-sm tracking-widest text-gray-500">NO USERS FOUND</div>}
         </div>
       )}
     </div>
@@ -277,7 +315,7 @@ function AdminsTab() {
   };
 
   const delAdmin = async (id) => {
-    if(!window.confirm('Delete this admin?')) return;
+    if(!window.confirm('WARNING: Deleting this admin will revoke their access. Proceed?')) return;
     try {
       await deleteDoc(doc(db, 'system_admins', id));
       toast.success('Admin deleted');
@@ -288,45 +326,71 @@ function AdminsTab() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl p-5" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
-        <h3 className="font-orbitron text-sm font-bold text-primary tracking-wider mb-4">ADD NEW ADMIN</h3>
-        <div className="flex gap-3 flex-wrap">
-          <input type="text" value={newUsername} onChange={e => setNewUsername(e.target.value)} placeholder="Username"
-            className="flex-1 min-w-[200px] px-4 py-2 rounded-lg font-inter text-sm outline-none transition-all"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-            onFocus={e => e.target.style.borderColor = '#00d4ff'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
-          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Password"
-            className="flex-1 min-w-[200px] px-4 py-2 rounded-lg font-inter text-sm outline-none transition-all"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-            onFocus={e => e.target.style.borderColor = '#00d4ff'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
-          <button onClick={addAdmin} className="px-6 py-2 rounded-lg font-orbitron font-bold text-xs"
-            style={{ background: 'rgba(0,212,255,0.15)', border: '1px solid rgba(0,212,255,0.3)', color: '#00d4ff' }}>
-            ADD ADMIN
+    <div className="space-y-6">
+      <div className="rounded-[32px] p-8 liquid-glass border border-[#00d4ff]/20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#00d4ff]/5 to-transparent pointer-events-none"></div>
+        <div className="flex items-center gap-3 mb-6 relative z-10">
+          <ShieldAlert className="w-6 h-6 text-[#00d4ff]" />
+          <h3 className="font-orbitron font-black text-lg text-white tracking-widest">GRANT ADMIN ACCESS</h3>
+        </div>
+        
+        <div className="flex flex-col md:flex-row gap-4 relative z-10">
+          <div className="flex-1 relative group">
+            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-[#00d4ff] transition-colors" />
+            <input type="text" value={newUsername} onChange={e => setNewUsername(e.target.value)} placeholder="New Admin ID"
+              className="w-full pl-12 pr-4 py-3.5 rounded-xl font-inter text-sm text-white outline-none transition-all placeholder:text-gray-500"
+              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
+              onFocus={e => e.target.style.borderColor = '#00d4ff'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+          </div>
+          <div className="flex-1 relative group">
+            <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-[#00d4ff] transition-colors" />
+            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Initial Password"
+              className="w-full pl-12 pr-4 py-3.5 rounded-xl font-inter text-sm text-white outline-none transition-all placeholder:text-gray-500"
+              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
+              onFocus={e => e.target.style.borderColor = '#00d4ff'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+          </div>
+          <button onClick={addAdmin} className="px-8 py-3.5 rounded-xl font-orbitron font-bold text-xs tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,212,255,0.2)]"
+            style={{ background: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,153,204,0.2))', border: '1px solid rgba(0,212,255,0.5)', color: '#00d4ff' }}>
+            <UserPlus className="w-4 h-4" /> AUTHORIZE
           </button>
         </div>
       </div>
 
-      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <div className="px-4 py-3 border-b flex justify-between" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-          <p className="font-orbitron text-xs text-muted-foreground tracking-wider">SYSTEM ADMINS</p>
-          <button onClick={load} className="text-muted-foreground hover:text-white"><RefreshCw className="w-4 h-4" /></button>
+      <div className="rounded-[32px] overflow-hidden bg-black/40 border border-white/10">
+        <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between bg-white/5">
+          <p className="font-orbitron font-bold text-sm tracking-widest text-gray-300">AUTHORIZED PERSONNEL</p>
+          <button onClick={load} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors">
+            <RefreshCw className="w-4 h-4" />
+          </button>
         </div>
-        {loading ? <div className="p-8 flex justify-center"><div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div> : (
-          <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-            <div className="flex items-center justify-between px-4 py-3">
-              <div className="flex items-center gap-3">
-                <Crown className="w-4 h-4 text-yellow-400" />
-                <p className="font-inter text-sm font-medium text-white">Sayuru <span className="text-xs text-muted-foreground ml-2">(Default System Admin)</span></p>
-              </div>
-            </div>
-            {admins.map(a => (
-              <div key={a.id} className="flex items-center justify-between px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <User className="w-4 h-4 text-primary" />
-                  <p className="font-inter text-sm font-medium text-white">{a.username}</p>
+        
+        {loading ? <div className="p-12 flex justify-center"><div className="w-8 h-8 border-4 border-[#00d4ff]/30 border-t-[#00d4ff] rounded-full animate-spin glow-cyan" /></div> : (
+          <div className="divide-y divide-white/5">
+            <div className="flex items-center justify-between px-6 py-4 bg-yellow-500/5">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center">
+                  <Crown className="w-5 h-5 text-yellow-400" />
                 </div>
-                <button onClick={() => delAdmin(a.id)} className="p-2 rounded-lg text-red-400 hover:bg-red-400/10 transition-colors">
+                <div>
+                  <p className="font-orbitron font-bold text-sm text-yellow-400">Sayuru</p>
+                  <p className="font-inter text-[10px] tracking-widest text-gray-500 uppercase">System Architect / Root</p>
+                </div>
+              </div>
+              <Shield className="w-5 h-5 text-yellow-500/30" />
+            </div>
+            
+            {admins.map(a => (
+              <div key={a.id} className="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors group">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#00d4ff]/10 border border-[#00d4ff]/30 flex items-center justify-center">
+                    <User className="w-5 h-5 text-[#00d4ff]" />
+                  </div>
+                  <div>
+                    <p className="font-orbitron font-bold text-sm text-white">{a.username}</p>
+                    <p className="font-inter text-[10px] tracking-widest text-gray-500 uppercase">System Admin</p>
+                  </div>
+                </div>
+                <button onClick={() => delAdmin(a.id)} className="p-2.5 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-all opacity-0 group-hover:opacity-100">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -358,53 +422,69 @@ function LoginForm({ onSuccess }) {
       if (!snap.empty) {
         onSuccess(username);
       } else {
-        toast.error('Invalid username or password');
+        toast.error('Invalid credentials or unauthorized access attempt.');
       }
     } catch (e) {
       console.error(e);
-      toast.error('Connection error');
+      toast.error('Secure connection error');
     }
     setLoading(false);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 w-full">
-      <div className="w-full max-w-md rounded-2xl p-8 space-y-6" style={{ background: 'rgba(0,10,25,0.95)', border: '1px solid rgba(0,212,255,0.15)', boxShadow: '0 16px 48px rgba(0,0,0,0.5)' }}>
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4" style={{ background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.2)' }}>
-            <Shield className="w-8 h-8" style={{ color: '#00d4ff' }} />
+    <div className="flex flex-col items-center justify-center py-16 px-4 w-full relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-[#ffaa00]/5 to-transparent pointer-events-none blur-3xl"></div>
+      
+      <div className="w-full max-w-md rounded-[32px] p-10 space-y-8 relative overflow-hidden liquid-glass border border-red-500/20" 
+        style={{ boxShadow: '0 30px 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,80,80,0.05)' }}>
+        
+        {/* Animated background elements */}
+        <div className="absolute -top-20 -left-20 w-40 h-40 bg-red-500/10 rounded-full blur-2xl animate-pulse"></div>
+        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-[#00d4ff]/10 rounded-full blur-2xl animate-pulse animation-delay-2000"></div>
+
+        <div className="text-center relative z-10">
+          <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-6 relative group" 
+            style={{ background: 'rgba(255,80,80,0.05)', border: '1px solid rgba(255,80,80,0.3)' }}>
+            <div className="absolute inset-0 bg-red-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl"></div>
+            <Shield className="w-10 h-10 text-red-500 relative z-10 drop-shadow-[0_0_10px_rgba(255,80,80,0.5)]" />
           </div>
-          <h2 className="font-orbitron font-black text-2xl tracking-widest mb-1" style={{ color: '#00d4ff' }}>PRRX ADMIN</h2>
-          <p className="font-inter text-xs text-muted-foreground">Secure portal — authorized personnel only</p>
+          <h2 className="font-orbitron font-black text-3xl tracking-widest mb-2 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">PRRX ADMIN</h2>
+          <p className="font-inter text-sm text-red-400 font-bold tracking-widest uppercase">Strictly Confidential</p>
         </div>
 
-        <div className="space-y-4">
-          <div className="relative">
-            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Username"
-              className="w-full pl-10 pr-4 py-3 rounded-xl font-inter text-sm text-foreground outline-none transition-all"
-              style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}
-              onFocus={e => e.target.style.borderColor = '#00d4ff'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+        <div className="space-y-5 relative z-10">
+          <div className="relative group">
+            <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#00d4ff] transition-colors" />
+            <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Admin ID"
+              className="w-full pl-14 pr-5 py-4 rounded-2xl font-inter text-base text-white outline-none transition-all placeholder:text-gray-500"
+              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
+              onFocus={e => { e.target.style.borderColor = 'rgba(0,212,255,0.5)'; e.target.style.boxShadow = '0 0 20px rgba(0,212,255,0.2)'; }} 
+              onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.boxShadow = 'none'; }} />
           </div>
-          <div className="relative">
-            <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password"
-              className="w-full pl-10 pr-4 py-3 rounded-xl font-inter text-sm text-foreground outline-none transition-all"
-              style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}
-              onFocus={e => e.target.style.borderColor = '#00d4ff'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+          <div className="relative group">
+            <Key className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-400 transition-colors" />
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Authorization Key"
+              className="w-full pl-14 pr-5 py-4 rounded-2xl font-inter text-base text-white outline-none transition-all placeholder:text-gray-500"
+              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
+              onFocus={e => { e.target.style.borderColor = 'rgba(255,80,80,0.5)'; e.target.style.boxShadow = '0 0 20px rgba(255,80,80,0.2)'; }} 
+              onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.boxShadow = 'none'; }} />
           </div>
         </div>
 
         <button onClick={handleLogin} disabled={loading}
-          className="w-full py-3 rounded-xl font-orbitron font-bold text-sm tracking-widest flex items-center justify-center gap-2 transition-all hover:scale-[1.02] hover:brightness-110 disabled:opacity-50"
-          style={{ background: 'linear-gradient(135deg, #00d4ff, #0099cc)', color: '#020810', boxShadow: '0 0 16px rgba(0,212,255,0.4)' }}>
-          {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
-          ENTER PORTAL
+          className="w-full py-4 rounded-2xl font-orbitron font-black text-sm tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 group relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, rgba(255,80,80,0.2), rgba(255,0,0,0.2))', border: '1px solid rgba(255,80,80,0.5)', color: '#fff', boxShadow: '0 0 20px rgba(255,80,80,0.3)' }}>
+          <div className="absolute inset-0 bg-red-500/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+          {loading ? <RefreshCw className="w-5 h-5 animate-spin text-white relative z-10" /> : <Shield className="w-5 h-5 text-red-400 group-hover:text-white transition-colors relative z-10" />}
+          <span className="relative z-10 text-red-100 group-hover:text-white transition-colors">DECRYPT PORTAL</span>
         </button>
 
-        <div className="text-center mt-6 flex items-center justify-center gap-1.5 opacity-60">
-          <Shield className="w-3 h-3 text-yellow-500" />
-          <p className="font-inter text-[10px] text-muted-foreground">Protected by PRRX Security — Session monitored</p>
+        <div className="text-center mt-8 flex flex-col items-center justify-center gap-2 opacity-70 relative z-10">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+            <p className="font-orbitron text-xs font-bold text-red-400 tracking-widest">IP LOGGED & MONITORED</p>
+          </div>
+          <p className="font-inter text-[10px] text-gray-500 max-w-[250px]">Unauthorized access attempts will be reported to system administrators.</p>
         </div>
       </div>
     </div>
@@ -437,41 +517,49 @@ function AdminPanel({ adminUser, onLogout }) {
   ];
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <Crown className="w-4 h-4" style={{ color: '#ffaa00' }} />
-          <span className="font-orbitron font-bold text-sm text-primary tracking-wider">ADMIN PANEL</span>
-          <span className="font-inter text-xs px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(0,255,100,0.1)', border: '1px solid rgba(0,255,100,0.3)', color: '#00ff64' }}>
-            ● {adminUser}
-          </span>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,170,0,0.1)', border: '1px solid rgba(255,170,0,0.3)' }}>
+            <Crown className="w-5 h-5 text-yellow-400 drop-shadow-[0_0_8px_rgba(255,170,0,0.8)]" />
+          </div>
+          <div>
+            <span className="font-orbitron font-black text-lg text-white tracking-widest block">ADMIN PANEL</span>
+            <span className="font-orbitron text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest mt-1 inline-block"
+              style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.3)', color: '#00d4ff' }}>
+              ID: {adminUser}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button onClick={onLogout}
-            className="flex items-center gap-1.5 font-inter text-xs text-red-400 hover:text-red-300 transition-colors px-3 py-1.5 rounded-lg"
-            style={{ border: '1px solid rgba(255,80,80,0.2)', background: 'rgba(255,80,80,0.05)' }}>
-            <LogOut className="w-3.5 h-3.5" /> Logout
+            className="flex items-center gap-2 font-orbitron text-xs font-bold text-red-400 hover:text-white transition-colors px-4 py-2.5 rounded-xl border group relative overflow-hidden"
+            style={{ borderColor: 'rgba(255,80,80,0.3)', background: 'rgba(255,80,80,0.1)' }}>
+            <div className="absolute inset-0 bg-red-500/20 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+            <LogOut className="w-4 h-4 relative z-10 group-hover:-translate-x-1 transition-transform" /> 
+            <span className="relative z-10 tracking-widest">DISCONNECT</span>
           </button>
         </div>
       </div>
 
       {/* Tabs - scrollable */}
-      <div className="overflow-x-auto pb-2 -mb-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-        <div className="flex gap-1 p-1 rounded-xl min-w-max" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
+      <div className="overflow-x-auto pb-4 -mb-4 custom-scrollbar">
+        <div className="flex gap-2 p-2 rounded-2xl min-w-max border" style={{ background: 'rgba(0,15,35,0.4)', borderColor: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
           {tabs.map(t => {
             const Icon = t.icon;
+            const isActive = tab === t.key;
             return (
               <button key={t.key} onClick={() => setTab(t.key)}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-inter text-xs font-medium transition-all whitespace-nowrap"
+                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-orbitron text-xs font-bold tracking-wider transition-all whitespace-nowrap group"
                 style={{
-                  background: tab === t.key ? 'rgba(0,212,255,0.15)' : 'transparent',
-                  color: tab === t.key ? '#00d4ff' : 'rgba(180,200,220,0.5)',
-                  border: tab === t.key ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
+                  background: isActive ? 'rgba(0,212,255,0.15)' : 'transparent',
+                  color: isActive ? '#fff' : 'rgba(180,200,220,0.6)',
+                  border: isActive ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
+                  boxShadow: isActive ? '0 0 15px rgba(0,212,255,0.1)' : 'none'
                 }}>
-                <Icon className="w-3.5 h-3.5" />
-                {t.label}
+                <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-[#00d4ff]' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                {t.label.toUpperCase()}
               </button>
             );
           })}
@@ -479,29 +567,34 @@ function AdminPanel({ adminUser, onLogout }) {
       </div>
 
       {/* Content */}
-      <AnimatePresence mode="wait">
-        <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-          {tab === 'overview' && <AdminOverviewTab />}
-          {tab === 'accrequests' && <AccountRequestsTab adminUser={adminUser} />}
-          {tab === 'receipts' && <ReceiptsTab />}
-          {tab === 'resellers' && <ResellersTab />}
-          {tab === 'keys' && <KeyBankTab />}
-          {tab === 'beneficiaries' && <BeneficiaryAccountsTab />}
-          {tab === 'prices' && <PricePlansTab />}
-          {tab === 'discounts' && <DiscountsTab />}
-          {tab === 'status' && <StatusTab />}
-          {tab === 'links' && <DownloadLinksTab />}
-          {tab === 'community' && <CommunityLinksTab />}
-          {tab === 'freebies' && <FreebiesTab />}
-          {tab === 'admins' && <AdminsTab />}
-          {tab === 'discord' && <DiscordSettingsTab />}
-          { tab === 'users' && <UsersTab /> }
-          { tab === 'messages' && <AdminMessagesTab /> }
-          { tab === 'announcements' && <AdminAnnouncementsTab /> }
-          { tab === 'panel_images' && <PanelImagesTab /> }
-          { tab === 'functions_screenshots' && <FunctionsScreenshotsTab /> }
-        </motion.div>
-      </AnimatePresence>
+      <div className="rounded-[32px] overflow-hidden liquid-glass border border-white/10 relative p-6 sm:p-8" style={{ minHeight: '600px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
+        <div className="relative z-10">
+          <AnimatePresence mode="wait">
+            <motion.div key={tab} initial={{ opacity: 0, y: 10, filter: 'blur(5px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} exit={{ opacity: 0, filter: 'blur(5px)' }} transition={{ duration: 0.3 }}>
+              {tab === 'overview' && <AdminOverviewTab />}
+              {tab === 'accrequests' && <AccountRequestsTab adminUser={adminUser} />}
+              {tab === 'receipts' && <ReceiptsTab />}
+              {tab === 'resellers' && <ResellersTab />}
+              {tab === 'keys' && <KeyBankTab />}
+              {tab === 'beneficiaries' && <BeneficiaryAccountsTab />}
+              {tab === 'prices' && <PricePlansTab />}
+              {tab === 'discounts' && <DiscountsTab />}
+              {tab === 'status' && <StatusTab />}
+              {tab === 'links' && <DownloadLinksTab />}
+              {tab === 'community' && <CommunityLinksTab />}
+              {tab === 'freebies' && <FreebiesTab />}
+              {tab === 'admins' && <AdminsTab />}
+              {tab === 'discord' && <DiscordSettingsTab />}
+              { tab === 'users' && <UsersTab /> }
+              { tab === 'messages' && <AdminMessagesTab /> }
+              { tab === 'announcements' && <AdminAnnouncementsTab /> }
+              { tab === 'panel_images' && <PanelImagesTab /> }
+              { tab === 'functions_screenshots' && <FunctionsScreenshotsTab /> }
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
     </motion.div>
   );
 }
@@ -515,32 +608,18 @@ export default function AdminPortal() {
   };
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
-      <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(0,212,255,0.08)' }}>
-        <div>
-          <h2 className="font-orbitron font-bold text-sm text-primary tracking-wider">PRRX ADMIN PORTAL</h2>
-          <p className="font-inter text-xs text-muted-foreground mt-0.5">Manage your platform</p>
-        </div>
-        {adminUser && (
-          <span className="font-inter text-xs px-2.5 py-1 rounded-full"
-            style={{ background: 'rgba(255,170,0,0.1)', border: '1px solid rgba(255,170,0,0.3)', color: '#ffaa00' }}>
-            <Crown className="w-3 h-3 inline mr-1" />Admin
-          </span>
+    <div className="w-full">
+      <AnimatePresence mode="wait">
+        {adminUser ? (
+          <motion.div key="panel" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <AdminPanel adminUser={adminUser} onLogout={handleLogout} />
+          </motion.div>
+        ) : (
+          <motion.div key="login" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}>
+            <LoginForm onSuccess={(u) => { sessionStorage.setItem('prrx_admin_logged_in', u); setAdminUser(u); }} />
+          </motion.div>
         )}
-      </div>
-      <div className="p-6">
-        <AnimatePresence mode="wait">
-          {adminUser ? (
-            <motion.div key="panel" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <AdminPanel adminUser={adminUser} onLogout={handleLogout} />
-            </motion.div>
-          ) : (
-            <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <LoginForm onSuccess={(u) => { sessionStorage.setItem('prrx_admin_logged_in', u); setAdminUser(u); }} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      </AnimatePresence>
     </div>
   );
 }

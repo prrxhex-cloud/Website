@@ -17,15 +17,16 @@ export default function DashboardLicenseCard() {
 
   if (!info) {
     return (
-      <div className="rounded-2xl p-6 flex items-center gap-4"
-        style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.12)' }}>
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+      <div className="rounded-[32px] p-8 flex items-center gap-6 liquid-glass border border-white/10"
+        style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 relative group"
           style={{ background: 'rgba(255,170,0,0.1)', border: '1px solid rgba(255,170,0,0.3)' }}>
-          <Shield className="w-6 h-6" style={{ color: '#ffaa00' }} />
+          <div className="absolute inset-0 rounded-2xl bg-[#ffaa00] blur-md opacity-30"></div>
+          <Shield className="w-8 h-8 relative z-10" style={{ color: '#ffaa00' }} />
         </div>
         <div className="flex-1">
-          <p className="font-orbitron font-bold text-sm text-foreground">No License Connected</p>
-          <p className="font-inter text-xs text-muted-foreground mt-0.5">Log in via KeyAuth on the Chat page to view your subscription</p>
+          <p className="font-orbitron font-black text-lg text-white tracking-widest glow-cyan">NO LICENSE CONNECTED</p>
+          <p className="font-inter text-sm text-gray-400 mt-1 tracking-wide">Log in via KeyAuth on the Chat page to view your subscription</p>
         </div>
       </div>
     );
@@ -39,45 +40,50 @@ export default function DashboardLicenseCard() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl p-6"
-      style={{ background: 'linear-gradient(135deg, rgba(0,212,255,0.06), rgba(0,80,160,0.08))', border: '1px solid rgba(0,212,255,0.2)' }}>
-      <div className="flex items-center gap-4 mb-5">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'rgba(255,170,0,0.15)', border: '1px solid rgba(255,170,0,0.3)' }}>
-          <Crown className="w-7 h-7" style={{ color: '#ffaa00' }} />
+      className="rounded-[32px] p-8 liquid-glass border border-white/10 overflow-hidden relative"
+      style={{ boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }}>
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
+
+      <div className="flex items-center gap-5 mb-8 relative z-10">
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 relative group"
+          style={{ background: 'rgba(255,170,0,0.1)', border: '1px solid rgba(255,170,0,0.3)' }}>
+          <div className="absolute inset-0 rounded-2xl bg-[#ffaa00] blur-md opacity-30"></div>
+          <Crown className="w-8 h-8 relative z-10" style={{ color: '#ffaa00' }} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-orbitron font-black text-lg text-foreground tracking-wide">{info?.username}</p>
-          <p className="font-inter text-xs text-primary mt-0.5">{sub?.subscription || 'Member'}</p>
+          <p className="font-orbitron font-black text-2xl text-white tracking-wider glow-cyan truncate">{info?.username}</p>
+          <p className="font-inter text-sm text-[#00d4ff] mt-1 font-semibold">{sub?.subscription || 'Member'}</p>
         </div>
-        <span className={`font-inter text-xs px-2.5 py-1 rounded-full font-semibold flex-shrink-0 ${isExpired ? 'text-red-400' : 'text-green-400'}`}
+        <span className={`font-orbitron text-xs px-4 py-2 rounded-xl font-bold flex-shrink-0 tracking-widest ${isExpired ? 'text-red-400 shadow-[0_0_15px_rgba(255,80,80,0.4)]' : 'text-green-400 shadow-[0_0_15px_rgba(0,255,100,0.4)]'}`}
           style={{ background: isExpired ? 'rgba(255,80,80,0.1)' : 'rgba(0,255,100,0.1)', border: `1px solid ${isExpired ? 'rgba(255,80,80,0.3)' : 'rgba(0,255,100,0.3)'}` }}>
           {isExpired ? 'EXPIRED' : 'ACTIVE'}
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(0,15,35,0.5)', border: '1px solid rgba(0,212,255,0.08)' }}>
-          <Clock className="w-4 h-4 mx-auto mb-1" style={{ color: isExpired ? '#ff5050' : '#00ff64' }} />
-          <p className="font-orbitron font-black text-lg" style={{ color: isExpired ? '#ff5050' : '#00ff64' }}>{daysLeft ?? '—'}</p>
-          <p className="font-inter text-xs text-muted-foreground">Days Left</p>
+      <div className="grid grid-cols-3 gap-4 mb-6 relative z-10">
+        <div className="rounded-2xl p-4 text-center bg-black/40 border border-white/10 hover:border-[#00d4ff]/50 transition-colors">
+          <Clock className="w-5 h-5 mx-auto mb-2" style={{ color: isExpired ? '#ff5050' : '#00ff64' }} />
+          <p className="font-orbitron font-black text-2xl mb-1" style={{ color: isExpired ? '#ff5050' : '#00ff64', textShadow: `0 0 10px ${isExpired ? 'rgba(255,80,80,0.5)' : 'rgba(0,255,100,0.5)'}` }}>{daysLeft ?? '—'}</p>
+          <p className="font-inter text-xs text-gray-400 tracking-wide">Days Left</p>
         </div>
-        <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(0,15,35,0.5)', border: '1px solid rgba(0,212,255,0.08)' }}>
-          <Calendar className="w-4 h-4 mx-auto mb-1 text-primary" />
-          <p className="font-inter text-xs font-bold text-foreground mt-1.5">{expireDate.split(',')[0]}</p>
-          <p className="font-inter text-xs text-muted-foreground mt-0.5">Expires</p>
+        <div className="rounded-2xl p-4 text-center bg-black/40 border border-white/10 hover:border-[#00d4ff]/50 transition-colors">
+          <Calendar className="w-5 h-5 mx-auto mb-2 text-[#00d4ff]" />
+          <p className="font-inter text-sm font-bold text-white mt-2 mb-1 truncate">{expireDate.split(',')[0]}</p>
+          <p className="font-inter text-xs text-gray-400 tracking-wide">Expires</p>
         </div>
-        <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(0,15,35,0.5)', border: '1px solid rgba(0,212,255,0.08)' }}>
-          <Zap className="w-4 h-4 mx-auto mb-1 text-yellow-400" />
-          <p className="font-inter text-xs font-bold text-foreground mt-1.5">{sub?.subscription || 'N/A'}</p>
-          <p className="font-inter text-xs text-muted-foreground mt-0.5">Plan</p>
+        <div className="rounded-2xl p-4 text-center bg-black/40 border border-white/10 hover:border-[#00d4ff]/50 transition-colors">
+          <Zap className="w-5 h-5 mx-auto mb-2 text-yellow-400" />
+          <p className="font-inter text-sm font-bold text-white mt-2 mb-1 truncate">{sub?.subscription || 'N/A'}</p>
+          <p className="font-inter text-xs text-gray-400 tracking-wide">Plan</p>
         </div>
       </div>
 
       <button onClick={handleLogout}
-        className="w-full mt-4 flex items-center justify-center gap-2 py-2 rounded-xl font-inter text-xs text-red-400 hover:text-red-300 transition-colors"
-        style={{ border: '1px solid rgba(255,80,80,0.2)', background: 'rgba(255,80,80,0.05)' }}>
-        <LogOut className="w-3.5 h-3.5" /> Disconnect License
+        className="w-full relative z-10 flex items-center justify-center gap-3 py-3 rounded-xl font-orbitron font-bold text-sm tracking-widest transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group/btn overflow-hidden"
+        style={{ border: '1px solid rgba(255,80,80,0.3)', background: 'rgba(255,80,80,0.1)' }}>
+        <div className="absolute inset-0 bg-red-500/20 translate-y-full group-hover/btn:translate-y-0 transition-transform"></div>
+        <LogOut className="w-4 h-4 text-red-400 group-hover/btn:text-white transition-colors relative z-10" /> 
+        <span className="text-red-400 group-hover/btn:text-white transition-colors relative z-10">DISCONNECT LICENSE</span>
       </button>
     </motion.div>
   );

@@ -23,9 +23,9 @@ export default function Resellers() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden" style={{ background: 'var(--page-bg)' }}>
+    <div className="min-h-screen relative overflow-x-hidden liquid-bg text-white">
       <Navbar />
-      <div className="relative z-10 pt-28 pb-20 px-4 max-w-5xl mx-auto">
+      <div className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
         <AnimatePresence mode="wait">
           {!resellerUser ? (
             <motion.div key="login" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>

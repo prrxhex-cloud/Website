@@ -9,29 +9,72 @@
     <link rel="manifest" href="/manifest.json" />
     <title>PRRX HEX</title>
     <script>
-      // Global Anti-Tamper & Security Script
+      // ==========================================
+      // ADVANCED SECURITY & ANTI-TAMPER SYSTEM
+      // ==========================================
       (function() {
-        // Disable right click
-        document.addEventListener('contextmenu', event => event.preventDefault());
+        // 1. Disable Right Click & Selection
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('selectstart', e => e.preventDefault());
+        document.addEventListener('dragstart', e => e.preventDefault());
         
-        // Disable common developer tools keyboard shortcuts (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
-        document.onkeydown = function(e) {
-          if (e.keyCode == 123 || 
-             (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) ||
-             (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+        // 2. Block Keyboard Shortcuts (DevTools, Source, Save)
+        document.addEventListener('keydown', function(e) {
+          if (
+            e.keyCode === 123 || // F12
+            (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || // Ctrl+Shift+I/J/C
+            (e.ctrlKey && [85, 83].includes(e.keyCode)) || // Ctrl+U, Ctrl+S
+            (e.metaKey && e.altKey && [73, 74, 67].includes(e.keyCode)) // Mac equivalents
+          ) {
+            e.preventDefault();
             return false;
           }
-        };
+        });
 
-        // Basic debugger trap
-        setInterval(() => {
-          const before = new Date().getTime();
-          debugger;
-          const after = new Date().getTime();
-          if (after - before > 100) {
-            document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20vh;'>Security Violation Detected</h1>";
+        // 3. Aggressive Debugger Trap
+        const trap = function() {
+          while (true) {
+            debugger;
           }
-        }, 4000);
+        };
+        
+        // 4. Timing Analysis to Detect DevTools
+        setInterval(() => {
+          const t0 = performance.now();
+          debugger;
+          const t1 = performance.now();
+          if (t1 - t0 > 100) {
+            // DevTools is open and paused the debugger
+            document.body.innerHTML = `
+              <div style="height:100vh;display:flex;align-items:center;justify-content:center;background:#000;color:#ff0000;font-family:monospace;flex-direction:column;">
+                <h1>SECURITY VIOLATION DETECTED</h1>
+                <p>UNAUTHORIZED ACCESS ATTEMPT LOGGED.</p>
+              </div>
+            `;
+            trap();
+          }
+        }, 2000);
+
+        // 5. Console clearing loop to prevent console reading
+        setInterval(() => {
+          console.clear();
+          console.log("%cSTOP!", "color: red; font-size: 50px; font-weight: bold; text-shadow: 2px 2px 0 #000;");
+          console.log("%cThis is a restricted area. All actions are logged.", "color: white; font-size: 16px;");
+        }, 1000);
+
+        // 6. Detect Console opening via toString proxy
+        const re = /x/;
+        let isConsoleOpen = false;
+        re.toString = function() {
+          isConsoleOpen = true;
+          document.body.innerHTML = '';
+          window.location.replace("about:blank");
+          return '';
+        };
+        setInterval(() => {
+          console.debug(re);
+        }, 1000);
+
       })();
     </script>
   </head>
