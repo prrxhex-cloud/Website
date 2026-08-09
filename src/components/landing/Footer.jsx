@@ -38,7 +38,7 @@ export default function Footer() {
 
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold font-inter">
               <ShieldCheck className="w-4 h-4" />
-              <span>100% Safe Main ID · Anti-Cheat Bypass</span>
+              <span>100% Safe Main ID · Anti-Cheat Bypassed</span>
             </div>
           </div>
 
@@ -86,7 +86,7 @@ export default function Footer() {
                     Internal Panel
                   </div>
                   <div className="font-inter text-[10px] text-[var(--text-muted)] mt-0.5">
-                    Root / No-Root APK Injector
+                    Non Root Apk Injection
                   </div>
                 </button>
               </li>
@@ -100,7 +100,7 @@ export default function Footer() {
                     External Panel
                   </div>
                   <div className="font-inter text-[10px] text-[var(--text-muted)] mt-0.5">
-                    PC Gameloop / BlueStacks Bypass
+                    100% Safer Gameplay
                   </div>
                 </button>
               </li>
