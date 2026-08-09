@@ -54,7 +54,7 @@ export default function DownloadSection() {
                 </div>
                 <div>
                   <h3 className="font-outfit font-extrabold text-2xl text-[var(--text-heading)]">PRRX HEX VIP</h3>
-                  <p className="font-inter text-xs text-[#06b6d4] font-bold">Free Fire All Versions · Free Fire Bypass</p>
+                  <p className="font-inter text-xs text-[#06b6d4] font-bold">Free Fire All Versions</p>
                 </div>
               </div>
 
@@ -94,8 +94,8 @@ export default function DownloadSection() {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
           {[
-            { val: '12K+', label: 'Active Users' },
-            { val: 'V7A', label: 'Latest Build' },
+            { val: '1K+', label: 'Active Users' },
+            { val: 'OB46', label: 'Latest Build' },
             { val: '99.9%', label: 'Undetected Uptime' },
           ].map((s) => (
             <div key={s.label} className="clean-card p-6 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl text-center space-y-1 shadow-sm">

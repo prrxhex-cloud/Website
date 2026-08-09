@@ -204,7 +204,7 @@ export default function Prices() {
                     : 'text-[var(--text-primary)] hover:text-[var(--text-heading)]'
                 }`}
               >
-                <LayoutGrid className="w-4 h-4" /> External Panel (PC / Emulator)
+                <LayoutGrid className="w-4 h-4" /> External Panel (Free Fire All Versions)
               </button>
 
               <button
@@ -215,7 +215,7 @@ export default function Prices() {
                     : 'text-[var(--text-primary)] hover:text-[var(--text-heading)]'
                 }`}
               >
-                <Settings className="w-4 h-4" /> Internal Panel (Android APK)
+                <Settings className="w-4 h-4" /> Internal Panel (V7A)
               </button>
             </div>
           </div>
