@@ -108,21 +108,21 @@ export default function PricePlansTab() {
   const internal = plans.filter(p => p.panel_type === 'internal').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
   const PlanRow = ({ p }) => (
-    <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: 'rgba(0,15,35,0.8)', border: `1px solid ${p.panel_type === 'external' ? 'rgba(0,212,255,0.1)' : 'rgba(255,180,0,0.1)'}` }}>
+    <div className="flex items-center gap-3 p-3.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] transition-all">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-orbitron font-bold text-xs" style={{ color: p.panel_type === 'external' ? '#00d4ff' : '#ffb400' }}>{p.label}</span>
-          {p.popular && <span className="font-inter text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(0,212,255,0.1)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.2)', fontSize: '10px' }}>⭐ Popular</span>}
-          {p.crown && <span className="font-inter text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,180,0,0.1)', color: '#ffb400', border: '1px solid rgba(255,180,0,0.2)', fontSize: '10px' }}>👑 Best Value</span>}
+          <span className="font-outfit font-extrabold text-sm text-[var(--text-heading)]">{p.label}</span>
+          {p.popular && <span className="font-inter text-xs px-2 py-0.5 rounded-full bg-[#06b6d4]/15 text-[#06b6d4] border border-[#06b6d4]/30 font-bold text-[10px]">⭐ Popular</span>}
+          {p.crown && <span className="font-inter text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 border border-amber-500/30 font-bold text-[10px]">👑 Best Value</span>}
         </div>
-        <p className="font-inter text-xs text-muted-foreground">LKR {(p.lkr || 0).toLocaleString()} · {p.days}</p>
+        <p className="font-inter text-xs text-[var(--text-muted)] font-medium mt-0.5">LKR {(p.lkr || 0).toLocaleString()} · {p.days}</p>
       </div>
       <div className="flex gap-1 flex-shrink-0">
-        <button onClick={() => setForm({ ...p })} className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-primary transition-colors">
-          <DollarSign className="w-3.5 h-3.5" />
+        <button onClick={() => setForm({ ...p })} className="p-2 rounded-lg hover:bg-[var(--bg-card-hover)] text-[var(--text-muted)] hover:text-[#06b6d4] transition-colors">
+          <DollarSign className="w-4 h-4" />
         </button>
-        <button onClick={() => remove(p.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors">
-          <Trash2 className="w-3.5 h-3.5" />
+        <button onClick={() => remove(p.id)} className="p-2 rounded-lg hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-500 transition-colors">
+          <Trash2 className="w-4 h-4" />
         </button>
       </div>
     </div>

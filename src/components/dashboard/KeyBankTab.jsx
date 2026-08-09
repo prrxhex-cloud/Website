@@ -168,24 +168,24 @@ export default function KeyBankTab() {
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-12 h-12 border-4 border-[#00d4ff]/30 border-t-[#00d4ff] rounded-full animate-spin glow-cyan" />
+          <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin" />
         </div>
       ) : (
-        <div className="rounded-[32px] overflow-hidden bg-black/40 border border-white/10">
-          <div className="px-6 py-5 border-b border-white/5 flex items-center gap-3 bg-white/5">
-            <Key className="w-5 h-5 text-white/50" />
-            <p className="font-orbitron font-bold text-sm tracking-widest text-white/70">VAULT LEDGER</p>
+        <div className="rounded-3xl overflow-hidden bg-[var(--bg-subtle)] border border-[var(--border-color)]">
+          <div className="px-6 py-4 border-b border-[var(--border-color)] flex items-center gap-3 bg-[var(--bg-card)]">
+            <Key className="w-5 h-5 text-[#06b6d4]" />
+            <p className="font-orbitron font-bold text-xs tracking-widest text-[var(--text-heading)]">VAULT LEDGER</p>
           </div>
-          <div className="max-h-[500px] overflow-y-auto custom-scrollbar divide-y divide-white/5">
+          <div className="max-h-[500px] overflow-y-auto custom-scrollbar divide-y divide-[var(--border-color)]">
             {keys.map(k => (
-              <div key={k.id} className="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors group">
+              <div key={k.id} className="flex items-center gap-4 px-6 py-4 hover:bg-[var(--bg-card-hover)] transition-colors group">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${STATUS_COLOR[k.status]}15`, border: `1px solid ${STATUS_COLOR[k.status]}30` }}>
                   <Key className="w-5 h-5" style={{ color: STATUS_COLOR[k.status] }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-orbitron font-bold text-sm truncate" style={{ color: STATUS_COLOR[k.status], textShadow: `0 0 10px ${STATUS_COLOR[k.status]}50` }}>{k.key}</p>
-                  <p className="font-inter text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
-                    {k.product_type} <span className="mx-1 text-gray-700">|</span> {k.duration?.replace('_', ' ')}
+                  <p className="font-orbitron font-bold text-sm truncate" style={{ color: STATUS_COLOR[k.status] }}>{k.key}</p>
+                  <p className="font-inter text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mt-1">
+                    {k.product_type} <span className="mx-1 opacity-50">|</span> {k.duration?.replace('_', ' ')}
                   </p>
                 </div>
                 <span className="font-orbitron font-bold text-[10px] px-3 py-1.5 rounded-full uppercase tracking-widest flex-shrink-0" 
@@ -194,13 +194,13 @@ export default function KeyBankTab() {
                 </span>
                 {k.status === 'available' && (
                   <button onClick={() => remove(k.id)} 
-                    className="p-2.5 rounded-xl hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-colors border border-transparent hover:border-red-500/20 opacity-0 group-hover:opacity-100 flex-shrink-0">
+                    className="p-2.5 rounded-xl hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-500 transition-colors border border-transparent hover:border-rose-500/20 opacity-0 group-hover:opacity-100 flex-shrink-0">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
             ))}
-            {keys.length === 0 && <div className="p-12 text-center font-orbitron font-bold text-sm tracking-widest text-gray-600">VAULT IS EMPTY</div>}
+            {keys.length === 0 && <div className="p-12 text-center font-orbitron font-bold text-xs tracking-widest text-[var(--text-muted)]">VAULT IS EMPTY</div>}
           </div>
         </div>
       )}

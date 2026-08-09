@@ -1,13 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Download, Eye, ShieldCheck, Crosshair, Star, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import DownloadModal from '@/components/landing/DownloadModal';
 import logoImg from '@/assets/logo.jpeg';
+import heroBooyahImg from '@/assets/hero_booyah.png';
 
 export default function HeroSection() {
   const navigate = useNavigate();
   const [showDownload, setShowDownload] = useState(false);
+  const [heroHudUrl, setHeroHudUrl] = useState(() => {
+    return localStorage.getItem('prrx_hero_hud_url') || '';
+  });
+
+  useEffect(() => {
+    const fetchHeroHud = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'public_settings', 'panel_images'));
+        if (snap.exists() && snap.data().hero_hud_url) {
+          const url = snap.data().hero_hud_url;
+          setHeroHudUrl(url);
+          localStorage.setItem('prrx_hero_hud_url', url);
+        }
+      } catch (err) {
+        console.error('Error fetching hero HUD image:', err);
+      }
+    };
+    fetchHeroHud();
+  }, []);
 
   return (
     <section className="relative pt-12 pb-20 overflow-hidden font-inter transition-colors duration-300">
@@ -113,20 +135,19 @@ export default function HeroSection() {
                   </span>
                 </div>
 
-                {/* Simulated HUD graphic */}
-                <div className="bg-slate-950 rounded-xl p-4 text-white space-y-4 relative overflow-hidden border border-slate-800 shadow-inner">
+                {/* Simulated HUD graphic / Booyah Image */}
+                <div className="bg-slate-950 rounded-xl p-3 text-white space-y-3 relative overflow-hidden border border-slate-800 shadow-inner">
                   <div className="flex items-center justify-between text-xs font-mono text-cyan-400">
                     <span>TARGET LOCK: ACTIVE</span>
                     <span>FOV: 360°</span>
                   </div>
 
-                  <div className="py-6 text-center space-y-2 border border-cyan-500/30 rounded-lg bg-cyan-950/30">
-                    <div className="inline-block p-3 rounded-full border-2 border-cyan-400 text-cyan-400 animate-pulse shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-                      <Crosshair className="w-8 h-8" />
-                    </div>
-                    <div className="font-outfit font-black text-sm tracking-widest text-cyan-300">
-                      HEADSHOT 100% (450m)
-                    </div>
+                  <div className="rounded-lg overflow-hidden border border-cyan-500/30 shadow-md aspect-video relative group">
+                    <img 
+                      src={heroHudUrl || heroBooyahImg} 
+                      alt="Hero Gameplay Preview" 
+                      className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-500" 
+                    />
                   </div>
 
                   <div className="space-y-2 text-xs">

@@ -2,25 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
-import { Image as ImageIcon, Upload, RefreshCw, Link } from 'lucide-react';
+import { Image as ImageIcon, Upload, RefreshCw, Link, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function PanelImagesTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [images, setImages] = useState({ external_image_url: '', internal_image_url: '' });
+  const [images, setImages] = useState({
+    external_image_url: '',
+    internal_image_url: '',
+    hero_hud_url: ''
+  });
 
   const [externalFile, setExternalFile] = useState(null);
   const [internalFile, setInternalFile] = useState(null);
+  const [heroHudFile, setHeroHudFile] = useState(null);
 
   const loadSettings = async () => {
     setLoading(true);
     try {
       const snap = await getDoc(doc(db, 'public_settings', 'panel_images'));
       if (snap.exists()) {
+        const data = snap.data();
         setImages({
-          external_image_url: snap.data().external_image_url || '',
-          internal_image_url: snap.data().internal_image_url || ''
+          external_image_url: data.external_image_url || '',
+          internal_image_url: data.internal_image_url || '',
+          hero_hud_url: data.hero_hud_url || ''
         });
       }
     } catch (e) {
@@ -37,6 +44,7 @@ export default function PanelImagesTab() {
     try {
       let extUrl = images.external_image_url;
       let intUrl = images.internal_image_url;
+      let heroUrl = images.hero_hud_url;
 
       // Handle External File Upload
       if (externalFile) {
@@ -52,17 +60,26 @@ export default function PanelImagesTab() {
         intUrl = await getDownloadURL(intRef);
       }
 
+      // Handle Hero HUD File Upload
+      if (heroHudFile) {
+        const heroRef = ref(storage, `panel_images/hero_hud_${Date.now()}_${heroHudFile.name}`);
+        await uploadBytes(heroRef, heroHudFile);
+        heroUrl = await getDownloadURL(heroRef);
+      }
+
       // Save to Firestore
       await setDoc(doc(db, 'public_settings', 'panel_images'), {
         external_image_url: extUrl,
         internal_image_url: intUrl,
+        hero_hud_url: heroUrl,
         updated_at: new Date().toISOString()
       }, { merge: true });
 
-      setImages({ external_image_url: extUrl, internal_image_url: intUrl });
+      setImages({ external_image_url: extUrl, internal_image_url: intUrl, hero_hud_url: heroUrl });
       setExternalFile(null);
       setInternalFile(null);
-      toast.success('Panel images updated successfully!');
+      setHeroHudFile(null);
+      toast.success('Site & Panel images updated successfully!');
     } catch (e) {
       console.error(e);
       toast.error('Failed to update panel images');
@@ -75,24 +92,68 @@ export default function PanelImagesTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-left">
       <div className="rounded-xl p-5" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-orbitron font-bold text-lg text-primary tracking-wider flex items-center gap-2">
-            <ImageIcon className="w-5 h-5" /> PANEL IMAGES
+            <ImageIcon className="w-5 h-5" /> SITE & PANEL IMAGES
           </h3>
           <button onClick={loadSettings} className="text-muted-foreground hover:text-white transition-colors">
             <RefreshCw className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           
+          {/* HERO HUD PREVIEW IMAGE */}
+          <div className="space-y-4 p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(0,212,255,0.2)' }}>
+            <h4 className="font-orbitron font-bold text-sm tracking-widest text-[#06b6d4] flex items-center gap-2">
+              <Sparkles className="w-4 h-4" /> HERO HUD GAMEPLAY IMAGE
+            </h4>
+            
+            <div className="w-full aspect-video rounded-lg overflow-hidden flex items-center justify-center" 
+              style={{ background: 'rgba(0,0,0,0.5)', border: '1px dashed rgba(0,212,255,0.3)' }}>
+              {(heroHudFile || images.hero_hud_url) ? (
+                <img 
+                  src={heroHudFile ? URL.createObjectURL(heroHudFile) : images.hero_hud_url} 
+                  className="w-full h-full object-cover" 
+                  alt="Hero HUD Preview" 
+                />
+              ) : (
+                <span className="text-muted-foreground text-xs font-inter">Default (Screenshot 1) Active</span>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-muted-foreground font-inter flex items-center gap-1.5 mb-1.5"><Link className="w-3.5 h-3.5"/> Direct Image URL</label>
+                <input 
+                  type="text" 
+                  value={images.hero_hud_url} 
+                  onChange={e => setImages({...images, hero_hud_url: e.target.value})}
+                  disabled={!!heroHudFile}
+                  placeholder="https://example.com/image.png"
+                  className="w-full px-3 py-2 rounded-lg font-inter text-sm outline-none transition-all disabled:opacity-50 text-white"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                />
+              </div>
+              <div className="text-center text-xs text-muted-foreground">OR</div>
+              <div>
+                <label className="text-xs text-muted-foreground font-inter flex items-center gap-1.5 mb-1.5"><Upload className="w-3.5 h-3.5"/> Upload New Image</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={e => setHeroHudFile(e.target.files[0])}
+                  className="w-full font-inter text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* EXTERNAL PANEL CONFIG */}
           <div className="space-y-4 p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(0,212,255,0.05)' }}>
             <h4 className="font-orbitron font-bold text-sm tracking-widest text-white">EXTERNAL PANEL IMAGE</h4>
             
-            {/* Current Image Preview */}
             <div className="w-full aspect-video rounded-lg overflow-hidden flex items-center justify-center" 
               style={{ background: 'rgba(0,0,0,0.5)', border: '1px dashed rgba(0,212,255,0.2)' }}>
               {(externalFile || images.external_image_url) ? (
@@ -115,7 +176,7 @@ export default function PanelImagesTab() {
                   onChange={e => setImages({...images, external_image_url: e.target.value})}
                   disabled={!!externalFile}
                   placeholder="https://example.com/image.png"
-                  className="w-full px-3 py-2 rounded-lg font-inter text-sm outline-none transition-all disabled:opacity-50"
+                  className="w-full px-3 py-2 rounded-lg font-inter text-sm outline-none transition-all disabled:opacity-50 text-white"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
                 />
               </div>
@@ -136,7 +197,6 @@ export default function PanelImagesTab() {
           <div className="space-y-4 p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(170,68,255,0.05)' }}>
             <h4 className="font-orbitron font-bold text-sm tracking-widest text-white">INTERNAL PANEL IMAGE</h4>
             
-            {/* Current Image Preview */}
             <div className="w-full aspect-video rounded-lg overflow-hidden flex items-center justify-center" 
               style={{ background: 'rgba(0,0,0,0.5)', border: '1px dashed rgba(170,68,255,0.2)' }}>
               {(internalFile || images.internal_image_url) ? (
@@ -159,7 +219,7 @@ export default function PanelImagesTab() {
                   onChange={e => setImages({...images, internal_image_url: e.target.value})}
                   disabled={!!internalFile}
                   placeholder="https://example.com/image.png"
-                  className="w-full px-3 py-2 rounded-lg font-inter text-sm outline-none transition-all disabled:opacity-50"
+                  className="w-full px-3 py-2 rounded-lg font-inter text-sm outline-none transition-all disabled:opacity-50 text-white"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
                 />
               </div>
@@ -186,7 +246,7 @@ export default function PanelImagesTab() {
             style={{ background: 'rgba(0,212,255,0.15)', border: '1px solid rgba(0,212,255,0.3)', color: '#00d4ff' }}
           >
             {saving && <div className="w-4 h-4 border-2 border-primary/50 border-t-primary rounded-full animate-spin" />}
-            SAVE CHANGES
+            SAVE ALL CHANGES
           </button>
         </div>
 
