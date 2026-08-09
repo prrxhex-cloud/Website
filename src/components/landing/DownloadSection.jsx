@@ -8,12 +8,11 @@ const FALLBACK_EXTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main
 const FALLBACK_INTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
 
 const features = [
-  'Silent Aim + Aimbot Range',
-  'Teleport V2 + Fly Hack',
-  'Auto Spawn Kill',
-  'ESP Menu + Speed Hack',
-  'Version Hack Included',
-  '3 Min Timer System',
+  '100% Safer Aimbots',
+  'All Esp And And Chams Features',
+  'Miscs',
+  'Keybinds',
+  'Security',
 ];
 
 export default function DownloadSection() {
@@ -36,7 +35,7 @@ export default function DownloadSection() {
     <section id="download" className="py-20 bg-[var(--bg-main)] border-b border-[var(--border-color)] font-inter text-[var(--text-primary)] transition-colors duration-300">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
         <ScrollReveal variant="zoomIn" className="text-center mb-12 space-y-2">
-          <div className="sub-heading">PREMIUM RELEASE — BETA X V7A</div>
+          <div className="sub-heading">PREMIUM RELEASE — Free Fire All Versions</div>
           <h2 className="font-outfit font-extrabold text-3xl sm:text-5xl text-[var(--text-heading)] tracking-tight">
             DOWNLOAD <span className="text-[#06b6d4]">PRRX PANELS</span>
           </h2>
@@ -55,7 +54,7 @@ export default function DownloadSection() {
                 </div>
                 <div>
                   <h3 className="font-outfit font-extrabold text-2xl text-[var(--text-heading)]">PRRX HEX VIP</h3>
-                  <p className="font-inter text-xs text-[#06b6d4] font-bold">Beta X V7A · Free Fire Bypass</p>
+                  <p className="font-inter text-xs text-[#06b6d4] font-bold">Free Fire All Versions · Free Fire Bypass</p>
                 </div>
               </div>
 

@@ -7,7 +7,7 @@ import ScrollReveal from '@/components/effects/ScrollReveal';
 
 export default function FunctionsSection() {
   const location = useLocation();
-  const [activePanel, setActivePanel] = useState(location.state?.tab || 'internal');
+  const [activePanel, setActivePanel] = useState(location.state?.tab || 'external');
   const [selectedImage, setSelectedImage] = useState(null);
 
   const [images, setImages] = useState(() => {
@@ -20,6 +20,17 @@ export default function FunctionsSection() {
   const [panelImages, setPanelImages] = useState(() => {
     const cached = localStorage.getItem('prrx_panel_images');
     return cached ? JSON.parse(cached) : { external_image_url: '', internal_image_url: '' };
+  });
+
+  const [meta, setMeta] = useState(() => {
+    const cached = localStorage.getItem('prrx_functions_meta');
+    return cached ? JSON.parse(cached) : {
+      external_toggles: '59',
+      internal_toggles: '51',
+      categories_count: '6',
+      external_description: 'External memory-safe overlay with smooth aim assistance, radar ESP, and 120FPS bypass capabilities.',
+      internal_description: 'Advanced in-game injection overlay features: Headshot Aimbot, ESP Skeleton, Color Chams, and Custom Hotkeys.'
+    };
   });
 
   useEffect(() => {
@@ -38,6 +49,10 @@ export default function FunctionsSection() {
           };
           setImages(newImages);
           localStorage.setItem('prrx_functions_screenshots', JSON.stringify(newImages));
+          if (data.meta) {
+            setMeta(data.meta);
+            localStorage.setItem('prrx_functions_meta', JSON.stringify(data.meta));
+          }
         }
         
         const panelSnap = await getDoc(doc(db, 'public_settings', 'panel_images'));
@@ -102,19 +117,21 @@ export default function FunctionsSection() {
                 {isInternal ? 'Internal Panel Suite' : 'External Overlay Panel'}
               </h2>
               <p className="font-inter text-[var(--text-muted)] text-sm max-w-xl mt-2 leading-relaxed">
-                {isInternal 
-                  ? 'Advanced in-game injection overlay features: Headshot Aimbot, ESP Skeleton, Color Chams, and Custom Hotkeys.'
-                  : 'External memory-safe overlay with smooth aim assistance, radar ESP, and 120FPS bypass capabilities.'}
+                {isInternal ? meta.internal_description : meta.external_description}
               </p>
             </div>
 
             <div className="flex gap-8 border-l border-[var(--border-color)] pl-8">
               <div>
-                <div className="font-outfit font-extrabold text-4xl text-[#06b6d4]">{isInternal ? '51' : '59'}</div>
+                <div className="font-outfit font-extrabold text-4xl text-[#06b6d4]">
+                  {isInternal ? meta.internal_toggles : meta.external_toggles}
+                </div>
                 <div className="font-inter text-xs text-[var(--text-muted)] font-medium">Total Toggles</div>
               </div>
               <div>
-                <div className="font-outfit font-extrabold text-4xl text-[var(--text-heading)]">6</div>
+                <div className="font-outfit font-extrabold text-4xl text-[var(--text-heading)]">
+                  {meta.categories_count || '6'}
+                </div>
                 <div className="font-inter text-xs text-[var(--text-muted)] font-medium font-inter">Categories</div>
               </div>
             </div>

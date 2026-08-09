@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
-import { LayoutGrid, Upload, RefreshCw, Link } from 'lucide-react';
+import { LayoutGrid, Upload, RefreshCw, Link, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const CATEGORIES = [
@@ -17,11 +17,19 @@ const CATEGORIES = [
 export default function FunctionsScreenshotsTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activePanel, setActivePanel] = useState('internal'); // internal | external
+  const [activePanel, setActivePanel] = useState('external'); // external | internal
 
   const [images, setImages] = useState({
     internal_screenshots: { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
     external_screenshots: { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
+  });
+
+  const [meta, setMeta] = useState({
+    external_toggles: '59',
+    internal_toggles: '51',
+    categories_count: '6',
+    external_description: 'External memory-safe overlay with smooth aim assistance, radar ESP, and 120FPS bypass capabilities.',
+    internal_description: 'Advanced in-game injection overlay features: Headshot Aimbot, ESP Skeleton, Color Chams, and Custom Hotkeys.'
   });
 
   const [files, setFiles] = useState({
@@ -39,6 +47,9 @@ export default function FunctionsScreenshotsTab() {
           internal_screenshots: data.internal_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
           external_screenshots: data.external_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
         });
+        if (data.meta) {
+          setMeta(prev => ({ ...prev, ...data.meta }));
+        }
       }
     } catch (e) {
       console.error(e);
@@ -74,7 +85,6 @@ export default function FunctionsScreenshotsTab() {
     try {
       let updatedImages = { ...images };
 
-      // Helper function to upload and update url
       const uploadCategoryFiles = async (panel) => {
         const panelFiles = files[panel];
         for (const cat of CATEGORIES) {
@@ -95,15 +105,16 @@ export default function FunctionsScreenshotsTab() {
       await setDoc(doc(db, 'public_settings', 'functions_screenshots'), {
         internal_screenshots: updatedImages.internal_screenshots,
         external_screenshots: updatedImages.external_screenshots,
+        meta: meta,
         updated_at: new Date().toISOString()
       }, { merge: true });
 
       setImages(updatedImages);
       setFiles({ internal: {}, external: {} });
-      toast.success('Functions screenshots updated successfully!');
+      toast.success('Functions screenshots & statistics updated successfully!');
     } catch (e) {
       console.error(e);
-      toast.error('Failed to update screenshots');
+      toast.error('Failed to update settings');
     }
     setSaving(false);
   };
@@ -117,30 +128,77 @@ export default function FunctionsScreenshotsTab() {
   const currentFiles = files[activePanel];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-left">
       <div className="rounded-xl p-5" style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-orbitron font-bold text-lg text-primary tracking-wider flex items-center gap-2">
-            <LayoutGrid className="w-5 h-5" /> FUNCTIONS SCREENSHOTS
+            <LayoutGrid className="w-5 h-5" /> FUNCTIONS CONFIG & SCREENSHOTS
           </h3>
           <button onClick={loadSettings} className="text-muted-foreground hover:text-white transition-colors">
             <RefreshCw className="w-5 h-5" />
           </button>
         </div>
 
+        {/* Editable Stats & Descriptions Section */}
+        <div className="p-4 rounded-xl mb-6 space-y-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(0,212,255,0.1)' }}>
+          <h4 className="font-orbitron font-bold text-sm tracking-widest text-[#06b6d4] flex items-center gap-2">
+            <Edit3 className="w-4 h-4" /> EDIT STATS & HERO DESCRIPTIONS
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs text-muted-foreground font-inter block mb-1">External Total Toggles</label>
+              <input
+                type="text"
+                value={meta.external_toggles}
+                onChange={e => setMeta({ ...meta, external_toggles: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg font-inter text-sm outline-none text-white bg-slate-900 border border-white/10"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground font-inter block mb-1">Internal Total Toggles</label>
+              <input
+                type="text"
+                value={meta.internal_toggles}
+                onChange={e => setMeta({ ...meta, internal_toggles: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg font-inter text-sm outline-none text-white bg-slate-900 border border-white/10"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground font-inter block mb-1">Total Categories</label>
+              <input
+                type="text"
+                value={meta.categories_count}
+                onChange={e => setMeta({ ...meta, categories_count: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg font-inter text-sm outline-none text-white bg-slate-900 border border-white/10"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div>
+              <label className="text-xs text-muted-foreground font-inter block mb-1">External Description</label>
+              <textarea
+                value={meta.external_description}
+                onChange={e => setMeta({ ...meta, external_description: e.target.value })}
+                rows={2}
+                className="w-full px-3 py-2 rounded-lg font-inter text-xs outline-none text-white bg-slate-900 border border-white/10 resize-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground font-inter block mb-1">Internal Description</label>
+              <textarea
+                value={meta.internal_description}
+                onChange={e => setMeta({ ...meta, internal_description: e.target.value })}
+                rows={2}
+                className="w-full px-3 py-2 rounded-lg font-inter text-xs outline-none text-white bg-slate-900 border border-white/10 resize-none"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Panel Switcher */}
         <div className="flex gap-2 mb-6">
-          <button 
-            onClick={() => setActivePanel('internal')}
-            className="px-6 py-2 rounded-lg font-orbitron font-bold text-xs tracking-wider transition-all"
-            style={{
-              background: activePanel === 'internal' ? 'rgba(170,68,255,0.2)' : 'rgba(255,255,255,0.05)',
-              border: activePanel === 'internal' ? '1px solid rgba(170,68,255,0.5)' : '1px solid transparent',
-              color: activePanel === 'internal' ? '#aa44ff' : 'rgba(255,255,255,0.5)'
-            }}
-          >
-            INTERNAL PANEL
-          </button>
           <button 
             onClick={() => setActivePanel('external')}
             className="px-6 py-2 rounded-lg font-orbitron font-bold text-xs tracking-wider transition-all"
@@ -151,6 +209,18 @@ export default function FunctionsScreenshotsTab() {
             }}
           >
             EXTERNAL PANEL
+          </button>
+
+          <button 
+            onClick={() => setActivePanel('internal')}
+            className="px-6 py-2 rounded-lg font-orbitron font-bold text-xs tracking-wider transition-all"
+            style={{
+              background: activePanel === 'internal' ? 'rgba(170,68,255,0.2)' : 'rgba(255,255,255,0.05)',
+              border: activePanel === 'internal' ? '1px solid rgba(170,68,255,0.5)' : '1px solid transparent',
+              color: activePanel === 'internal' ? '#aa44ff' : 'rgba(255,255,255,0.5)'
+            }}
+          >
+            INTERNAL PANEL
           </button>
         </div>
 

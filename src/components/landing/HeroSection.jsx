@@ -25,7 +25,7 @@ export default function HeroSection() {
             <div className="flex flex-wrap items-center gap-3">
               <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-full shadow-md text-xs font-semibold">
                 <span className="pulse-dot green" />
-                <span className="text-[var(--text-primary)]">100% Undetected Garena Anti-Cheat Bypass</span>
+                <span className="text-[var(--text-primary)]">100% Undetected Garena Anti-Cheat Bypassed</span>
                 <span className="bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded">
                   v5.8 Active
                 </span>
