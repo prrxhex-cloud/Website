@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
-import { Bell, Check, Link2, MessageCircle } from 'lucide-react';
+import { Bell, Check, Link2, MessageCircle, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { clearDiscordConfigCache } from '@/utils/discordNotifier';
 
