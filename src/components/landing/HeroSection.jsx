@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Download, Eye, ShieldCheck, Crosshair, Star, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { getFormattedPrices } from '@/lib/currency';
 import DownloadModal from '@/components/landing/DownloadModal';
 import logoImg from '@/assets/logo.jpeg';
 import heroBooyahImg from '@/assets/hero_booyah.png';
@@ -13,6 +14,18 @@ export default function HeroSection() {
   const [showDownload, setShowDownload] = useState(false);
   const [heroHudUrl, setHeroHudUrl] = useState(() => {
     return localStorage.getItem('prrx_hero_hud_url') || '';
+  });
+
+  const [dayPriceUsd, setDayPriceUsd] = useState(() => {
+    const cached = localStorage.getItem('prrx_cached_plans');
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        const ext1Day = parsed.external?.find(p => p.label?.toLowerCase() === '1 day') || parsed.external?.[0];
+        if (ext1Day?.lkr) return getFormattedPrices(ext1Day.lkr).usd;
+      } catch (e) {}
+    }
+    return '$0.49';
   });
 
   useEffect(() => {
@@ -28,7 +41,24 @@ export default function HeroSection() {
         console.error('Error fetching hero HUD image:', err);
       }
     };
+
+    const fetchDayPrice = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'price_plans'));
+        if (!snap.empty) {
+          const plans = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const oneDayPlan = plans.find(p => p.label?.toLowerCase() === '1 day' || p.days?.toLowerCase()?.includes('1 day')) || plans[0];
+          if (oneDayPlan?.lkr) {
+            setDayPriceUsd(getFormattedPrices(oneDayPlan.lkr).usd);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching 1 Day price plan:', err);
+      }
+    };
+
     fetchHeroHud();
+    fetchDayPrice();
   }, []);
 
   return (
@@ -163,7 +193,7 @@ export default function HeroSection() {
 
                 <div className="flex items-center justify-between pt-2">
                   <span className="font-inter text-xs text-[var(--text-muted)] font-medium">Instant Activation</span>
-                  <span className="font-outfit font-extrabold text-lg text-[var(--text-heading)]">$4.99 / Day</span>
+                  <span className="font-outfit font-extrabold text-lg text-[var(--text-heading)]">{dayPriceUsd} / Day</span>
                 </div>
               </motion.div>
 
