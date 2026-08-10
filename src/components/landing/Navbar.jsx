@@ -94,60 +94,90 @@ export default function Navbar() {
             {/* Buy VIP Key CTA */}
             <button
               onClick={() => navigate('/prices')}
-              className="btn-primary-cyan btn-glow px-4 py-2 font-inter font-bold text-xs flex items-center gap-2 shadow-md"
+              className="btn-primary-cyan btn-glow px-3 sm:px-4 py-2 font-inter font-bold text-xs flex items-center gap-1.5 shadow-md whitespace-nowrap"
             >
-              <ShieldCheck className="w-4 h-4" />
-              <span>Buy VIP Key</span>
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span className="hidden xs:inline">Buy VIP Key</span>
+              <span className="xs:hidden">VIP</span>
             </button>
 
-            {/* Simplified Dropdown Menu Button (Photo 1 Style: ≡ Menu v) */}
-            <div className="relative">
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="px-3.5 py-2 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-heading)] font-outfit font-bold text-xs flex items-center gap-2 hover:border-[#06b6d4] transition-all shadow-sm"
-              >
-                {menuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4 text-[#06b6d4]" />}
-                <span>Menu</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Simplified Menu Dropdown Drawer */}
-              <AnimatePresence>
-                {menuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 top-12 w-64 p-2 rounded-2xl bg-[var(--bg-glass-card)] backdrop-blur-2xl border border-[var(--border-color)] shadow-2xl z-50 space-y-1 text-left"
-                  >
-                    {navLinks.map((item) => (
-                      <button
-                        key={item.label}
-                        onClick={() => handleNav(item.path)}
-                        className={`w-full font-inter font-semibold text-xs px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all ${
-                          isActive(item.path)
-                            ? 'bg-[#06b6d4]/15 text-[#06b6d4] font-bold'
-                            : 'text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-heading)]'
-                        }`}
-                      >
-                        <span>{item.label}</span>
-                        {item.badge && (
-                          <span 
-                            className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase text-white"
-                            style={{ backgroundColor: item.badgeColor }}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
+            {/* Dropdown / Mobile Menu Drawer Toggle Button */}
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="px-3 py-2 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-heading)] font-outfit font-bold text-xs flex items-center gap-1.5 hover:border-[#06b6d4] transition-all shadow-sm shrink-0"
+              aria-label="Toggle Menu"
+            >
+              {menuOpen ? <X className="w-4 h-4 text-rose-400" /> : <Menu className="w-4 h-4 text-[#06b6d4]" />}
+              <span className="hidden sm:inline">Menu</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
+            </button>
           </div>
         </div>
+
+        {/* Responsive Mobile / Desktop Navigation Overlay & Drawer */}
+        <AnimatePresence>
+          {menuOpen && (
+            <>
+              {/* Tap Outside Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMenuOpen(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              />
+
+              {/* Menu Drawer */}
+              <motion.div
+                initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="absolute right-2 sm:right-6 top-16 w-[calc(100vw-1rem)] sm:w-80 p-3 rounded-2xl bg-[var(--bg-glass-card)] backdrop-blur-2xl border border-[var(--border-color)] shadow-2xl z-50 text-left space-y-1 max-h-[80vh] overflow-y-auto custom-scrollbar"
+              >
+                <div className="px-3 py-2 mb-1 border-b border-[var(--border-color)] flex items-center justify-between">
+                  <span className="text-[10px] font-outfit font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
+                  <div className="flex items-center gap-2 sm:hidden">
+                    <button
+                      onClick={toggleTheme}
+                      className="p-1.5 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
+                    >
+                      {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-600" />}
+                    </button>
+                    <button
+                      onClick={toggleSound}
+                      className="p-1.5 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
+                    >
+                      {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-[#06b6d4]" /> : <VolumeX className="w-3.5 h-3.5 opacity-50" />}
+                    </button>
+                  </div>
+                </div>
+
+                {navLinks.map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => handleNav(item.path)}
+                    className={`w-full font-inter font-semibold text-xs px-3.5 py-3 rounded-xl flex items-center justify-between transition-all min-h-[44px] ${
+                      isActive(item.path)
+                        ? 'bg-[#06b6d4]/15 text-[#06b6d4] font-bold border border-[#06b6d4]/30'
+                        : 'text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-heading)]'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span 
+                        className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase text-white"
+                        style={{ backgroundColor: item.badgeColor }}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </header>
     </div>
   );

@@ -531,10 +531,10 @@ function AdminPanel({ adminUser, onLogout }) {
       </div>
 
       {/* Top Level Mode Selector */}
-      <div className="flex justify-center gap-4 mb-4">
+      <div className="flex flex-col sm:flex-row justify-center gap-2.5 sm:gap-4 mb-4 w-full">
         <button 
           onClick={() => setMode('website')}
-          className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-sm tracking-wider transition-all ${
+          className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 rounded-xl font-outfit font-bold text-xs sm:text-sm tracking-wider transition-all justify-center flex items-center ${
             mode === 'website' 
               ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]' 
               : 'text-slate-400 bg-slate-900 border border-slate-800 hover:text-white'
@@ -543,26 +543,26 @@ function AdminPanel({ adminUser, onLogout }) {
         </button>
         <button 
           onClick={() => setMode('bot')}
-          className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-sm tracking-wider transition-all flex items-center gap-2 ${
+          className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 rounded-xl font-outfit font-bold text-xs sm:text-sm tracking-wider transition-all flex items-center justify-center gap-2 ${
             mode === 'bot' 
               ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]' 
               : 'text-slate-400 bg-slate-900 border border-slate-800 hover:text-white'
           }`}>
-          <Bell className="w-4 h-4" /> DISCORD BOT MANAGEMENT
+          <Bell className="w-4 h-4 shrink-0" /> DISCORD BOT MANAGEMENT
         </button>
       </div>
 
       {mode === 'website' ? (
         <>
-          {/* Tabs - scrollable */}
-          <div className="overflow-x-auto pb-2 custom-scrollbar">
-            <div className="flex gap-2 p-1.5 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] min-w-max shadow-sm">
+          {/* Tabs - Touch Scrollable with Snap */}
+          <div className="overflow-x-auto pb-2 custom-scrollbar touch-scroll max-w-full">
+            <div className="flex gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] min-w-max shadow-sm">
           {tabs.map(t => {
             const Icon = t.icon;
             const isActive = tab === t.key;
             return (
               <button key={t.key} onClick={() => handleTabChange(t.key)}
-                className={`flex items-center justify-center gap-2 py-2 px-3.5 rounded-xl font-outfit text-xs font-bold transition-all whitespace-nowrap ${
+                className={`touch-scroll-item flex items-center justify-center gap-1.5 sm:gap-2 py-2 px-3 sm:px-3.5 rounded-xl font-outfit text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap min-h-[38px] ${
                   isActive 
                     ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-sm' 
                     : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--bg-card-hover)]'
@@ -575,8 +575,8 @@ function AdminPanel({ adminUser, onLogout }) {
         </div>
       </div>
 
-      {/* Content - Instant Keep-Alive rendering */}
-      <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl p-6 sm:p-8" style={{ minHeight: '550px' }}>
+      {/* Content - Instant Keep-Alive rendering with responsive padding */}
+      <div className="rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl p-3 sm:p-8 overflow-x-auto" style={{ minHeight: '550px' }}>
         {visitedTabs.has('overview') && <div style={{ display: tab === 'overview' ? 'block' : 'none' }}><AdminOverviewTab /></div>}
         {visitedTabs.has('accrequests') && <div style={{ display: tab === 'accrequests' ? 'block' : 'none' }}><AccountRequestsTab adminUser={adminUser} /></div>}
         {visitedTabs.has('receipts') && <div style={{ display: tab === 'receipts' ? 'block' : 'none' }}><ReceiptsTab /></div>}
@@ -599,7 +599,7 @@ function AdminPanel({ adminUser, onLogout }) {
           </div>
         </>
       ) : (
-        <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl p-6 sm:p-8" style={{ minHeight: '650px' }}>
+        <div className="rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl p-3 sm:p-8 overflow-x-auto" style={{ minHeight: '650px' }}>
           <DiscordBotManagement />
         </div>
       )}

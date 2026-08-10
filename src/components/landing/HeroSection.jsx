@@ -102,20 +102,20 @@ export default function HeroSection() {
             </p>
 
             {/* CTA Group */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 w-full">
               <button
                 onClick={() => navigate('/prices')}
-                className="btn-primary-cyan btn-glow px-7 py-3.5 font-inter font-bold text-base flex items-center gap-2.5 shadow-lg"
+                className="btn-primary-cyan btn-glow px-7 py-3.5 font-inter font-bold text-base flex items-center justify-center gap-2.5 shadow-lg w-full sm:w-auto min-h-[48px]"
               >
-                <ShoppingBag className="w-5 h-5" />
+                <ShoppingBag className="w-5 h-5 shrink-0" />
                 <span>Browse VIP Bundles</span>
               </button>
 
               <button
                 onClick={() => setShowDownload(true)}
-                className="btn-secondary-white px-7 py-3.5 font-inter font-bold text-base flex items-center gap-2.5"
+                className="btn-secondary-white px-7 py-3.5 font-inter font-bold text-base flex items-center justify-center gap-2.5 w-full sm:w-auto min-h-[48px]"
               >
-                <Download className="w-5 h-5 text-[#06b6d4]" />
+                <Download className="w-5 h-5 text-[#06b6d4] shrink-0" />
                 <span>Download Panel</span>
               </button>
             </div>

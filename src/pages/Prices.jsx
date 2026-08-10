@@ -194,28 +194,30 @@ export default function Prices() {
           </p>
 
           {/* Panel Selector Toggle */}
-          <div className="flex justify-center pt-4">
-            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-1.5 rounded-2xl shadow-md flex items-center gap-2">
+          <div className="flex justify-center pt-4 w-full">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-1.5 rounded-2xl shadow-md flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 w-full max-w-xl mx-auto">
               <button
                 onClick={() => setPanel('external')}
-                className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-xs tracking-wider transition-all flex items-center gap-2 ${
+                className={`w-full sm:w-1/2 px-3 sm:px-6 py-2.5 rounded-xl font-outfit font-bold text-[11px] sm:text-xs tracking-wider transition-all flex items-center justify-center gap-1.5 min-h-[42px] ${
                   panel === 'external'
                     ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-md'
                     : 'text-[var(--text-primary)] hover:text-[var(--text-heading)]'
                 }`}
               >
-                <LayoutGrid className="w-4 h-4" /> External Panel (Free Fire All Versions)
+                <LayoutGrid className="w-4 h-4 shrink-0" /> 
+                <span className="truncate">External Panel (Free Fire)</span>
               </button>
 
               <button
                 onClick={() => setPanel('internal')}
-                className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-xs tracking-wider transition-all flex items-center gap-2 ${
+                className={`w-full sm:w-1/2 px-3 sm:px-6 py-2.5 rounded-xl font-outfit font-bold text-[11px] sm:text-xs tracking-wider transition-all flex items-center justify-center gap-1.5 min-h-[42px] ${
                   panel === 'internal'
                     ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
                     : 'text-[var(--text-primary)] hover:text-[var(--text-heading)]'
                 }`}
               >
-                <Settings className="w-4 h-4" /> Internal Panel (V7A)
+                <Settings className="w-4 h-4 shrink-0" /> 
+                <span className="truncate">Internal Panel (V7A)</span>
               </button>
             </div>
           </div>
