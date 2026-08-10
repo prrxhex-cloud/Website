@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, X, Zap, Shield } from 'lucide-react';
+import { Download, X, Zap, Shield, Smartphone } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import { usePwa } from '@/context/PwaContext';
 
 const FALLBACK_EXTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
 const FALLBACK_INTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
@@ -11,6 +12,7 @@ export default function DownloadModal({ open, onClose }) {
   const [externalUrl, setExternalUrl] = useState(FALLBACK_EXTERNAL);
   const [internalUrl, setInternalUrl] = useState(FALLBACK_INTERNAL);
   const [loading, setLoading] = useState(true);
+  const { promptInstall, isInstalled } = usePwa();
 
   useEffect(() => {
     if (!open) return;
@@ -131,6 +133,40 @@ export default function DownloadModal({ open, onClose }) {
                   </div>
                   <Download className="w-4 h-4 flex-shrink-0" style={{ color: '#aa44ff' }} />
                 </motion.a>
+
+                {/* Web App Desktop & Mobile Direct Install */}
+                {!isInstalled && (
+                  <motion.div
+                    onClick={() => {
+                      onClose();
+                      promptInstall();
+                    }}
+                    whileHover={{ scale: 1.02, boxShadow: '0 0 50px rgba(6,182,212,0.4)' }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-4 p-5 rounded-2xl cursor-pointer transition-all"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(2,132,199,0.1))',
+                      border: '1px solid rgba(6,182,212,0.4)',
+                      boxShadow: '0 0 24px rgba(6,182,212,0.15)',
+                    }}
+                  >
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.5)' }}>
+                      <Smartphone className="w-5 h-5 text-[#06b6d4]" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-orbitron font-bold text-sm tracking-wider text-[#06b6d4]">
+                        📲 Web App (PC Desktop & Phone)
+                      </p>
+                      <p className="font-inter text-xs text-muted-foreground mt-0.5">
+                        Install as native app on PC / Android / iOS
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase bg-[#06b6d4] text-white shrink-0">
+                      INSTALL
+                    </span>
+                  </motion.div>
+                )}
               </div>
             )}
 

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShieldCheck, Volume2, VolumeX, ChevronRight, Zap, Sun, Moon, ChevronDown } from 'lucide-react';
+import { Menu, X, ShieldCheck, Volume2, VolumeX, ChevronRight, Zap, Sun, Moon, ChevronDown, Smartphone } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSound } from '../../context/SoundContext';
 import { useTheme } from '@/lib/ThemeContext';
+import { usePwa } from '@/context/PwaContext';
 import logoImg from '@/assets/logo.jpeg';
 
 const navLinks = [
@@ -24,6 +25,7 @@ export default function Navbar() {
   const location = useLocation();
   const { soundEnabled, toggleSound } = useSound();
   const { theme, toggleTheme } = useTheme();
+  const { promptInstall, isInstalled } = usePwa();
 
   const handleNav = (path) => {
     setMenuOpen(false);
@@ -152,6 +154,25 @@ export default function Navbar() {
                     </button>
                   </div>
                 </div>
+
+                {/* Web App Installation Action */}
+                {!isInstalled && (
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      promptInstall();
+                    }}
+                    className="w-full font-inter font-bold text-xs px-3.5 py-2.5 my-1.5 rounded-xl flex items-center justify-between bg-gradient-to-r from-[#06b6d4]/20 to-cyan-500/20 text-[#06b6d4] border border-[#06b6d4]/40 hover:border-[#06b6d4] transition-all min-h-[44px] shadow-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-4 h-4 text-[#06b6d4]" />
+                      <span>Install App (PC & Mobile)</span>
+                    </div>
+                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase bg-[#06b6d4] text-white">
+                      WEBAPP
+                    </span>
+                  </button>
+                )}
 
                 {navLinks.map((item) => (
                   <button

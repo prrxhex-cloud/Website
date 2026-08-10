@@ -6,6 +6,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import { SoundProvider } from '@/context/SoundContext';
+import { PwaProvider } from '@/context/PwaContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Home from '@/pages/Home.jsx';
 import Functions from '@/pages/Functions';
@@ -91,16 +92,18 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <SoundProvider>
-          <QueryClientProvider client={queryClientInstance}>
-            <Router>
-              {isInitialLoad ? (
-                <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
-              ) : (
-                <AuthenticatedApp />
-              )}
-            </Router>
-            <Toaster />
-          </QueryClientProvider>
+          <PwaProvider>
+            <QueryClientProvider client={queryClientInstance}>
+              <Router>
+                {isInitialLoad ? (
+                  <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
+                ) : (
+                  <AuthenticatedApp />
+                )}
+              </Router>
+              <Toaster />
+            </QueryClientProvider>
+          </PwaProvider>
         </SoundProvider>
       </AuthProvider>
     </ThemeProvider>
