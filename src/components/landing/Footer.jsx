@@ -149,7 +149,7 @@ export default function Footer() {
                 <div className="font-outfit font-black text-base text-[var(--text-heading)] flex items-center gap-2">
                   GAARA <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />
                 </div>
-                <div className="font-inter text-xs text-[var(--text-muted)]">Lead Developer · PRRX CHEATS OWNER</div>
+                <div className="font-inter text-xs text-[var(--text-muted)]">Co Developer · PRRX CHEATS CO-OWNER</div>
               </div>
             </div>
 
