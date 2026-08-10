@@ -11,6 +11,7 @@ export default function DiscordSettingsTab() {
   const [receiptUrl, setReceiptUrl] = useState('');
   const [discordInviteUrl, setDiscordInviteUrl] = useState('');
   const [botDashboardUrl, setBotDashboardUrl] = useState('');
+  const [botApiKey, setBotApiKey] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -26,6 +27,7 @@ export default function DiscordSettingsTab() {
         setReceiptUrl(data[0].receipt_webhook_url || '');
         setDiscordInviteUrl(data[0].discord_invite_url || 'https://discord.com/users/prrx2021');
         setBotDashboardUrl(data[0].bot_dashboard_url || '');
+        setBotApiKey(data[0].bot_api_key || '');
       }
     } catch (e) {
       toast.error('Failed to load Discord settings');
@@ -44,7 +46,8 @@ export default function DiscordSettingsTab() {
         freebie_webhook_url: freebieUrl, 
         receipt_webhook_url: receiptUrl,
         discord_invite_url: discordInviteUrl,
-        bot_dashboard_url: botDashboardUrl
+        bot_dashboard_url: botDashboardUrl,
+        bot_api_key: botApiKey
       };
       if (record) {
         await updateDoc(doc(db, 'discord_webhooks', record.id), payload);
@@ -97,10 +100,21 @@ export default function DiscordSettingsTab() {
             <Link2 className="w-3.5 h-3.5 text-green-400" /> Discord Bot Dashboard URL
           </label>
           <p className="font-inter text-xs text-slate-400 mb-2">The Render or localhost URL where the Bot is hosted (used for the Discord Bot Management tab).</p>
-          <div className="relative">
+          <div className="relative mb-4">
             <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             <input value={botDashboardUrl} onChange={e => setBotDashboardUrl(e.target.value)}
               placeholder="https://prrx-discord-bot.onrender.com"
+              className="w-full pl-9 pr-3 py-2 rounded-lg font-inter text-sm text-white placeholder-slate-500 bg-slate-900 border border-slate-800 outline-none" />
+          </div>
+
+          <label className="font-inter text-xs font-semibold text-white mb-1.5 block flex items-center gap-1.5">
+            <Key className="w-3.5 h-3.5 text-yellow-400" /> Discord Bot API Key
+          </label>
+          <p className="font-inter text-xs text-slate-400 mb-2">A secret API Key used by the website to authenticate with the bot securely.</p>
+          <div className="relative">
+            <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <input type="password" value={botApiKey} onChange={e => setBotApiKey(e.target.value)}
+              placeholder="Enter secure API Key (e.g. your discord token or random string)"
               className="w-full pl-9 pr-3 py-2 rounded-lg font-inter text-sm text-white placeholder-slate-500 bg-slate-900 border border-slate-800 outline-none" />
           </div>
         </div>
