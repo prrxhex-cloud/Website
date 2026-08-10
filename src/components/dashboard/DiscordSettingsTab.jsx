@@ -8,9 +8,9 @@ import { clearDiscordConfigCache } from '@/utils/discordNotifier';
 export default function DiscordSettingsTab() {
   const [record, setRecord] = useState(null);
   const [ticketUrl, setTicketUrl] = useState('');
-  const [freebieUrl, setFreebieUrl] = useState('');
   const [receiptUrl, setReceiptUrl] = useState('');
   const [discordInviteUrl, setDiscordInviteUrl] = useState('');
+  const [botDashboardUrl, setBotDashboardUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -25,6 +25,7 @@ export default function DiscordSettingsTab() {
         setFreebieUrl(data[0].freebie_webhook_url || '');
         setReceiptUrl(data[0].receipt_webhook_url || '');
         setDiscordInviteUrl(data[0].discord_invite_url || 'https://discord.com/users/prrx2021');
+        setBotDashboardUrl(data[0].bot_dashboard_url || '');
       }
     } catch (e) {
       toast.error('Failed to load Discord settings');
@@ -42,7 +43,8 @@ export default function DiscordSettingsTab() {
         ticket_webhook_url: ticketUrl, 
         freebie_webhook_url: freebieUrl, 
         receipt_webhook_url: receiptUrl,
-        discord_invite_url: discordInviteUrl
+        discord_invite_url: discordInviteUrl,
+        bot_dashboard_url: botDashboardUrl
       };
       if (record) {
         await updateDoc(doc(db, 'discord_webhooks', record.id), payload);
@@ -87,6 +89,19 @@ export default function DiscordSettingsTab() {
               placeholder="https://discord.gg/your-server-code"
               className="w-full pl-9 pr-3 py-2.5 rounded-xl font-inter text-sm text-white placeholder-slate-500 bg-slate-900 border border-indigo-500/30 focus:border-indigo-400 outline-none"
             />
+          </div>
+        </div>
+
+        <div>
+          <label className="font-inter text-xs font-semibold text-white mb-1.5 block flex items-center gap-1.5">
+            <Link2 className="w-3.5 h-3.5 text-green-400" /> Discord Bot Dashboard URL
+          </label>
+          <p className="font-inter text-xs text-slate-400 mb-2">The Render or localhost URL where the Bot is hosted (used for the Discord Bot Management tab).</p>
+          <div className="relative">
+            <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <input value={botDashboardUrl} onChange={e => setBotDashboardUrl(e.target.value)}
+              placeholder="https://prrx-discord-bot.onrender.com"
+              className="w-full pl-9 pr-3 py-2 rounded-lg font-inter text-sm text-white placeholder-slate-500 bg-slate-900 border border-slate-800 outline-none" />
           </div>
         </div>
 

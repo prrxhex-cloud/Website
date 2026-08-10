@@ -20,6 +20,7 @@ import AdminMessagesTab from './AdminMessagesTab';
 import AdminAnnouncementsTab from './AdminAnnouncementsTab';
 import PanelImagesTab from './PanelImagesTab';
 import FunctionsScreenshotsTab from './FunctionsScreenshotsTab';
+import DiscordBotManagement from './DiscordBotManagement';
 
 function ReceiptsTab() {
   const [receipts, setReceipts] = useState([]);
@@ -477,6 +478,7 @@ function LoginForm({ onSuccess }) {
 }
 
 function AdminPanel({ adminUser, onLogout }) {
+  const [mode, setMode] = useState('website'); // 'website' | 'bot'
   const [tab, setTab] = useState('overview');
   const [visitedTabs, setVisitedTabs] = useState(new Set(['overview']));
 
@@ -528,9 +530,33 @@ function AdminPanel({ adminUser, onLogout }) {
         </button>
       </div>
 
-      {/* Tabs - scrollable */}
-      <div className="overflow-x-auto pb-2 custom-scrollbar">
-        <div className="flex gap-2 p-1.5 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] min-w-max shadow-sm">
+      {/* Top Level Mode Selector */}
+      <div className="flex justify-center gap-4 mb-4">
+        <button 
+          onClick={() => setMode('website')}
+          className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-sm tracking-wider transition-all ${
+            mode === 'website' 
+              ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]' 
+              : 'text-slate-400 bg-slate-900 border border-slate-800 hover:text-white'
+          }`}>
+          WEBSITE MANAGEMENT
+        </button>
+        <button 
+          onClick={() => setMode('bot')}
+          className={`px-6 py-2.5 rounded-xl font-outfit font-bold text-sm tracking-wider transition-all flex items-center gap-2 ${
+            mode === 'bot' 
+              ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]' 
+              : 'text-slate-400 bg-slate-900 border border-slate-800 hover:text-white'
+          }`}>
+          <Bell className="w-4 h-4" /> DISCORD BOT MANAGEMENT
+        </button>
+      </div>
+
+      {mode === 'website' ? (
+        <>
+          {/* Tabs - scrollable */}
+          <div className="overflow-x-auto pb-2 custom-scrollbar">
+            <div className="flex gap-2 p-1.5 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] min-w-max shadow-sm">
           {tabs.map(t => {
             const Icon = t.icon;
             const isActive = tab === t.key;
@@ -567,10 +593,16 @@ function AdminPanel({ adminUser, onLogout }) {
         {visitedTabs.has('discord') && <div style={{ display: tab === 'discord' ? 'block' : 'none' }}><DiscordSettingsTab /></div>}
         {visitedTabs.has('users') && <div style={{ display: tab === 'users' ? 'block' : 'none' }}><UsersTab /></div>}
         {visitedTabs.has('messages') && <div style={{ display: tab === 'messages' ? 'block' : 'none' }}><AdminMessagesTab /></div>}
-        {visitedTabs.has('announcements') && <div style={{ display: tab === 'announcements' ? 'block' : 'none' }}><AdminAnnouncementsTab /></div>}
-        {visitedTabs.has('panel_images') && <div style={{ display: tab === 'panel_images' ? 'block' : 'none' }}><PanelImagesTab /></div>}
-        {visitedTabs.has('functions_screenshots') && <div style={{ display: tab === 'functions_screenshots' ? 'block' : 'none' }}><FunctionsScreenshotsTab /></div>}
-      </div>
+            {visitedTabs.has('announcements') && <div style={{ display: tab === 'announcements' ? 'block' : 'none' }}><AdminAnnouncementsTab /></div>}
+            {visitedTabs.has('panel_images') && <div style={{ display: tab === 'panel_images' ? 'block' : 'none' }}><PanelImagesTab /></div>}
+            {visitedTabs.has('functions_screenshots') && <div style={{ display: tab === 'functions_screenshots' ? 'block' : 'none' }}><FunctionsScreenshotsTab /></div>}
+          </div>
+        </>
+      ) : (
+        <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl p-6 sm:p-8" style={{ minHeight: '650px' }}>
+          <DiscordBotManagement />
+        </div>
+      )}
     </motion.div>
   );
 }
