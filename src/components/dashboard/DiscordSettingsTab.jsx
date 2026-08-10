@@ -8,6 +8,7 @@ import { clearDiscordConfigCache } from '@/utils/discordNotifier';
 export default function DiscordSettingsTab() {
   const [record, setRecord] = useState(null);
   const [ticketUrl, setTicketUrl] = useState('');
+  const [freebieUrl, setFreebieUrl] = useState('');
   const [receiptUrl, setReceiptUrl] = useState('');
   const [discordInviteUrl, setDiscordInviteUrl] = useState('');
   const [botDashboardUrl, setBotDashboardUrl] = useState('');
