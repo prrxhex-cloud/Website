@@ -165,7 +165,7 @@ export default function DiscordBotManagement() {
                 <span className="text-white font-bold">{status?.memoryUsage || '0 MB'} / 512 MB</span>
               </div>
               <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div className="bg-cyan-400 h-full rounded-full" style={{ width: \`\${Math.min(100, (parseInt(status?.memoryUsage || 0) / 512) * 100)}%\` }} />
+                <div className="bg-cyan-400 h-full rounded-full" style={{ width: `${Math.min(100, (parseInt(status?.memoryUsage || 0) / 512) * 100)}%` }} />
               </div>
             </div>
             
