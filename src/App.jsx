@@ -19,6 +19,7 @@ import Status from '@/pages/Status';
 import Admin from '@/pages/Admin';
 import Freebies from '@/pages/Freebies';
 import Login from '@/pages/Login';
+import DesktopLauncher from '@/pages/DesktopLauncher';
 import LiveDemo from '@/pages/LiveDemo';
 import LiquidLoader from '@/components/ui/LiquidLoader';
 import React from 'react';
@@ -36,6 +37,11 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
+    // If running in Electron, use the standalone launcher
+    if (window.electronAPI) {
+      return <Navigate to="/launcher" replace />;
+    }
+    // Otherwise, use the standard website login
     return <Navigate to="/login" replace />;
   }
 
@@ -59,6 +65,10 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
+      // In electron, we also want to intercept standard API redirect requests
+      if (window.electronAPI) {
+        return <Navigate to="/launcher" replace />;
+      }
       navigateToLogin();
       return null;
     }
@@ -68,6 +78,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/launcher" element={<DesktopLauncher />} />
 
       {/* PROTECTED ROUTES (Must login to access) */}
       <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />

@@ -29,3 +29,8 @@ dist-ssr
 
 .env
 .vite
+
+# Desktop App Electron Builds
+desktop-app/node_modules/
+desktop-app/release/
+desktop-app/www/
