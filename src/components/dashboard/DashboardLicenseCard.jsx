@@ -29,7 +29,8 @@ export default function DashboardLicenseCard() {
     );
   }
 
-  const sub = info?.subscriptions?.[0];
+  const keyAuthData = info?.keyAuthData || info;
+  const sub = keyAuthData?.subscriptions?.[0];
   const expireTs = sub?.expiry ? parseInt(sub.expiry) * 1000 : null;
   const isExpired = expireTs && expireTs < Date.now();
   const daysLeft = expireTs ? Math.max(0, Math.ceil((expireTs - Date.now()) / (1000 * 60 * 60 * 24))) : null;
@@ -44,7 +45,7 @@ export default function DashboardLicenseCard() {
           <Crown className="w-8 h-8 relative z-10 text-amber-500" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-outfit font-black text-2xl text-[var(--text-heading)] tracking-wider truncate">{info?.username}</p>
+          <p className="font-outfit font-black text-2xl text-[var(--text-heading)] tracking-wider truncate">{keyAuthData?.username || 'KeyAuth User'}</p>
           <p className="font-inter text-sm text-[#06b6d4] mt-1 font-semibold">{sub?.subscription || 'Member'}</p>
         </div>
         <span className={`font-outfit text-xs px-4 py-2 rounded-xl font-bold flex-shrink-0 tracking-widest ${isExpired ? 'bg-red-500/15 border border-red-500/30 text-red-500' : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-500'}`}>

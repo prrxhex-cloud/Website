@@ -10,14 +10,29 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
+    // Check local storage for KeyAuth session
+    const storedKeyAuth = localStorage.getItem('prrx_keyauth_user');
+    let keyAuthUser = null;
+    if (storedKeyAuth) {
+      try {
+        keyAuthUser = JSON.parse(storedKeyAuth);
+      } catch (e) {
+        console.error('Failed to parse stored KeyAuth user', e);
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser({
           uid: currentUser.uid,
           email: currentUser.email,
           displayName: currentUser.displayName,
-          role: 'admin' // In a real app, you might fetch role from Firestore
+          role: 'admin'
         });
+        setIsAuthenticated(true);
+      } else if (keyAuthUser) {
+        // Fallback to KeyAuth if Firebase is null but KeyAuth session exists
+        setUser(keyAuthUser);
         setIsAuthenticated(true);
       } else {
         setUser(null);
@@ -29,8 +44,23 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
+  const loginWithKeyAuth = (userData) => {
+    const keyAuthUser = {
+      uid: 'keyauth-' + (userData.username || 'user'),
+      email: userData.username || 'KeyAuth User',
+      displayName: userData.username || 'KeyAuth User',
+      role: 'external',
+      isKeyAuth: true,
+      keyAuthData: userData
+    };
+    localStorage.setItem('prrx_keyauth_user', JSON.stringify(keyAuthUser));
+    setUser(keyAuthUser);
+    setIsAuthenticated(true);
+  };
+
   const logout = async (shouldRedirect = true) => {
     try {
+      localStorage.removeItem('prrx_keyauth_user');
       await signOut(auth);
       if (shouldRedirect) {
         window.location.reload();
@@ -50,7 +80,8 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated, 
       isLoadingAuth,
       logout,
-      navigateToLogin
+      navigateToLogin,
+      loginWithKeyAuth
     }}>
       {children}
     </AuthContext.Provider>

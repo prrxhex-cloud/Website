@@ -1,7 +1,19 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const express = require('express');
+const KeyAuth = require('./keyauth');
 
+const externalKeyAuth = new KeyAuth({
+  name: "PRRX EXTERNAL",
+  ownerid: "7P1GTjNd76",
+  version: "1.0",
+});
+
+const internalKeyAuth = new KeyAuth({
+  name: "PRRX INTERNAL",
+  ownerid: "7P1GTjNd76",
+  version: "3.6",
+});
 let mainWindow;
 let server;
 
@@ -122,3 +134,26 @@ ipcMain.on('maximize-app', () => {
     }
   }
 });
+
+ipcMain.handle('keyauth-login', async (event, { type, username, password }) => {
+  try {
+    const authApp = type === 'INTERNAL' ? internalKeyAuth : externalKeyAuth;
+    await authApp.init();
+    const result = await authApp.login(username, password);
+    return { success: true, user: authApp.user_data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('keyauth-license', async (event, { type, license }) => {
+  try {
+    const authApp = type === 'INTERNAL' ? internalKeyAuth : externalKeyAuth;
+    await authApp.init();
+    const result = await authApp.license(license);
+    return { success: true, user: authApp.user_data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+});
+
