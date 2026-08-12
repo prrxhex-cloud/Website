@@ -35,4 +35,5 @@ desktop-app/node_modules/
 desktop-app/release/
 desktop-app/dist-electron/
 desktop-app/dist-final/
+desktop-app/dist-fast/
 desktop-app/www/

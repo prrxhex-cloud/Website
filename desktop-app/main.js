@@ -62,6 +62,10 @@ async function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
+  app.on('browser-window-created', (e, window) => {
+    window.setMenuBarVisibility(false);
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
