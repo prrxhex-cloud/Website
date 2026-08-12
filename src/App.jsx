@@ -135,7 +135,7 @@ function App() {
 
   if (isElectron) {
     return (
-      <div className="min-h-screen w-full bg-[var(--bg-main)] rounded-3xl border border-white/5 relative flex flex-col">
+      <div className="min-h-screen w-full bg-[var(--bg-main)] relative flex flex-col">
         <div className="fixed top-0 left-0 right-0 z-[99999]">
           <TitleBar />
         </div>

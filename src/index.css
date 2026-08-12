@@ -277,7 +277,7 @@ body::-webkit-scrollbar {
 }
 html::-webkit-scrollbar-track,
 body::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-main);
 }
 html::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb {
