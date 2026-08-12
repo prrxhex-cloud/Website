@@ -34,8 +34,8 @@ export default function LiveDemo() {
     const resizeCanvas = () => {
       const parent = canvas.parentElement;
       if (parent) {
-        canvas.width = parent.clientWidth || 700;
-        canvas.height = Math.max(480, Math.min(parent.clientWidth * 0.65, 540));
+        canvas.width = parent.clientWidth || window.innerWidth;
+        canvas.height = Math.max(320, Math.min(parent.clientWidth * 0.75, 540));
       }
     };
     resizeCanvas();

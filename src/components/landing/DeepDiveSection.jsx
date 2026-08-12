@@ -79,7 +79,7 @@ export default function DeepDiveSection() {
               {/* Preview Window */}
               <div className="clean-card p-3 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md">
                 <div className="px-4 py-2 bg-slate-950 rounded-xl flex items-center justify-between text-xs text-cyan-400 font-mono mb-2 border border-slate-800">
-                  <span>ext.prrx.local</span>
+                  <span>prrxhex.com</span>
                   <Lock className="w-3.5 h-3.5 text-slate-400" />
                 </div>
                 <div 
@@ -88,7 +88,7 @@ export default function DeepDiveSection() {
                 >
                   {panelImages.external_image_url ? (
                     <>
-                      <img src={panelImages.external_image_url} alt="External Panel" className="w-full h-full object-cover object-top rounded-lg" />
+                      <img src={panelImages.external_image_url} alt="External Panel" className="w-full h-full object-contain rounded-lg" />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
                         <Maximize2 className="w-4 h-4" /> Full View
                       </div>
@@ -108,7 +108,7 @@ export default function DeepDiveSection() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
               <div className="clean-card p-3 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-md lg:order-1 order-2">
                 <div className="px-4 py-2 bg-slate-950 rounded-xl flex items-center justify-between text-xs text-cyan-400 font-mono mb-2 border border-slate-800">
-                  <span>int.prrx.local</span>
+                  <span>prrxhex.com</span>
                   <Lock className="w-3.5 h-3.5 text-slate-400" />
                 </div>
                 <div 
@@ -117,7 +117,7 @@ export default function DeepDiveSection() {
                 >
                   {panelImages.internal_image_url ? (
                     <>
-                      <img src={panelImages.internal_image_url} alt="Internal Panel" className="w-full h-full object-cover object-top rounded-lg" />
+                      <img src={panelImages.internal_image_url} alt="Internal Panel" className="w-full h-full object-contain rounded-lg" />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
                         <Maximize2 className="w-4 h-4" /> Full View
                       </div>

@@ -152,18 +152,18 @@ export default function FunctionsSection() {
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                 </div>
                 <div className="mx-auto text-xs text-cyan-400 font-mono flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-slate-400" /> {isInternal ? 'int.prrx.local' : 'ext.prrx.local'}
+                  <Lock className="w-3 h-3 text-slate-400" /> prrxhex.com
                 </div>
               </div>
 
               {/* Preview Image Viewport - Full View Object Contain */}
-              <div className="flex-1 bg-slate-950 rounded-xl overflow-hidden min-h-[360px] p-2 relative flex items-center justify-center group cursor-pointer border border-slate-800"
+              <div className="flex-1 bg-slate-950 rounded-xl overflow-hidden min-h-[250px] sm:min-h-[360px] p-2 relative flex items-center justify-center group cursor-pointer border border-slate-800"
                 onClick={() => mainPreviewImage && setSelectedImage(mainPreviewImage)}>
                 {mainPreviewImage ? (
                   <>
                     <img 
                       src={mainPreviewImage} 
-                      className="w-full h-full max-h-[460px] object-cover object-top rounded-lg" 
+                      className="w-full h-full max-h-[460px] object-contain rounded-lg" 
                       alt="Full Panel Preview" 
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-2">
@@ -234,7 +234,7 @@ export default function FunctionsSection() {
                       <img 
                         src={currentImages[cat.key]} 
                         alt={cat.label} 
-                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300 rounded-lg" 
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 rounded-lg" 
                       />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
                         <Maximize2 className="w-4 h-4" /> Full View
