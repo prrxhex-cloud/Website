@@ -40,13 +40,13 @@
       "center": true,
       "fullScreen": false,
       "alwaysOnTop": false,
-      "icon": "/resources/icons/appIcon.png",
-      "enableInspector": true,
+      "icon": "/resources/logo.jpeg",
+      "enableInspector": false,
       "borderless": false,
       "maximize": false,
       "hidden": false,
       "resizable": true,
-      "exitProcessOnClose": false
+      "exitProcessOnClose": true
     },
     "browser": {
       "globalVariables": {
@@ -73,7 +73,7 @@
     }
   },
   "cli": {
-    "binaryName": "prrx-desktop",
+    "binaryName": "PRRX-HEX",
     "resourcesPath": "/resources/",
     "extensionsPath": "/extensions/",
     "clientLibrary": "/resources/js/neutralino.js",
