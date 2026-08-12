@@ -61,7 +61,7 @@ export default function DesktopLauncher() {
         <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-[320px] bg-slate-900/60 backdrop-blur-xl border border-white/5 p-8 rounded-2xl shadow-2xl relative z-10"
+        className="w-full max-w-[320px] bg-slate-900/60 backdrop-blur-xl border border-white/5 p-8 rounded-none shadow-2xl relative z-10"
         style={{ WebkitAppRegion: 'no-drag' }}
       >
         {/* Close Button */}
