@@ -16,7 +16,6 @@
   "build": {
     "appId": "com.prrxhex.app",
     "productName": "PRRX HEX",
-    "compression": "maximum",
     "directories": {
       "output": "dist-ui"
     },
@@ -28,7 +27,7 @@
     ],
     "win": {
       "target": "portable",
-      "icon": "www/logo.png"
+      "icon": "www/logo.jpeg"
     },
     "portable": {
       "artifactName": "${productName}.exe"

@@ -42,7 +42,7 @@ class KeyAuth {
   async login(username, password) {
     this.checkinit();
     
-    const hwid = this.get_hwid();
+    const hwid = await this.get_hwid();
     const post_data = {
       type: "login",
       username: username,
@@ -66,7 +66,7 @@ class KeyAuth {
   async license(key) {
     this.checkinit();
     
-    const hwid = this.get_hwid();
+    const hwid = await this.get_hwid();
     const post_data = {
       type: "license",
       key: key,
@@ -93,21 +93,22 @@ class KeyAuth {
   }
 
   get_hwid() {
-    const platform = os.platform();
-    if (platform === "win32") {
-      try {
-        const winUser = os.userInfo().username;
-        const sidOutput = execSync(`wmic useraccount where name='${winUser}' get sid`).toString().split("\n");
-        const sid = sidOutput[1]?.trim();
-        if (!sid) {
-          return "N/A";
-        }
-        return sid;
-      } catch (error) {
-        return "N/A";
+    return new Promise((resolve) => {
+      const platform = os.platform();
+      if (platform === "win32") {
+        require('child_process').exec('wmic csproduct get uuid', (error, stdout) => {
+          if (error) {
+            resolve("N/A");
+            return;
+          }
+          const lines = stdout.toString().split("\n");
+          const uuid = lines[1]?.trim();
+          resolve(uuid || "N/A");
+        });
+      } else {
+        resolve("N/A"); // fallback for other OS
       }
-    }
-    return "N/A"; // fallback for other OS
+    });
   }
 
   async __do_request(data) {

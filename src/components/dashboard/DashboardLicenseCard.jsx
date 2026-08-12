@@ -61,7 +61,7 @@ export default function DashboardLicenseCard() {
         </div>
         <div className="rounded-2xl p-4 text-center bg-[var(--bg-subtle)] border border-[var(--border-color)]">
           <Calendar className="w-5 h-5 mx-auto mb-2 text-[#06b6d4]" />
-          <p className="font-inter text-sm font-bold text-[var(--text-heading)] mt-2 mb-1 truncate">{expireDate.split(',')[0]}</p>
+          <p className="font-inter text-sm font-bold text-[var(--text-heading)] mt-2 mb-1 truncate">{expireDate}</p>
           <p className="font-inter text-xs text-[var(--text-muted)] tracking-wide">Expires</p>
         </div>
         <div className="rounded-2xl p-4 text-center bg-[var(--bg-subtle)] border border-[var(--border-color)]">
