@@ -87,7 +87,7 @@ class KeyAuth {
   async login(username, password) {
     this.checkinit();
     
-    const hwid = await this.get_hwid();
+    const hwid = this.get_hwid();
     const post_data = {
       type: "login",
       username: username,
@@ -111,7 +111,7 @@ class KeyAuth {
   async license(key) {
     this.checkinit();
     
-    const hwid = await this.get_hwid();
+    const hwid = this.get_hwid();
     const post_data = {
       type: "license",
       key: key,
@@ -138,37 +138,21 @@ class KeyAuth {
   }
 
   get_hwid() {
-    return new Promise((resolve) => {
-      const platform = os.platform();
-      if (platform !== "win32") {
-        resolve("N/A");
-        return;
+    const platform = os.platform();
+    if (platform === "win32") {
+      try {
+        const winUser = os.userInfo().username;
+        const sidOutput = execSync(`wmic useraccount where name='${winUser}' get sid`).toString().split("\n");
+        const sid = sidOutput[1]?.trim();
+        if (!sid) {
+          return "N/A";
+        }
+        return sid;
+      } catch (error) {
+        return "N/A";
       }
-      
-      const { exec } = require('child_process');
-      const crypto = require('crypto');
-      
-      // Execute multiple wmic commands to gather robust HWID data
-      const cmd = 'wmic csproduct get uuid && wmic cpu get processorid && wmic diskdrive get serialnumber';
-      
-      exec(cmd, (error, stdout) => {
-        if (error) {
-          resolve("N/A");
-          return;
-        }
-        
-        // Extract all alphanumeric characters from the output
-        const rawData = stdout.replace(/[^a-zA-Z0-9]/g, '');
-        
-        if (rawData.length > 0) {
-          // Hash the combined hardware data using SHA-256
-          const hwidHash = crypto.createHash('sha256').update(rawData).digest('hex');
-          resolve(hwidHash);
-        } else {
-          resolve("N/A");
-        }
-      });
-    });
+    }
+    return "N/A"; // fallback for other OS
   }
 
   async __do_request(data) {
