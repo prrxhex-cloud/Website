@@ -36,4 +36,5 @@ desktop-app/release/
 desktop-app/dist-electron/
 desktop-app/dist-final/
 desktop-app/dist-fast/
+desktop-app/dist-ui/
 desktop-app/www/

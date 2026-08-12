@@ -3,6 +3,7 @@ import { Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { signInWithPopup, signInWithEmailAndPassword, auth, googleProvider } from '@/lib/firebase';
 import { useNavigate } from 'react-router-dom';
+import TitleBar from '@/components/TitleBar';
 
 import logoImg from '@/assets/logo.jpeg';
 
@@ -51,7 +52,7 @@ export default function DesktopLauncher() {
   };
 
   return (
-    <div className="h-full w-full text-white font-inter flex flex-col items-center justify-center p-6 relative select-none" style={{ WebkitAppRegion: 'drag' }}>
+    <div className="h-full w-full text-white font-inter flex flex-col items-center justify-center p-6 relative select-none bg-black/5" style={{ WebkitAppRegion: 'drag' }}>
       
       {/* Background Glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
@@ -64,15 +65,7 @@ export default function DesktopLauncher() {
         style={{ WebkitAppRegion: 'no-drag' }}
       >
         {/* Close Button */}
-        {window.electronAPI && (
-          <button 
-            onClick={() => window.electronAPI.quitApp()}
-            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
-            title="Close Application"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        )}
+        <TitleBar />
 
         {/* Header */}
         <div className="text-center space-y-4 mb-8">

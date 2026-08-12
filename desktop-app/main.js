@@ -99,3 +99,17 @@ ipcMain.on('login-success', () => {
 ipcMain.on('quit-app', () => {
   app.quit();
 });
+
+ipcMain.on('minimize-app', () => {
+  if (mainWindow) mainWindow.minimize();
+});
+
+ipcMain.on('maximize-app', () => {
+  if (mainWindow) {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+  }
+});

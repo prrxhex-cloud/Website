@@ -23,6 +23,7 @@ import DesktopLauncher from '@/pages/DesktopLauncher';
 import LiveDemo from '@/pages/LiveDemo';
 import LiquidLoader from '@/components/ui/LiquidLoader';
 import React from 'react';
+import TitleBar from '@/components/TitleBar';
 
 // Protected Route Wrapper Component
 const ProtectedRoute = ({ children }) => {
@@ -134,8 +135,11 @@ function App() {
 
   if (isElectron) {
     return (
-      <div className="h-screen w-full bg-[var(--bg-main)] rounded-3xl overflow-hidden border border-white/5 relative">
-        {content}
+      <div className="h-screen w-full bg-[var(--bg-main)] rounded-3xl overflow-hidden border border-white/5 relative pt-8 flex flex-col">
+        <TitleBar />
+        <div className="flex-1 overflow-auto relative">
+          {content}
+        </div>
       </div>
     );
   }

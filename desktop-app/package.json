@@ -18,7 +18,7 @@
     "productName": "PRRX HEX",
     "compression": "normal",
     "directories": {
-      "output": "dist-fast"
+      "output": "dist-ui"
     },
     "files": [
       "main.js",
