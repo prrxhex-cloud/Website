@@ -135,9 +135,24 @@ function App() {
 
   if (isElectron) {
     return (
-      <div className="h-screen w-full bg-[var(--bg-main)] rounded-3xl overflow-hidden border border-white/5 relative pt-8 flex flex-col">
-        <TitleBar />
-        <div className="flex-1 overflow-auto relative">
+      <div className="min-h-screen w-full bg-[var(--bg-main)] rounded-3xl border border-white/5 relative flex flex-col">
+        <div className="fixed top-0 left-0 right-0 z-[99999]">
+          <TitleBar />
+        </div>
+        <style>
+          {`
+            /* Push fixed elements down to make room for TitleBar in Electron */
+            .sticky.top-0, .fixed.top-0 {
+              top: 32px !important;
+            }
+            /* Reset TitleBar to actual top */
+            .fixed.top-0.z-\\[99999\\] {
+              top: 0 !important;
+            }
+            /* Hide the body overflow if necessary, or just let it scroll natively */
+          `}
+        </style>
+        <div className="flex-1 w-full pt-8">
           {content}
         </div>
       </div>
