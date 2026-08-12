@@ -2,6 +2,10 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const express = require('express');
 const KeyAuth = require('./keyauth');
+const { startAntiDebug } = require('./antidebug');
+
+// Start checking for debuggers immediately
+startAntiDebug();
 
 const externalKeyAuth = new KeyAuth({
   name: "PRRX EXTERNAL",
@@ -50,7 +54,7 @@ async function createWindow() {
     resizable: false,
     maximizable: false,
     // Note: Do not set backgroundColor when using transparent: true
-    icon: path.join(__dirname, 'www', 'logo.jpeg'),
+    icon: path.join(__dirname, 'www', 'icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -85,6 +89,12 @@ app.whenReady().then(() => {
 
   app.on('browser-window-created', (e, window) => {
     window.setMenuBarVisibility(false);
+    // Prevent DevTools from opening
+    window.webContents.on('devtools-opened', () => {
+      window.webContents.closeDevTools();
+      // Optionally forcefully close the window as a penalty
+      // window.close();
+    });
   });
 
   app.on('activate', () => {

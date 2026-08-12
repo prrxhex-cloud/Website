@@ -23,11 +23,12 @@
       "main.js",
       "preload.js",
       "keyauth.js",
+      "antidebug.js",
       "www/**/*"
     ],
     "win": {
       "target": "portable",
-      "icon": "www/logo.jpeg"
+      "icon": "www/icon.ico"
     },
     "portable": {
       "artifactName": "${productName}.exe"

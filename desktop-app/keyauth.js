@@ -2,17 +2,61 @@ const { Buffer } = require('buffer');
 const { execSync } = require('child_process');
 const { verifyKey } = require('discord-interactions');
 const os = require('os');
+const crypto = require('crypto');
+const fs = require('fs');
+
+// Simple obfuscated key for string encryption (In production, use a more complex key derivation)
+const ENCRYPTION_KEY = Buffer.from('4c6f636b6564416e645365637572652131323334353637383930616263646566', 'hex'); // 32 bytes
+
+function decryptString(encryptedHex, ivHex, authTagHex) {
+  try {
+    const decipher = crypto.createDecipheriv('aes-256-gcm', ENCRYPTION_KEY, Buffer.from(ivHex, 'hex'));
+    decipher.setAuthTag(Buffer.from(authTagHex, 'hex'));
+    let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch (e) {
+    return "";
+  }
+}
+
+// Encrypted: "https://keyauth.win/api/1.3/"
+const API_URL_ENC = "f1ce9427c39b68a7575d02f83e87dab9518fbe256a50737f186f64b4";
+const API_URL_IV = "aeb5e66505a41f7aab8ed87d";
+const API_URL_TAG = "3495a8fe483409c039ee4834f0a3d35d";
+
+// Encrypted: "5586b4bc69c7a4b487e4563a4cd96afd39140f919bd31cea7d1c6a1e8439422b"
+const PUB_KEY_ENC = "e4e3bfc4e30b2b6460e4dd90a7ec18e418a8dc169918a4cf9b99307a0dbe74469eb2ca5cc6e3cb75284648d493dacfde5e1a60a0b37ce419cf08fe4fffb4ccbc";
+const PUB_KEY_IV = "40adceba5a55470dfb7606fb";
+const PUB_KEY_TAG = "2d8a666342ab8082dd6e4de1c615b82f";
 
 class KeyAuth {
   constructor(options) {
     this.name = options.name;
     this.ownerid = options.ownerid;
     this.version = options.version;
-    this.url = "https://keyauth.win/api/1.3/";
-    this.public_key = "5586b4bc69c7a4b487e4563a4cd96afd39140f919bd31cea7d1c6a1e8439422b";
+    this.url = decryptString(API_URL_ENC, API_URL_IV, API_URL_TAG);
+    this.public_key = decryptString(PUB_KEY_ENC, PUB_KEY_IV, PUB_KEY_TAG);
     this.initialized = false;
     this.user_data = null;
     this.app_data = null;
+    
+    this.verifyExeHash();
+  }
+  
+  verifyExeHash() {
+    try {
+      if (process.execPath.endsWith('electron.exe')) return; // Ignore in dev mode
+      const fileBuffer = fs.readFileSync(process.execPath);
+      const hashSum = crypto.createHash('sha256');
+      hashSum.update(fileBuffer);
+      const hex = hashSum.digest('hex');
+      // In a real scenario, this hash would be sent to the server for validation
+      // or compared against a known good hash. We verify that it can be generated.
+      this.exe_hash = hex;
+    } catch (e) {
+      this.exe_hash = "N/A";
+    }
   }
 
   async init() {
@@ -24,6 +68,7 @@ class KeyAuth {
     const post_data = {
       type: "init",
       ver: this.version,
+      hash: this.exe_hash ? this.exe_hash.toString() : "",
       name: this.name,
       ownerid: this.ownerid,
     };
@@ -95,25 +140,40 @@ class KeyAuth {
   get_hwid() {
     return new Promise((resolve) => {
       const platform = os.platform();
-      if (platform === "win32") {
-        require('child_process').exec('wmic csproduct get uuid', (error, stdout) => {
-          if (error) {
-            resolve("N/A");
-            return;
-          }
-          const lines = stdout.toString().split("\n");
-          const uuid = lines[1]?.trim();
-          resolve(uuid || "N/A");
-        });
-      } else {
-        resolve("N/A"); // fallback for other OS
+      if (platform !== "win32") {
+        resolve("N/A");
+        return;
       }
+      
+      const { exec } = require('child_process');
+      const crypto = require('crypto');
+      
+      // Execute multiple wmic commands to gather robust HWID data
+      const cmd = 'wmic csproduct get uuid && wmic cpu get processorid && wmic diskdrive get serialnumber';
+      
+      exec(cmd, (error, stdout) => {
+        if (error) {
+          resolve("N/A");
+          return;
+        }
+        
+        // Extract all alphanumeric characters from the output
+        const rawData = stdout.replace(/[^a-zA-Z0-9]/g, '');
+        
+        if (rawData.length > 0) {
+          // Hash the combined hardware data using SHA-256
+          const hwidHash = crypto.createHash('sha256').update(rawData).digest('hex');
+          resolve(hwidHash);
+        } else {
+          resolve("N/A");
+        }
+      });
     });
   }
 
   async __do_request(data) {
     try {
-      const response = await fetch(this.url, {
+      const response = await fetch(decryptString(API_URL_ENC, API_URL_IV, API_URL_TAG), {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded"
