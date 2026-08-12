@@ -10,6 +10,7 @@ import { PwaProvider } from '@/context/PwaContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Home from '@/pages/Home.jsx';
 import Functions from '@/pages/Functions';
+import NetworkGuard from '@/components/NetworkGuard';
 
 import Dashboard from '@/pages/Dashboard';
 import Prices from '@/pages/Prices.jsx';
@@ -66,14 +67,14 @@ const AuthenticatedApp = () => {
   // Render routes with explicit Public vs Protected access
   return (
     <Routes>
-      {/* PUBLIC ROUTES (No login required) */}
-      <Route path="/" element={<Home />} />
-      <Route path="/status" element={<Status />} />
-      <Route path="/live-demo" element={<LiveDemo />} />
-      <Route path="/functions" element={<Functions />} />
       <Route path="/login" element={<Login />} />
 
       {/* PROTECTED ROUTES (Must login to access) */}
+      <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+      <Route path="/status" element={<ProtectedRoute><Status /></ProtectedRoute>} />
+      <Route path="/live-demo" element={<ProtectedRoute><LiveDemo /></ProtectedRoute>} />
+      <Route path="/functions" element={<ProtectedRoute><Functions /></ProtectedRoute>} />
+      
       <Route path="/prices" element={<ProtectedRoute><Prices /></ProtectedRoute>} />
       <Route path="/resellers" element={<ProtectedRoute><Resellers /></ProtectedRoute>} />
       <Route path="/freebies" element={<ProtectedRoute><Freebies /></ProtectedRoute>} />
@@ -95,11 +96,13 @@ function App() {
           <PwaProvider>
             <QueryClientProvider client={queryClientInstance}>
               <Router>
-                {isInitialLoad ? (
-                  <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
-                ) : (
-                  <AuthenticatedApp />
-                )}
+                <NetworkGuard>
+                  {isInitialLoad ? (
+                    <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
+                  ) : (
+                    <AuthenticatedApp />
+                  )}
+                </NetworkGuard>
               </Router>
               <Toaster />
             </QueryClientProvider>
