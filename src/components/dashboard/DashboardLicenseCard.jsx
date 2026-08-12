@@ -34,7 +34,7 @@ export default function DashboardLicenseCard() {
   const expireTs = sub?.expiry ? parseInt(sub.expiry) * 1000 : null;
   const isExpired = expireTs && expireTs < Date.now();
   const daysLeft = expireTs ? Math.max(0, Math.ceil((expireTs - Date.now()) / (1000 * 60 * 60 * 24))) : null;
-  const expireDate = expireTs ? new Date(expireTs).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+  const expireDate = expireTs ? new Date(expireTs).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -61,7 +61,7 @@ export default function DashboardLicenseCard() {
         </div>
         <div className="rounded-2xl p-4 text-center bg-[var(--bg-subtle)] border border-[var(--border-color)]">
           <Calendar className="w-5 h-5 mx-auto mb-2 text-[#06b6d4]" />
-          <p className="font-inter text-sm font-bold text-[var(--text-heading)] mt-2 mb-1 truncate">{expireDate}</p>
+          <p className="font-inter text-xs font-bold text-[var(--text-heading)] mt-2 mb-1 whitespace-nowrap overflow-hidden text-ellipsis">{expireDate}</p>
           <p className="font-inter text-xs text-[var(--text-muted)] tracking-wide">Expires</p>
         </div>
         <div className="rounded-2xl p-4 text-center bg-[var(--bg-subtle)] border border-[var(--border-color)]">

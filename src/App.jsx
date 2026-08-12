@@ -21,6 +21,7 @@ import Freebies from '@/pages/Freebies';
 import Login from '@/pages/Login';
 import DesktopLauncher from '@/pages/DesktopLauncher';
 import LiveDemo from '@/pages/LiveDemo';
+import About from '@/pages/About';
 import LiquidLoader from '@/components/ui/LiquidLoader';
 import React from 'react';
 import TitleBar from '@/components/TitleBar';
@@ -91,6 +92,7 @@ const AuthenticatedApp = () => {
       <Route path="/resellers" element={<ProtectedRoute><Resellers /></ProtectedRoute>} />
       <Route path="/freebies" element={<ProtectedRoute><Freebies /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
 
       <Route path="*" element={<PageNotFound />} />

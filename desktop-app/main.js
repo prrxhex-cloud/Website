@@ -3,6 +3,13 @@ const path = require('path');
 const express = require('express');
 const KeyAuth = require('./keyauth');
 const { startAntiDebug } = require('./antidebug');
+const fs = require('fs');
+const os = require('os');
+const https = require('https');
+const { spawn } = require('child_process');
+
+// CRITICAL: Protect user data by enforcing AppData directory securely
+app.setPath('userData', path.join(app.getPath('appData'), 'PRRX_HEX'));
 
 // Start checking for debuggers immediately
 startAntiDebug();
@@ -167,3 +174,52 @@ ipcMain.handle('keyauth-license', async (event, { type, license }) => {
   }
 });
 
+// Auto-Updater IPC Handler
+ipcMain.handle('download-and-install-update', async (event, url) => {
+  return new Promise((resolve) => {
+    try {
+      const installerPath = path.join(os.tmpdir(), 'PRRX_HEX_Update.exe');
+      const fileStream = fs.createWriteStream(installerPath);
+
+      https.get(url, (response) => {
+        // Handle redirects if necessary (GitHub releases usually redirect)
+        if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+          https.get(response.headers.location, handleResponse);
+        } else {
+          handleResponse(response);
+        }
+
+        function handleResponse(res) {
+          if (res.statusCode !== 200) {
+            resolve({ success: false, error: `Server responded with status code: ${res.statusCode}` });
+            return;
+          }
+
+          res.pipe(fileStream);
+
+          fileStream.on('finish', () => {
+            fileStream.close();
+            
+            // Spawn the installer detached so it survives the app exit
+            const subprocess = spawn(installerPath, [], {
+              detached: true,
+              stdio: 'ignore'
+            });
+            
+            subprocess.unref();
+
+            // Quit application to release file locks for the installer
+            app.quit();
+            
+            resolve({ success: true });
+          });
+        }
+      }).on('error', (err) => {
+        fs.unlink(installerPath, () => {});
+        resolve({ success: false, error: err.message });
+      });
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});

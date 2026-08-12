@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
-import { Download, MessageCircle, DollarSign, Activity, Store, Shield, LogOut, User } from 'lucide-react';
+import { Download, MessageCircle, DollarSign, Activity, Store, Shield, LogOut, User, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfileEditor from '@/components/dashboard/ProfileEditor';
 import DashboardLicenseCard from '@/components/dashboard/DashboardLicenseCard';
@@ -32,6 +32,7 @@ export default function Dashboard() {
     { label: 'Service Status', desc: 'Check system availability', icon: Activity, action: () => navigate('/status') },
     { label: 'Reseller Portal', desc: 'Manage reseller account', icon: Store, action: () => navigate('/resellers') },
     { label: 'Admin Portal', desc: 'Staff management access', icon: Shield, action: () => navigate('/admin') },
+    { label: 'About & Updates', desc: 'Check app version', icon: Info, action: () => navigate('/about') },
   ];
 
   return (
