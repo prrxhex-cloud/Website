@@ -100,7 +100,16 @@ const AuthenticatedApp = () => {
 function App() {
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
-  return (
+  React.useEffect(() => {
+    if (window.electronAPI) {
+      document.body.style.backgroundColor = 'transparent';
+      document.documentElement.style.backgroundColor = 'transparent';
+    }
+  }, []);
+
+  const isElectron = !!window.electronAPI;
+
+  const content = (
     <ThemeProvider>
       <AuthProvider>
         <SoundProvider>
@@ -122,6 +131,16 @@ function App() {
       </AuthProvider>
     </ThemeProvider>
   );
+
+  if (isElectron) {
+    return (
+      <div className="h-screen w-full bg-[var(--bg-main)] rounded-3xl overflow-hidden border border-white/5 relative">
+        {content}
+      </div>
+    );
+  }
+
+  return content;
 }
 
 export default App;

@@ -1,18 +1,34 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
+const express = require('express');
 
 let mainWindow;
+let server;
 
-function createWindow() {
+function startServer() {
+  return new Promise((resolve) => {
+    const expressApp = express();
+    expressApp.use(express.static(path.join(__dirname, 'www')));
+    server = expressApp.listen(0, '127.0.0.1', () => {
+      resolve(server.address().port);
+    });
+  });
+}
+
+async function createWindow() {
+  const port = await startServer();
+
   // Create a small, frameless-like window for the launcher login
   mainWindow = new BrowserWindow({
     width: 400,
     height: 600,
     show: false,
-    frame: false, // We'll make it frameless for that sleek launcher look, or just unresizable
+    frame: false, // Frameless for sleek look
+    transparent: true, // Transparent to allow CSS rounded corners to show
+    hasShadow: true,
     resizable: false,
     maximizable: false,
-    backgroundColor: '#0a0a0f',
+    // Note: Do not set backgroundColor when using transparent: true
     icon: path.join(__dirname, 'www', 'logo.jpeg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -21,8 +37,19 @@ function createWindow() {
     }
   });
 
-  // Load the React app. It will route to #/launcher due to our App.jsx logic
-  mainWindow.loadFile(path.join(__dirname, 'www', 'index.html'));
+  // Load the React app via localhost to bypass Firebase file:// domain restriction
+  mainWindow.loadURL(`http://localhost:${port}/#/launcher`);
+
+  // Intercept links to open in the user's default browser (e.g. Google Login popups if they somehow target _blank)
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.includes('accounts.google.com') || url.includes('auth')) {
+      // By returning 'allow', Electron opens an internal popup window for Google Login, 
+      // which is typically what users expect for "in-app" auth popups.
+      return { action: 'allow' };
+    }
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
@@ -62,4 +89,9 @@ ipcMain.on('login-success', () => {
     // Since frame cannot be changed dynamically on all OS, we can center it.
     mainWindow.center();
   }
+});
+
+// IPC handler to close the app from the custom UI
+ipcMain.on('quit-app', () => {
+  app.quit();
 });

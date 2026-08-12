@@ -51,18 +51,29 @@ export default function DesktopLauncher() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#0a0a0f] text-white font-inter flex flex-col items-center justify-center p-6 relative overflow-hidden select-none" style={{ WebkitAppRegion: 'drag' }}>
+    <div className="h-full w-full text-white font-inter flex flex-col items-center justify-center p-6 relative select-none" style={{ WebkitAppRegion: 'drag' }}>
       
       {/* Background Glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-      <motion.div
+        <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-[320px] bg-slate-900/60 backdrop-blur-xl border border-white/5 p-8 rounded-2xl shadow-2xl relative z-10"
         style={{ WebkitAppRegion: 'no-drag' }}
       >
+        {/* Close Button */}
+        {window.electronAPI && (
+          <button 
+            onClick={() => window.electronAPI.quitApp()}
+            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
+            title="Close Application"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        )}
+
         {/* Header */}
         <div className="text-center space-y-4 mb-8">
           <div className="w-20 h-20 rounded-2xl bg-slate-900/80 border border-cyan-500/50 p-2 shadow-[0_0_30px_rgba(6,182,212,0.4)] mx-auto flex items-center justify-center relative group">

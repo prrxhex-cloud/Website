@@ -14,8 +14,9 @@
     "electron-builder": "^24.13.3"
   },
   "build": {
-    "appId": "com.prrx.hex",
+    "appId": "com.prrxhex.app",
     "productName": "PRRX HEX",
+    "compression": "maximum",
     "directories": {
       "output": "release"
     },
@@ -25,10 +26,14 @@
       "www/**/*"
     ],
     "win": {
-      "target": "portable"
+      "target": "portable",
+      "icon": "www/logo.png"
     },
     "portable": {
       "artifactName": "${productName}.exe"
     }
+  },
+  "dependencies": {
+    "express-static": "^1.2.6"
   }
 }
