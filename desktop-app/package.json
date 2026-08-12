@@ -18,7 +18,7 @@
     "productName": "PRRX HEX",
     "compression": "maximum",
     "directories": {
-      "output": "release"
+      "output": "dist-electron"
     },
     "files": [
       "main.js",
