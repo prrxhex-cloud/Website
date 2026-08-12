@@ -95,19 +95,20 @@ export default function DesktopLauncher() {
   };
 
   return (
-    <div className="h-full w-full text-white font-inter flex flex-col items-center justify-center p-6 relative select-none bg-black/5" style={{ WebkitAppRegion: 'drag' }}>
+    <div className="h-[100vh] w-full text-white font-inter flex flex-col items-center justify-center relative select-none bg-slate-950" style={{ WebkitAppRegion: 'drag' }}>
       
       {/* Background Glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
+      <TitleBar />
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-[340px] bg-slate-900/60 backdrop-blur-xl border border-white/5 p-6 rounded-none shadow-2xl relative z-10 flex flex-col"
+        className="w-full h-full max-w-[340px] p-6 pt-12 relative z-10 flex flex-col justify-center"
         style={{ WebkitAppRegion: 'no-drag' }}
       >
-        <TitleBar />
 
         {/* Header */}
         <div className="text-center space-y-4 mb-6 mt-4">

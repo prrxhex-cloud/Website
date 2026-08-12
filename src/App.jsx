@@ -98,6 +98,28 @@ const AuthenticatedApp = () => {
   );
 };
 
+import { useLocation } from 'react-router-dom';
+
+const ElectronLayout = ({ children }) => {
+  const location = useLocation();
+  const isLauncher = location.pathname === '/launcher';
+  
+  if (!window.electronAPI || isLauncher) {
+    return <>{children}</>;
+  }
+
+  return (
+    <div className="h-screen w-full bg-[var(--bg-main)] flex flex-col overflow-hidden">
+      <div className="flex-none w-full z-[99999]">
+        <TitleBar />
+      </div>
+      <div className="flex-1 w-full overflow-y-auto overflow-x-hidden custom-scrollbar relative">
+        {children}
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
@@ -108,8 +130,6 @@ function App() {
     }
   }, []);
 
-  const isElectron = !!window.electronAPI;
-
   const content = (
     <ThemeProvider>
       <AuthProvider>
@@ -117,13 +137,15 @@ function App() {
           <PwaProvider>
             <QueryClientProvider client={queryClientInstance}>
               <Router>
-                <NetworkGuard>
-                  {isInitialLoad ? (
-                    <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
-                  ) : (
-                    <AuthenticatedApp />
-                  )}
-                </NetworkGuard>
+                <ElectronLayout>
+                  <NetworkGuard>
+                    {isInitialLoad ? (
+                      <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
+                    ) : (
+                      <AuthenticatedApp />
+                    )}
+                  </NetworkGuard>
+                </ElectronLayout>
               </Router>
               <Toaster />
             </QueryClientProvider>
@@ -132,32 +154,6 @@ function App() {
       </AuthProvider>
     </ThemeProvider>
   );
-
-  if (isElectron) {
-    return (
-      <div className="min-h-screen w-full bg-[var(--bg-main)] relative flex flex-col">
-        <div className="fixed top-0 left-0 right-0 z-[99999]">
-          <TitleBar />
-        </div>
-        <style>
-          {`
-            /* Push fixed elements down to make room for TitleBar in Electron */
-            .sticky.top-0, .fixed.top-0 {
-              top: 32px !important;
-            }
-            /* Reset TitleBar to actual top */
-            .fixed.top-0.z-\\[99999\\] {
-              top: 0 !important;
-            }
-            /* Hide the body overflow if necessary, or just let it scroll natively */
-          `}
-        </style>
-        <div className="flex-1 w-full pt-8">
-          {content}
-        </div>
-      </div>
-    );
-  }
 
   return content;
 }

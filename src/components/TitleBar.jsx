@@ -7,7 +7,7 @@ export default function TitleBar() {
 
   return (
     <div 
-      className="h-8 w-full flex items-center justify-between absolute top-0 left-0 right-0 z-50 px-3 bg-transparent select-none transition-colors duration-300"
+      className="h-8 w-full flex items-center justify-between relative z-50 px-3 bg-transparent select-none transition-colors duration-300"
       style={{ WebkitAppRegion: 'drag' }}
       onDoubleClick={() => window.electronAPI.maximizeApp()}
     >
