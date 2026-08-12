@@ -16,7 +16,7 @@
   "build": {
     "appId": "com.prrxhex.app",
     "productName": "PRRX HEX",
-    "compression": "normal",
+    "compression": "maximum",
     "directories": {
       "output": "dist-ui"
     },
