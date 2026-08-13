@@ -7,5 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   maximizeApp: () => ipcRenderer.send('maximize-app'),
   keyAuthLogin: (type, username, password) => ipcRenderer.invoke('keyauth-login', { type, username, password }),
   keyAuthLicense: (type, license) => ipcRenderer.invoke('keyauth-license', { type, license }),
-  downloadAndInstallUpdate: (url) => ipcRenderer.invoke('download-and-install-update', url)
+  downloadAndInstallUpdate: (url) => ipcRenderer.invoke('download-and-install-update', url),
+  downloadUpdateBackground: (url) => ipcRenderer.invoke('download-update-background', url),
+  installUpdateBackground: (path) => ipcRenderer.invoke('install-update-background', path)
 });

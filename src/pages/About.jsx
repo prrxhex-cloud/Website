@@ -168,6 +168,25 @@ export default function About() {
               )}
             </AnimatePresence>
           </div>
+          
+          {/* Background Auto-Update Settings */}
+          <div className="mt-8 pt-8 border-t border-[var(--border-color)] flex items-center justify-between gap-4 max-w-sm mx-auto">
+            <div className="text-left">
+              <h3 className="font-outfit font-bold text-sm text-[var(--text-heading)]">Auto-Download Updates</h3>
+              <p className="font-inter text-xs text-[var(--text-muted)] mt-1">Download updates in the background automatically</p>
+            </div>
+            <button
+              onClick={() => {
+                const isCurrentlyDisabled = localStorage.getItem('disableAutoUpdate') === 'true';
+                localStorage.setItem('disableAutoUpdate', isCurrentlyDisabled ? 'false' : 'true');
+                // Force state update to re-render UI toggle
+                setStatus(status === 'idle' ? 'idle ' : 'idle'); 
+              }}
+              className={`w-12 h-6 rounded-full transition-colors relative ${localStorage.getItem('disableAutoUpdate') === 'true' ? 'bg-slate-700' : 'bg-[#06b6d4]'}`}
+            >
+              <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${localStorage.getItem('disableAutoUpdate') === 'true' ? 'left-1' : 'left-7'}`} />
+            </button>
+          </div>
         </motion.div>
       </main>
 

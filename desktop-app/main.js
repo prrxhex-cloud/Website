@@ -231,3 +231,58 @@ ipcMain.handle('download-and-install-update', async (event, url) => {
     }
   });
 });
+
+// Background Downloader (Does not install automatically)
+ipcMain.handle('download-update-background', async (event, url) => {
+  return new Promise((resolve) => {
+    try {
+      const installerPath = path.join(os.tmpdir(), 'PRRX_HEX_Background_Update.exe');
+      const fileStream = fs.createWriteStream(installerPath);
+
+      https.get(url, (response) => {
+        if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+          https.get(response.headers.location, handleResponse);
+        } else {
+          handleResponse(response);
+        }
+
+        function handleResponse(res) {
+          if (res.statusCode !== 200) {
+            resolve({ success: false, error: `Server responded with status code: ${res.statusCode}` });
+            return;
+          }
+          res.pipe(fileStream);
+          fileStream.on('finish', () => {
+            fileStream.close(() => {
+              // Return the path so it can be installed later
+              resolve({ success: true, path: installerPath });
+            });
+          });
+        }
+      }).on('error', (err) => {
+        fs.unlink(installerPath, () => {});
+        resolve({ success: false, error: err.message });
+      });
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});
+
+// Execute the background downloaded update
+ipcMain.handle('install-update-background', async (event, installerPath) => {
+  try {
+    if (!fs.existsSync(installerPath)) {
+      return { success: false, error: "Installer file not found." };
+    }
+    const subprocess = spawn(installerPath, [], {
+      detached: true,
+      stdio: 'ignore'
+    });
+    subprocess.unref();
+    app.quit();
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});

@@ -8,16 +8,56 @@ import DashboardLicenseCard from '@/components/dashboard/DashboardLicenseCard';
 import DashboardAnnouncements from '@/components/dashboard/DashboardAnnouncements';
 import DashboardServiceStatus from '@/components/dashboard/DashboardServiceStatus';
 import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
+import { ToastAction } from '@/components/ui/toast';
+import appInfo from '../../desktop-app/package.json';
 
 export default function Dashboard() {
   const { user: currentUser, isAuthenticated, isLoadingAuth, logout } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isLoadingAuth && !isAuthenticated) {
       navigate('/login');
     }
   }, [isAuthenticated, isLoadingAuth, navigate]);
+
+  // Background Updater Logic
+  useEffect(() => {
+    if (!isAuthenticated || !window.electronAPI) return;
+    
+    const disableAutoUpdate = localStorage.getItem('disableAutoUpdate') === 'true';
+    if (disableAutoUpdate) return;
+
+    const checkBackgroundUpdate = async () => {
+      try {
+        const res = await fetch(`https://raw.githubusercontent.com/prrxhex-cloud/Website/main/version.json?t=${Date.now()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (data.version && data.version !== appInfo.version && data.downloadUrl) {
+          const result = await window.electronAPI.downloadUpdateBackground(data.downloadUrl);
+          if (result && result.success && result.path) {
+            toast({
+              title: "Update Ready!",
+              description: `Version ${data.version} is downloaded.`,
+              duration: 999999,
+              action: (
+                <ToastAction altText="Install" onClick={() => window.electronAPI.installUpdateBackground(result.path)}>
+                  Install Now
+                </ToastAction>
+              ),
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Background update check failed", e);
+      }
+    };
+    
+    setTimeout(checkBackgroundUpdate, 3000);
+  }, [isAuthenticated, toast]);
 
   if (isLoadingAuth || !currentUser) return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)]">
