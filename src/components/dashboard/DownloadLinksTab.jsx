@@ -27,7 +27,7 @@ export default function DownloadLinksTab() {
   useEffect(() => { load(); }, []);
 
   const startEdit = (link) => setEditing({ ...link });
-  const startNew = (type) => setEditing({ type, label: type === 'external' ? '⚡ External Panel' : '🔥 Internal Panel', url: '', version: 'V7A BETA', active: true });
+  const startNew = (type) => setEditing({ type, label: type === 'external' ? '⚡ External Panel' : type === 'internal' ? '🔥 Internal Panel' : '🚀 PRRX Launcher', url: '', version: type === 'launcher' ? 'v1.0.0' : 'V7A BETA', active: true });
 
   const save = async () => {
     setSaving(true);
@@ -74,7 +74,7 @@ export default function DownloadLinksTab() {
     }
   };
 
-  const typeColor = (t) => t === 'external' ? '#00d4ff' : '#aa44ff';
+  const typeColor = (t) => t === 'external' ? '#00d4ff' : t === 'internal' ? '#aa44ff' : '#f59e0b';
 
   return (
     <div className="space-y-4">
@@ -88,6 +88,10 @@ export default function DownloadLinksTab() {
           <button onClick={() => startNew('internal')} className="flex items-center gap-1.5 font-inter text-xs px-3 py-1.5 rounded-lg transition-all"
             style={{ background: 'rgba(170,68,255,0.1)', border: '1px solid rgba(170,68,255,0.3)', color: '#aa44ff' }}>
             <Plus className="w-3.5 h-3.5" /> Internal
+          </button>
+          <button onClick={() => startNew('launcher')} className="flex items-center gap-1.5 font-inter text-xs px-3 py-1.5 rounded-lg transition-all"
+            style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', color: '#f59e0b' }}>
+            <Plus className="w-3.5 h-3.5" /> Launcher
           </button>
         </div>
       </div>

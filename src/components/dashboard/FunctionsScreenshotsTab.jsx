@@ -29,7 +29,9 @@ export default function FunctionsScreenshotsTab() {
     internal_toggles: '51',
     categories_count: '6',
     external_description: 'External memory-safe overlay with smooth aim assistance, radar ESP, and 120FPS bypass capabilities.',
-    internal_description: 'Advanced in-game injection overlay features: Headshot Aimbot, ESP Skeleton, Color Chams, and Custom Hotkeys.'
+    internal_description: 'Advanced in-game injection overlay features: Headshot Aimbot, ESP Skeleton, Color Chams, and Custom Hotkeys.',
+    external_labels: {},
+    internal_labels: {}
   });
 
   const [files, setFiles] = useState({
@@ -254,6 +256,23 @@ export default function FunctionsScreenshotsTab() {
                       disabled={hasFile}
                       placeholder="https://example.com/image.png"
                       className="w-full px-3 py-2 rounded-lg font-inter text-sm outline-none transition-all disabled:opacity-50 text-white"
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground font-inter flex items-center gap-1.5 mb-1.5">Custom Label (Optional)</label>
+                    <input 
+                      type="text" 
+                      value={meta[`${activePanel}_labels`]?.[cat.key] || ''} 
+                      onChange={e => setMeta(prev => ({
+                        ...prev,
+                        [`${activePanel}_labels`]: {
+                          ...prev[`${activePanel}_labels`],
+                          [cat.key]: e.target.value
+                        }
+                      }))}
+                      placeholder={cat.label}
+                      className="w-full px-3 py-2 rounded-lg font-inter text-sm outline-none transition-all text-white"
                       style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
                     />
                   </div>

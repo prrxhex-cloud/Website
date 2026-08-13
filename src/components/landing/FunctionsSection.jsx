@@ -29,7 +29,9 @@ export default function FunctionsSection() {
       internal_toggles: '51',
       categories_count: '6',
       external_description: 'External memory-safe overlay with smooth aim assistance, radar ESP, and 120FPS bypass capabilities.',
-      internal_description: 'Advanced in-game injection overlay features: Headshot Aimbot, ESP Skeleton, Color Chams, and Custom Hotkeys.'
+      internal_description: 'Advanced in-game injection overlay features: Headshot Aimbot, ESP Skeleton, Color Chams, and Custom Hotkeys.',
+      external_labels: {},
+      internal_labels: {}
     };
   });
 
@@ -223,7 +225,9 @@ export default function FunctionsSection() {
               { key: 'misc', label: 'Misc Modifications' },
               { key: 'keybinds', label: 'Keybind Config' },
               { key: 'settings', label: 'Settings & Security' }
-            ].map((cat) => (
+            ].map((cat) => {
+              const customLabel = meta[`${activePanel}_labels`]?.[cat.key] || cat.label;
+              return (
               <div key={cat.key} className="clean-card p-3 bg-[var(--bg-card)] border border-[var(--border-color)] space-y-2 shadow-sm text-left">
                 <div 
                   className="aspect-[16/10] bg-slate-950 rounded-xl overflow-hidden relative flex items-center justify-center p-0.5 group cursor-pointer border border-slate-800"
@@ -233,7 +237,7 @@ export default function FunctionsSection() {
                     <>
                       <img 
                         src={currentImages[cat.key]} 
-                        alt={cat.label} 
+                        alt={customLabel} 
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 rounded-lg" 
                       />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-outfit text-xs font-bold gap-1.5">
@@ -243,13 +247,13 @@ export default function FunctionsSection() {
                   ) : (
                     <div className="text-center">
                       <ImageIcon className="w-6 h-6 text-slate-600 mx-auto mb-1" />
-                      <span className="font-inter text-[11px] text-[var(--text-muted)] font-semibold">{cat.label}</span>
+                      <span className="font-inter text-[11px] text-[var(--text-muted)] font-semibold">{customLabel}</span>
                     </div>
                   )}
                 </div>
-                <div className="font-outfit font-bold text-xs text-[var(--text-heading)] px-1">{cat.label}</div>
+                <div className="font-outfit font-bold text-xs text-[var(--text-heading)] px-1">{customLabel}</div>
               </div>
-            ))}
+            )})}
           </div>
         </ScrollReveal>
 

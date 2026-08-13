@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, X, Zap, Shield, Smartphone } from 'lucide-react';
+import { Download, X, Zap, Shield, Smartphone, Rocket } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { usePwa } from '@/context/PwaContext';
@@ -11,6 +11,7 @@ const FALLBACK_INTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main
 export default function DownloadModal({ open, onClose }) {
   const [externalUrl, setExternalUrl] = useState(FALLBACK_EXTERNAL);
   const [internalUrl, setInternalUrl] = useState(FALLBACK_INTERNAL);
+  const [launcherUrl, setLauncherUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const { promptInstall, isInstalled } = usePwa();
 
@@ -21,8 +22,10 @@ export default function DownloadModal({ open, onClose }) {
       const links = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       const ext = links.find(l => l.type === 'external');
       const int_ = links.find(l => l.type === 'internal');
+      const laun = links.find(l => l.type === 'launcher');
       if (ext?.url) setExternalUrl(ext.url);
       if (int_?.url) setInternalUrl(int_.url);
+      if (laun?.url) setLauncherUrl(laun.url);
     }).catch(e => console.error(e)).finally(() => setLoading(false));
   }, [open]);
 
@@ -74,6 +77,38 @@ export default function DownloadModal({ open, onClose }) {
               </div>
             ) : (
               <div className="space-y-4">
+                {/* PRRX Launcher */}
+                {launcherUrl && (
+                  <motion.a
+                    href={launcherUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={onClose}
+                    whileHover={{ scale: 1.02, boxShadow: '0 0 50px rgba(245,158,11,0.4)' }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-4 p-5 rounded-2xl cursor-pointer transition-all"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(200,100,0,0.08))',
+                      border: '1px solid rgba(245,158,11,0.35)',
+                      boxShadow: '0 0 24px rgba(245,158,11,0.1)',
+                    }}
+                  >
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)' }}>
+                      <Rocket className="w-5 h-5" style={{ color: '#f59e0b' }} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-orbitron font-bold text-sm tracking-wider" style={{ color: '#f59e0b' }}>
+                        🚀 PRRX Launcher (PC Desktop)
+                      </p>
+                      <p className="font-inter text-xs text-muted-foreground mt-0.5">
+                        Download the Desktop App to access all panels
+                      </p>
+                    </div>
+                    <Download className="w-4 h-4 flex-shrink-0" style={{ color: '#f59e0b' }} />
+                  </motion.a>
+                )}
+
                 {/* External Panel */}
                 <motion.a
                   href={externalUrl}
