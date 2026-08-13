@@ -14,6 +14,7 @@ export default function DesktopLauncher() {
   const [email, setEmail] = useState(''); // Reused for KeyAuth username
   const [password, setPassword] = useState('');
   const [license, setLicense] = useState('');
+  const [rememberMe, setRememberMe] = useState(localStorage.getItem('prrx_remember_me') === 'true');
   const [activeTab, setActiveTab] = useState('WEB'); // 'WEB', 'EXTERNAL', 'INTERNAL'
   const navigate = useNavigate();
   const { loginWithKeyAuth, isAuthenticated, isLoadingAuth } = useAuth();
@@ -24,6 +25,18 @@ export default function DesktopLauncher() {
       handleSuccess();
     }
   }, [isAuthenticated, isLoadingAuth]);
+
+  // Load saved credentials on mount
+  useEffect(() => {
+    if (rememberMe) {
+      const savedEmail = localStorage.getItem('prrx_keyauth_email');
+      const savedPass = localStorage.getItem('prrx_keyauth_pass');
+      const savedLic = localStorage.getItem('prrx_keyauth_license');
+      if (savedEmail) setEmail(savedEmail);
+      if (savedPass) setPassword(savedPass);
+      if (savedLic) setLicense(savedLic);
+    }
+  }, []);
 
   const handleSuccess = () => {
     if (window.electronAPI && window.electronAPI.onLoginSuccess) {
@@ -54,6 +67,18 @@ export default function DesktopLauncher() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      
+      // Save for next time if checked
+      if (rememberMe) {
+        localStorage.setItem('prrx_remember_me', 'true');
+        localStorage.setItem('prrx_keyauth_email', email);
+        localStorage.setItem('prrx_keyauth_pass', password);
+      } else {
+        localStorage.removeItem('prrx_remember_me');
+        localStorage.removeItem('prrx_keyauth_email');
+        localStorage.removeItem('prrx_keyauth_pass');
+      }
+
       handleSuccess();
     } catch (err) {
       setError('Invalid email or password.');
@@ -89,6 +114,21 @@ export default function DesktopLauncher() {
       }
 
       if (response && response.success) {
+        if (rememberMe) {
+          localStorage.setItem('prrx_remember_me', 'true');
+          if (isLicense) {
+            localStorage.setItem('prrx_keyauth_license', license);
+          } else {
+            localStorage.setItem('prrx_keyauth_email', email);
+            localStorage.setItem('prrx_keyauth_pass', password);
+          }
+        } else {
+          localStorage.removeItem('prrx_remember_me');
+          localStorage.removeItem('prrx_keyauth_email');
+          localStorage.removeItem('prrx_keyauth_pass');
+          localStorage.removeItem('prrx_keyauth_license');
+        }
+
         loginWithKeyAuth(response.user);
         handleSuccess();
       } else {
@@ -182,6 +222,19 @@ export default function DesktopLauncher() {
                 />
               </div>
 
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  type="checkbox"
+                  id="rememberWeb"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-slate-950"
+                />
+                <label htmlFor="rememberWeb" className="text-xs text-slate-400 cursor-pointer select-none">
+                  Remember credentials
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -259,6 +312,19 @@ export default function DesktopLauncher() {
                     <Key size={16} />
                   </div>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  type="checkbox"
+                  id="rememberAuth"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-slate-950"
+                />
+                <label htmlFor="rememberAuth" className="text-xs text-slate-400 cursor-pointer select-none">
+                  Remember credentials
+                </label>
               </div>
 
               <div className="space-y-3 pt-2">

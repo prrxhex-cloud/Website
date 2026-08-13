@@ -340,8 +340,22 @@ ipcMain.on('update-discord-rpc-user', (event, username) => {
 ipcMain.on('discord-rpc-toggle', (event, enabled) => {
   rpcEnabled = enabled;
   if (enabled) {
-    setActivity();
-  } else if (rpcReady) {
-    rpc.clearActivity().catch(console.error);
+    if (!rpcReady) {
+      rpc.login({ clientId }).catch(console.error);
+    } else {
+      setActivity();
+    }
+  } else {
+    if (rpcReady) {
+      rpc.clearActivity().catch(console.error);
+      rpc.destroy().catch(console.error);
+    }
+    rpcReady = false;
+    // Re-initialize client so it can be turned back on later
+    rpc = new DiscordRPC.Client({ transport: 'ipc' });
+    rpc.on('ready', () => {
+      rpcReady = true;
+      if (rpcEnabled) setActivity();
+    });
   }
 });
