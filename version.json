@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.1",
   "downloadUrl": "https://github.com/prrxhex-cloud/Website/releases/download/v1.0.2/PRRX HEX.exe",
   "changelog": "Bug fixes and security updates\n- Added new automated updater system\n- Implemented secure AppData storage logic\n- Optimized UI layout for Dashboard"
 }
