@@ -309,8 +309,6 @@ async function setActivity() {
       startTimestamp,
       largeImageKey: "logo", // Ensure your uploaded JPEG in the portal is named 'logo'
       largeImageText: "PRRX HEX",
-      smallImageKey: "small_icon", // Optional
-      smallImageText: "PRRX",
       instance: false,
       buttons: [
         { label: "<3 Buying Here !", url: "https://wa.me/+94761386077" },
