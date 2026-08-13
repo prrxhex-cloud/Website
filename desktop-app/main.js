@@ -198,20 +198,20 @@ ipcMain.handle('download-and-install-update', async (event, url) => {
           res.pipe(fileStream);
 
           fileStream.on('finish', () => {
-            fileStream.close();
-            
-            // Spawn the installer detached so it survives the app exit
-            const subprocess = spawn(installerPath, [], {
-              detached: true,
-              stdio: 'ignore'
-            });
-            
-            subprocess.unref();
+            fileStream.close(() => {
+              // Spawn the installer detached so it survives the app exit
+              const subprocess = spawn(installerPath, [], {
+                detached: true,
+                stdio: 'ignore'
+              });
+              
+              subprocess.unref();
 
-            // Quit application to release file locks for the installer
-            app.quit();
-            
-            resolve({ success: true });
+              // Quit application to release file locks for the installer
+              app.quit();
+              
+              resolve({ success: true });
+            });
           });
         }
       }).on('error', (err) => {
