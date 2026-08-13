@@ -307,7 +307,7 @@ async function setActivity() {
       details: "Username: " + currentRPCUser + " | Expiry: Lifetime",
       state: "discord.gg/EuwhvXXfJC",
       startTimestamp,
-      largeImageKey: "https://cdn.discordapp.com/attachments/1490548124094042153/1537792554517528577/MOSHED-2026-8-13-20-57-41-ezgif.com-optimize.gif?ex=6a80546b&is=6a7f02eb&hm=3689c189f692822b97e0ddd390d34187ca65f901ef448b92d5b4a80f64f377d1",
+      largeImageKey: "logo", // Ensure your uploaded JPEG in the portal is named 'logo'
       largeImageText: "PRRX HEX",
       smallImageKey: "small_icon", // Optional
       smallImageText: "PRRX",
