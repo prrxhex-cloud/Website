@@ -297,13 +297,14 @@ const rpc = new DiscordRPC.Client({ transport: 'ipc' });
 const startTimestamp = new Date();
 let rpcEnabled = true; // Default state
 let rpcReady = false;
+let currentRPCUser = "Guest";
 
 async function setActivity() {
   if (!rpc || !rpcEnabled || !rpcReady) return;
   
   try {
     rpc.setActivity({
-      details: "Username: " + (internalKeyAuth.user_data?.username || "Guest") + " | Expiry: Lifetime",
+      details: "Username: " + currentRPCUser + " | Expiry: Lifetime",
       state: "discord.gg/EuwhvXXfJC",
       startTimestamp,
       largeImageKey: "logo", // Ensure you upload an image named "logo" in Discord Developer Portal
@@ -324,15 +325,17 @@ async function setActivity() {
 rpc.on('ready', () => {
   rpcReady = true;
   setActivity();
-  
-  // Refresh activity every 15 seconds to update username if logged in
-  setInterval(() => {
-    setActivity();
-  }, 15e3);
 });
 
 // Attempt login non-blocking
 rpc.login({ clientId }).catch(console.error);
+
+ipcMain.on('update-discord-rpc-user', (event, username) => {
+  if (username) {
+    currentRPCUser = username;
+    setActivity();
+  }
+});
 
 ipcMain.on('discord-rpc-toggle', (event, enabled) => {
   rpcEnabled = enabled;

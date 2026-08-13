@@ -26,6 +26,13 @@ export default function Dashboard() {
   }, [discordRPC]);
 
   useEffect(() => {
+    if (currentUser && window.electronAPI && window.electronAPI.updateDiscordRPCUser) {
+      const displayUsername = currentUser.full_name?.split(' ')[0] || currentUser.username || currentUser.email?.split('@')[0] || 'User';
+      window.electronAPI.updateDiscordRPCUser(displayUsername);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
     if (!isLoadingAuth && !isAuthenticated) {
       navigate('/login');
     }
