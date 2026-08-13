@@ -39,12 +39,12 @@ function startServer() {
     // We must use a fixed port so the origin (http://localhost:54321) remains constant.
     // If the port changes, the browser clears localStorage/IndexedDB and the user is logged out.
     const FIXED_PORT = 54321;
-    server = expressApp.listen(FIXED_PORT, '127.0.0.1', () => {
-      resolve(server.address().port);
+    server = expressApp.listen(FIXED_PORT, '127.0.0.1', function() {
+      resolve(this.address().port);
     }).on('error', (err) => {
       // If the port is somehow in use, fall back to a random port (will lose login state for this session)
-      server = expressApp.listen(0, '127.0.0.1', () => {
-        resolve(server.address().port);
+      server = expressApp.listen(0, '127.0.0.1', function() {
+        resolve(this.address().port);
       });
     });
   });
