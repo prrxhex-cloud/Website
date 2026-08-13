@@ -293,7 +293,7 @@ ipcMain.handle('install-update-background', async (event, installerPath) => {
 // ==========================================
 const clientId = '1537775256175902792';
 DiscordRPC.register(clientId);
-const rpc = new DiscordRPC.Client({ transport: 'ipc' });
+let rpc = new DiscordRPC.Client({ transport: 'ipc' });
 const startTimestamp = new Date();
 let rpcEnabled = true; // Default state
 let rpcReady = false;
