@@ -275,6 +275,21 @@ export default function DesktopLauncher() {
             </motion.div>
           )}
         </div>
+        
+        {/* Settings Toggle */}
+        <div className="mt-4 flex justify-center">
+          <button 
+            type="button"
+            onClick={() => {
+              const current = localStorage.getItem('prrx_show_fps') === 'true';
+              localStorage.setItem('prrx_show_fps', (!current).toString());
+              window.dispatchEvent(new Event('prrx_toggle_fps'));
+            }}
+            className="text-[10px] text-slate-500 hover:text-white uppercase tracking-wider font-bold transition-colors"
+          >
+            Toggle FPS Overlay
+          </button>
+        </div>
       </motion.div>
     </div>
   );

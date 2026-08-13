@@ -8,23 +8,25 @@ import { ThemeProvider } from '@/lib/ThemeContext';
 import { SoundProvider } from '@/context/SoundContext';
 import { PwaProvider } from '@/context/PwaContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import Home from '@/pages/Home.jsx';
-import Functions from '@/pages/Functions';
 import NetworkGuard from '@/components/NetworkGuard';
-
-import Dashboard from '@/pages/Dashboard';
-import Prices from '@/pages/Prices.jsx';
-import Resellers from '@/pages/Resellers';
-import Status from '@/pages/Status';
-import Admin from '@/pages/Admin';
-import Freebies from '@/pages/Freebies';
-import Login from '@/pages/Login';
-import DesktopLauncher from '@/pages/DesktopLauncher';
-import LiveDemo from '@/pages/LiveDemo';
-import About from '@/pages/About';
 import LiquidLoader from '@/components/ui/LiquidLoader';
-import React from 'react';
+import React, { Suspense } from 'react';
 import TitleBar from '@/components/TitleBar';
+import FpsOverlay from '@/components/ui/FpsOverlay';
+
+// Lazy load heavy components to ensure instant startup
+const Home = React.lazy(() => import('@/pages/Home.jsx'));
+const Functions = React.lazy(() => import('@/pages/Functions'));
+const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
+const Prices = React.lazy(() => import('@/pages/Prices.jsx'));
+const Resellers = React.lazy(() => import('@/pages/Resellers'));
+const Status = React.lazy(() => import('@/pages/Status'));
+const Admin = React.lazy(() => import('@/pages/Admin'));
+const Freebies = React.lazy(() => import('@/pages/Freebies'));
+const Login = React.lazy(() => import('@/pages/Login'));
+const DesktopLauncher = React.lazy(() => import('@/pages/DesktopLauncher'));
+const LiveDemo = React.lazy(() => import('@/pages/LiveDemo'));
+const About = React.lazy(() => import('@/pages/About'));
 
 // Protected Route Wrapper Component
 const ProtectedRoute = ({ children }) => {
@@ -78,25 +80,31 @@ const AuthenticatedApp = () => {
 
   // Render routes with explicit Public vs Protected access
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/launcher" element={<DesktopLauncher />} />
+    <Suspense fallback={
+      <div className="fixed inset-0 flex items-center justify-center bg-[var(--bg-main)]">
+        <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin"></div>
+      </div>
+    }>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/launcher" element={<DesktopLauncher />} />
 
-      {/* PROTECTED ROUTES (Must login to access) */}
-      <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-      <Route path="/status" element={<ProtectedRoute><Status /></ProtectedRoute>} />
-      <Route path="/live-demo" element={<ProtectedRoute><LiveDemo /></ProtectedRoute>} />
-      <Route path="/functions" element={<ProtectedRoute><Functions /></ProtectedRoute>} />
-      
-      <Route path="/prices" element={<ProtectedRoute><Prices /></ProtectedRoute>} />
-      <Route path="/resellers" element={<ProtectedRoute><Resellers /></ProtectedRoute>} />
-      <Route path="/freebies" element={<ProtectedRoute><Freebies /></ProtectedRoute>} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+        {/* PROTECTED ROUTES (Must login to access) */}
+        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/status" element={<ProtectedRoute><Status /></ProtectedRoute>} />
+        <Route path="/live-demo" element={<ProtectedRoute><LiveDemo /></ProtectedRoute>} />
+        <Route path="/functions" element={<ProtectedRoute><Functions /></ProtectedRoute>} />
+        
+        <Route path="/prices" element={<ProtectedRoute><Prices /></ProtectedRoute>} />
+        <Route path="/resellers" element={<ProtectedRoute><Resellers /></ProtectedRoute>} />
+        <Route path="/freebies" element={<ProtectedRoute><Freebies /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
 
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 
@@ -148,6 +156,7 @@ function App() {
                     )}
                   </NetworkGuard>
                 </ElectronLayout>
+                <FpsOverlay />
               </Router>
               <Toaster />
             </QueryClientProvider>

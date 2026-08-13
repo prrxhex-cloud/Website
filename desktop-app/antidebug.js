@@ -1,11 +1,11 @@
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 
 function startAntiDebug() {
   const pid = process.pid;
   
-  // This PowerShell script compiles a small C# class in memory that uses Win32 APIs
-  // to check if a debugger is attached to the specific PID of this Electron app.
-  // It completely bypasses the need for node-gyp, Python, or Visual Studio Build Tools.
+  // This PowerShell script compiles the C# class ONCE into memory,
+  // then enters an infinite loop waiting for 'CHECK' on stdin.
+  // This prevents the massive CPU spikes from recompiling the script every 5 seconds.
   const psScript = `
     $code = @"
     using System;
@@ -29,25 +29,42 @@ function startAntiDebug() {
     }
 "@
     Add-Type -TypeDefinition $code
-    $isAttached = [AntiDebug]::IsDebuggerAttached(${pid})
-    if ($isAttached) {
-        Write-Output "DETECTED"
-    } else {
-        Write-Output "CLEAN"
+    
+    while ($true) {
+        $input = [Console]::ReadLine()
+        if ($input -eq "CHECK") {
+            $isAttached = [AntiDebug]::IsDebuggerAttached(${pid})
+            if ($isAttached) {
+                Write-Output "DETECTED"
+            } else {
+                Write-Output "CLEAN"
+            }
+        }
     }
   `;
 
-  // Run the check every 5 seconds
+  const encodedCommand = Buffer.from(psScript, 'utf16le').toString('base64');
+  
+  // Spawn the background PowerShell process
+  const psProcess = spawn('powershell.exe', ['-NoProfile', '-EncodedCommand', encodedCommand], { 
+    windowsHide: true,
+    stdio: ['pipe', 'pipe', 'ignore'] // pipe stdin/stdout, ignore stderr
+  });
+  
+  psProcess.stdout.on('data', (data) => {
+    if (data.toString().includes("DETECTED")) {
+      console.error("Debugger detected! Exiting immediately.");
+      process.exit(0);
+    }
+  });
+
+  // Run the check every 5 seconds by sending a signal to the running process
   setInterval(() => {
-    // We execute via cmd /c powershell because standard ExecutionPolicy might block script files,
-    // but running inline commands usually passes if properly escaped.
-    const encodedCommand = Buffer.from(psScript, 'utf16le').toString('base64');
-    exec(`powershell.exe -NoProfile -EncodedCommand ${encodedCommand}`, (error, stdout) => {
-      if (stdout && stdout.includes("DETECTED")) {
-        console.error("Debugger detected! Exiting immediately.");
-        process.exit(0);
-      }
-    });
+    try {
+      psProcess.stdin.write("CHECK\\r\\n");
+    } catch (e) {
+      // Process closed or pipe broken
+    }
   }, 5000);
 }
 

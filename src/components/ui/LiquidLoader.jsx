@@ -87,7 +87,7 @@ export default function LiquidLoader({ onComplete }) {
                   ]
                 }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-28 h-28 rounded-3xl bg-slate-900/80 border border-cyan-400/50 backdrop-blur-xl flex flex-col items-center justify-center p-3 relative group"
+                className="w-28 h-28 rounded-3xl bg-slate-900 border border-cyan-400/50 flex flex-col items-center justify-center p-3 relative group"
               >
                 {/* Brand Logo & Security Icon */}
                 <img src={logoImg} alt="PRRX Logo" className="w-12 h-12 object-contain rounded-xl shadow-md mb-1" />

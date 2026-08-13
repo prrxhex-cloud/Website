@@ -8,12 +8,15 @@ const os = require('os');
 const https = require('https');
 const { spawn } = require('child_process');
 
+// CRITICAL: Force GPU Hardware Acceleration for Low-End PCs
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+
 // CRITICAL: Protect user data by enforcing AppData directory securely
 app.setPath('userData', path.join(app.getPath('appData'), 'PRRX_HEX'));
 
-// Start checking for debuggers immediately
-startAntiDebug();
-
+// We will defer anti-debug startup to prevent blocking the UI thread
 const externalKeyAuth = new KeyAuth({
   name: "PRRX EXTERNAL",
   ownerid: "7P1GTjNd76",
@@ -92,6 +95,11 @@ async function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Defer heavy anti-debug scripts to let the UI render instantly
+  setTimeout(() => {
+    startAntiDebug();
+  }, 2000);
+
   createWindow();
 
   app.on('browser-window-created', (e, window) => {
