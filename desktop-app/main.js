@@ -304,7 +304,7 @@ async function setActivity() {
   
   try {
     rpc.setActivity({
-      details: "Username: " + currentRPCUser + " | Expiry: Lifetime",
+      details: "Username: " + currentRPCUser + " | Expiry: " + currentRPCExpiry,
       state: "discord.gg/EuwhvXXfJC",
       startTimestamp,
       largeImageKey: "logo", // Ensure your uploaded JPEG in the portal is named 'logo'
@@ -328,9 +328,10 @@ rpc.on('ready', () => {
 // Attempt login non-blocking
 rpc.login({ clientId }).catch(console.error);
 
-ipcMain.on('update-discord-rpc-user', (event, username) => {
+ipcMain.on('update-discord-rpc-user', (event, username, expiry) => {
   if (username) {
     currentRPCUser = username;
+    if (expiry) currentRPCExpiry = expiry;
     setActivity();
   }
 });

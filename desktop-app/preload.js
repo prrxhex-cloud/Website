@@ -11,5 +11,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   downloadUpdateBackground: (url) => ipcRenderer.invoke('download-update-background', url),
   installUpdateBackground: (path) => ipcRenderer.invoke('install-update-background', path),
   toggleDiscordRPC: (enabled) => ipcRenderer.send('discord-rpc-toggle', enabled),
-  updateDiscordRPCUser: (username) => ipcRenderer.send('update-discord-rpc-user', username)
+  updateDiscordRPCUser: (username, expiry) => ipcRenderer.send('update-discord-rpc-user', username, expiry)
 });

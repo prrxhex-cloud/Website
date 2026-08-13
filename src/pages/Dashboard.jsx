@@ -28,7 +28,18 @@ export default function Dashboard() {
   useEffect(() => {
     if (currentUser && window.electronAPI && window.electronAPI.updateDiscordRPCUser) {
       const displayUsername = currentUser.full_name?.split(' ')[0] || currentUser.username || currentUser.email?.split('@')[0] || 'User';
-      window.electronAPI.updateDiscordRPCUser(displayUsername);
+      
+      let displayExpiry = "Lifetime";
+      const keyAuthData = currentUser?.keyAuthData || currentUser;
+      const sub = keyAuthData?.subscriptions?.[0];
+      const expireTs = sub?.expiry ? parseInt(sub.expiry) * 1000 : null;
+      
+      if (expireTs) {
+        const date = new Date(expireTs);
+        displayExpiry = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, '0') + "-" + String(date.getDate()).padStart(2, '0');
+      }
+      
+      window.electronAPI.updateDiscordRPCUser(displayUsername, displayExpiry);
     }
   }, [currentUser]);
 
