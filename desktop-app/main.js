@@ -307,7 +307,7 @@ async function setActivity() {
       details: "Username: " + currentRPCUser + " | Expiry: Lifetime",
       state: "discord.gg/EuwhvXXfJC",
       startTimestamp,
-      largeImageKey: "https://i.imgur.com/ciYIvLp.gif",
+      largeImageKey: "https://i.imgur.com/xrbgCAI.gif",
       largeImageText: "PRRX HEX",
       smallImageKey: "small_icon", // Optional
       smallImageText: "PRRX",
