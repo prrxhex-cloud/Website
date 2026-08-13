@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, User, Lock, Key } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signInWithPopup, signInWithEmailAndPassword, auth, googleProvider } from '@/lib/firebase';
@@ -16,7 +16,14 @@ export default function DesktopLauncher() {
   const [license, setLicense] = useState('');
   const [activeTab, setActiveTab] = useState('WEB'); // 'WEB', 'EXTERNAL', 'INTERNAL'
   const navigate = useNavigate();
-  const { loginWithKeyAuth } = useAuth();
+  const { loginWithKeyAuth, isAuthenticated, isLoadingAuth } = useAuth();
+
+  // Auto-redirect if already logged in (speeds up Google login significantly)
+  useEffect(() => {
+    if (isAuthenticated && !isLoadingAuth) {
+      handleSuccess();
+    }
+  }, [isAuthenticated, isLoadingAuth]);
 
   const handleSuccess = () => {
     if (window.electronAPI && window.electronAPI.onLoginSuccess) {

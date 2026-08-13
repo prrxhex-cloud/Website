@@ -7,6 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const https = require('https');
 const { spawn } = require('child_process');
+const DiscordRPC = require('discord-rpc');
 
 // CRITICAL: Force GPU Hardware Acceleration for Low-End PCs
 app.commandLine.appendSwitch('enable-gpu-rasterization');
@@ -284,5 +285,60 @@ ipcMain.handle('install-update-background', async (event, installerPath) => {
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
+  }
+});
+
+// ==========================================
+// DISCORD RPC SETUP
+// ==========================================
+const clientId = '1537775256175902792';
+DiscordRPC.register(clientId);
+const rpc = new DiscordRPC.Client({ transport: 'ipc' });
+const startTimestamp = new Date();
+let rpcEnabled = true; // Default state
+let rpcReady = false;
+
+async function setActivity() {
+  if (!rpc || !rpcEnabled || !rpcReady) return;
+  
+  try {
+    rpc.setActivity({
+      details: "Username: " + (internalKeyAuth.user_data?.username || "Guest") + " | Expiry: Lifetime",
+      state: "discord.gg/EuwhvXXfJC",
+      startTimestamp,
+      largeImageKey: "logo", // Ensure you upload an image named "logo" in Discord Developer Portal
+      largeImageText: "PRRX HEX",
+      smallImageKey: "small_icon", // Optional
+      smallImageText: "PRRX",
+      instance: false,
+      buttons: [
+        { label: "<3 Buying Here !", url: "https://wa.me/+94761386077" },
+        { label: "Website", url: "https://prrxhex-cloud.github.io/Website/" }
+      ]
+    }).catch(console.error);
+  } catch (err) {
+    console.error("RPC Error:", err);
+  }
+}
+
+rpc.on('ready', () => {
+  rpcReady = true;
+  setActivity();
+  
+  // Refresh activity every 15 seconds to update username if logged in
+  setInterval(() => {
+    setActivity();
+  }, 15e3);
+});
+
+// Attempt login non-blocking
+rpc.login({ clientId }).catch(console.error);
+
+ipcMain.on('discord-rpc-toggle', (event, enabled) => {
+  rpcEnabled = enabled;
+  if (enabled) {
+    setActivity();
+  } else if (rpcReady) {
+    rpc.clearActivity().catch(console.error);
   }
 });

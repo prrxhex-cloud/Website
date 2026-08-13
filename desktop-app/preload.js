@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   keyAuthLicense: (type, license) => ipcRenderer.invoke('keyauth-license', { type, license }),
   downloadAndInstallUpdate: (url) => ipcRenderer.invoke('download-and-install-update', url),
   downloadUpdateBackground: (url) => ipcRenderer.invoke('download-update-background', url),
-  installUpdateBackground: (path) => ipcRenderer.invoke('install-update-background', path)
+  installUpdateBackground: (path) => ipcRenderer.invoke('install-update-background', path),
+  toggleDiscordRPC: (enabled) => ipcRenderer.send('discord-rpc-toggle', enabled)
 });

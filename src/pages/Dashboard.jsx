@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import { Download, MessageCircle, DollarSign, Activity, Store, Shield, LogOut, User, Info } from 'lucide-react';
@@ -16,6 +16,14 @@ export default function Dashboard() {
   const { user: currentUser, isAuthenticated, isLoadingAuth, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [discordRPC, setDiscordRPC] = useState(localStorage.getItem('discordRPC') !== 'false');
+
+  useEffect(() => {
+    localStorage.setItem('discordRPC', discordRPC.toString());
+    if (window.electronAPI && window.electronAPI.toggleDiscordRPC) {
+      window.electronAPI.toggleDiscordRPC(discordRPC);
+    }
+  }, [discordRPC]);
 
   useEffect(() => {
     if (!isLoadingAuth && !isAuthenticated) {
@@ -98,13 +106,22 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <button
-            onClick={() => logout(true)}
-            className="px-5 py-2.5 rounded-xl font-inter font-bold text-xs text-rose-500 bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 flex items-center gap-2 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <button
+              onClick={() => setDiscordRPC(!discordRPC)}
+              className={`px-5 py-2.5 rounded-xl font-inter font-bold text-xs flex items-center gap-2 transition-colors border ${discordRPC ? 'bg-[#5865F2]/10 text-[#5865F2] border-[#5865F2]/30 hover:bg-[#5865F2]/20' : 'bg-gray-500/10 text-[var(--text-muted)] border-gray-500/30 hover:bg-gray-500/20'}`}
+            >
+              <Activity className="w-4 h-4" />
+              <span>Discord RPC: {discordRPC ? 'ON' : 'OFF'}</span>
+            </button>
+            <button
+              onClick={() => logout(true)}
+              className="px-5 py-2.5 rounded-xl font-inter font-bold text-xs text-rose-500 bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 flex items-center gap-2 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
 
         {/* License & Actions Grid */}
