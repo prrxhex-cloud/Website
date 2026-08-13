@@ -307,7 +307,7 @@ async function setActivity() {
       details: "Username: " + currentRPCUser + " | Expiry: Lifetime",
       state: "discord.gg/EuwhvXXfJC",
       startTimestamp,
-      largeImageKey: "logo", // Ensure you upload an image named "logo" in Discord Developer Portal
+      largeImageKey: "https://i.imgur.com/ciYIvLp.gif",
       largeImageText: "PRRX HEX",
       smallImageKey: "small_icon", // Optional
       smallImageText: "PRRX",
