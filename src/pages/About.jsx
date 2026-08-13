@@ -3,9 +3,10 @@ import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import { RefreshCw, DownloadCloud, CheckCircle, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import appInfo from '../../desktop-app/package.json';
 
 export default function About() {
-  const currentVersion = "1.0.0";
+  const currentVersion = appInfo.version;
   const [status, setStatus] = useState("idle"); // idle, checking, available, up-to-date, error, downloading
   const [updateInfo, setUpdateInfo] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");

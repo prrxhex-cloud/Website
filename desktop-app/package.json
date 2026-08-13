@@ -1,6 +1,6 @@
 {
   "name": "prrx-hex-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PRRX HEX Desktop Application",
   "main": "main.js",
   "scripts": {
