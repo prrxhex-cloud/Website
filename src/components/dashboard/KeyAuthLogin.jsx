@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Shield, Eye, EyeOff, Loader2, User, Lock, Crown, Calendar, Clock, Copy, CheckCircle, Activity, Globe, Cpu, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const APP_NAME = import.meta.env.VITE_KEYAUTH_APP_NAME || 'PRRX WEBSITE';
-const OWNER_ID = import.meta.env.VITE_KEYAUTH_OWNER_ID || '7P1GTjNd76';
-const APP_VERSION = import.meta.env.VITE_KEYAUTH_APP_VERSION || '1.0';
+const APP_NAME = 'PRRX WEBSITE';
+const OWNER_ID = '7P1GTjNd76';
+const APP_VERSION = '1.0';
 const BASE_URL = 'https://keyauth.win/api/1.2/';
 
 function getBrowserHWID() {
