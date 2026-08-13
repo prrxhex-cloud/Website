@@ -8,7 +8,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBy" + "6s123sntfr869PqbCtB-70Ee1hx5ZHk",
   authDomain: "website-cf544.firebaseapp.com",
   projectId: "website-cf544",
-  storageBucket: "website-cf544.firebasestorage.app",
+  storageBucket: "website-cf544.appspot.com",
   messagingSenderId: "850601207355",
   appId: "1:850601207355:web:86566ef3e4620ace2a9e1e",
   measurementId: "G-EWVKPXNPQ5"
