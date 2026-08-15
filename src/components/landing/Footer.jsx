@@ -57,7 +57,14 @@ export default function Footer() {
                 { label: 'Resellers Portal', path: '/resellers' },
                 { label: 'Freebies & Trials', path: '/freebies' },
                 { label: 'User Dashboard', path: '/dashboard' },
-              ].map(link => (
+              ]
+                .filter(link => {
+                  if (window.electronAPI) {
+                    return !['/live-demo', '/functions', '/resellers'].includes(link.path);
+                  }
+                  return true;
+                })
+                .map(link => (
                 <li key={link.label}>
                   <button
                     onClick={() => navigate(link.path)}

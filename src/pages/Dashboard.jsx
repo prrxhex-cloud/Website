@@ -96,7 +96,7 @@ export default function Dashboard() {
     { label: 'Live Chat', desc: 'Chat with users & support', icon: MessageCircle, action: () => navigate('/chat') },
     { label: 'View Prices', desc: 'Browse subscription plans', icon: DollarSign, action: () => navigate('/prices') },
     { label: 'Service Status', desc: 'Check system availability', icon: Activity, action: () => navigate('/status') },
-    { label: 'Reseller Portal', desc: 'Manage reseller account', icon: Store, action: () => navigate('/resellers') },
+    ...(!window.electronAPI ? [{ label: 'Reseller Portal', desc: 'Manage reseller account', icon: Store, action: () => navigate('/resellers') }] : []),
     { label: 'Admin Portal', desc: 'Staff management access', icon: Shield, action: () => navigate('/admin') },
     { label: 'About & Updates', desc: 'Check app version', icon: Info, action: () => navigate('/about') },
   ];

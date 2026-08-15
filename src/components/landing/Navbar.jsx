@@ -34,6 +34,10 @@ export default function Navbar() {
 
   const isActive = (path) => location.pathname === path;
 
+  const filteredNavLinks = window.electronAPI
+    ? navLinks.filter(item => !['/live-demo', '/functions', '/resellers'].includes(item.path))
+    : navLinks;
+
   return (
     <div className="sticky top-0 z-50 w-full font-inter">
       {/* Top Announcement Bar */}
@@ -174,7 +178,7 @@ export default function Navbar() {
                   </button>
                 )}
 
-                {navLinks.map((item) => (
+                {filteredNavLinks.map((item) => (
                   <button
                     key={item.label}
                     onClick={() => handleNav(item.path)}

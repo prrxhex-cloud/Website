@@ -44,7 +44,13 @@ export default function FunctionsTeaserSection() {
           <ScrollReveal variant="fadeUp" delay={0}>
             <div 
               className="clean-card p-8 sm:p-10 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl h-full flex flex-col justify-between cursor-pointer group hover:border-[#06b6d4] transition-all shadow-md"
-              onClick={() => navigate('/functions', { state: { tab: 'external' } })}
+              onClick={() => {
+                if (window.electronAPI) {
+                  navigate('/prices');
+                } else {
+                  navigate('/functions', { state: { tab: 'external' } });
+                }
+              }}
             >
               <div className="space-y-4 mb-6 text-left">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#06b6d4]/15 text-[#06b6d4] border border-[#06b6d4]/30 font-outfit">
@@ -82,7 +88,13 @@ export default function FunctionsTeaserSection() {
           <ScrollReveal variant="fadeUp" delay={0.1}>
             <div 
               className="clean-card p-8 sm:p-10 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl h-full flex flex-col justify-between cursor-pointer group hover:border-violet-500 transition-all shadow-md"
-              onClick={() => navigate('/functions', { state: { tab: 'internal' } })}
+              onClick={() => {
+                if (window.electronAPI) {
+                  navigate('/prices');
+                } else {
+                  navigate('/functions', { state: { tab: 'internal' } });
+                }
+              }}
             >
               <div className="space-y-4 mb-6 text-left">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-violet-500/15 text-violet-400 border border-violet-500/30 font-outfit">

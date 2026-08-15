@@ -52,6 +52,14 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Restricted Route for Desktop App (Removed only from application, kept on website)
+const DesktopRestrictedRoute = ({ children }) => {
+  if (window.electronAPI) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+};
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
@@ -92,11 +100,11 @@ const AuthenticatedApp = () => {
         {/* PROTECTED ROUTES (Must login to access) */}
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/status" element={<ProtectedRoute><Status /></ProtectedRoute>} />
-        <Route path="/live-demo" element={<ProtectedRoute><LiveDemo /></ProtectedRoute>} />
-        <Route path="/functions" element={<ProtectedRoute><Functions /></ProtectedRoute>} />
+        <Route path="/live-demo" element={<ProtectedRoute><DesktopRestrictedRoute><LiveDemo /></DesktopRestrictedRoute></ProtectedRoute>} />
+        <Route path="/functions" element={<ProtectedRoute><DesktopRestrictedRoute><Functions /></DesktopRestrictedRoute></ProtectedRoute>} />
         
         <Route path="/prices" element={<ProtectedRoute><Prices /></ProtectedRoute>} />
-        <Route path="/resellers" element={<ProtectedRoute><Resellers /></ProtectedRoute>} />
+        <Route path="/resellers" element={<ProtectedRoute><DesktopRestrictedRoute><Resellers /></DesktopRestrictedRoute></ProtectedRoute>} />
         <Route path="/freebies" element={<ProtectedRoute><Freebies /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
