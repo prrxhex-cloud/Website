@@ -17,14 +17,14 @@ export default function DesktopLauncher() {
   const [rememberMe, setRememberMe] = useState(localStorage.getItem('prrx_remember_me') === 'true');
   const [activeTab, setActiveTab] = useState('WEB'); // 'WEB', 'EXTERNAL', 'INTERNAL'
   const navigate = useNavigate();
-  const { loginWithKeyAuth, isAuthenticated, isLoadingAuth } = useAuth();
+  const { loginWithKeyAuth, isAuthenticated, isLoadingAuth, logout } = useAuth();
 
-  // Auto-redirect if already logged in (speeds up Google login significantly)
+  // Ensure user is logged out when landing on the login screen
   useEffect(() => {
-    if (isAuthenticated && !isLoadingAuth) {
-      handleSuccess();
+    if (isAuthenticated) {
+      logout();
     }
-  }, [isAuthenticated, isLoadingAuth]);
+  }, [isAuthenticated, logout]);
 
   // Load saved credentials on mount
   useEffect(() => {
