@@ -98,7 +98,8 @@ export default function AppLauncher() {
       try {
         await window.electronAPI.launchEmulatorAndOptimize({
           emulatorPath: emuPath,
-          emulatorName: emuName
+          emulatorName: emuName,
+          emulatorType: selectedEmulator
         });
       } catch (err) {
         console.error("Emulator launch error:", err);

@@ -361,8 +361,8 @@ ipcMain.handle('stop-executable', async (event, filePath) => {
 });
 
 // Launch Emulator with Real System & FPS Optimization Batch Files
-ipcMain.handle('launch-emulator-and-optimize', async (event, { emulatorPath, emulatorName }) => {
-  const { exec, spawn } = require('child_process');
+ipcMain.handle('launch-emulator-and-optimize', async (event, { emulatorPath, emulatorName, emulatorType }) => {
+  const { exec } = require('child_process');
   
   // Optimizer batch files location
   const optimizersDir = path.join(__dirname, 'optimizers');
@@ -373,15 +373,16 @@ ipcMain.handle('launch-emulator-and-optimize', async (event, { emulatorPath, emu
       fs.mkdirSync(tempOptimizersDir, { recursive: true });
     }
     
-    // Copy optimizer files to temp directory for reliable execution
-    const batFiles = [
-      'PRRX_MAIN_OPTIMIZER.bat',
-      'PRRX_NETWORK_TUNER.bat',
-      'PRRX_MEMORY_TRIMMER.bat',
-      'PRRX_EMULATOR_BYPASS.bat'
+    // Copy all batch optimizer files
+    const allFiles = [
+      'PRRX_MAIN_BOOSTER.bat',
+      'PRRX_MEMORY_DUMP.bat',
+      'PRRX_KERNEL_NETWORK.bat',
+      'PRRX_FIX_ADB_BLUESTACKS.bat',
+      'PRRX_FIX_ADB_MSI.bat'
     ];
     
-    batFiles.forEach(file => {
+    allFiles.forEach(file => {
       const src = path.join(optimizersDir, file);
       const dest = path.join(tempOptimizersDir, file);
       if (fs.existsSync(src)) {
@@ -389,41 +390,66 @@ ipcMain.handle('launch-emulator-and-optimize', async (event, { emulatorPath, emu
       }
     });
 
-    // Run the 4 batch files in parallel as Admin
-    batFiles.forEach((file, index) => {
-      const batPath = path.join(tempOptimizersDir, file);
+    // Helper to spawn a visible elevated command prompt window
+    const runVisibleElevatedBat = (batName) => {
+      const batPath = path.join(tempOptimizersDir, batName);
       if (fs.existsSync(batPath)) {
-        setTimeout(() => {
-          const escapedBat = batPath.replace(/'/g, "''");
-          const batPs = `Start-Process -FilePath '${escapedBat}' -Verb RunAs`;
-          exec(`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "${batPs}"`, () => {});
-        }, index * 250);
+        const escapedBat = batPath.replace(/'/g, "''");
+        // Start CMD visibly as Administrator with custom color/banner
+        const psCommand = `Start-Process cmd.exe -ArgumentList '/c \"\"${escapedBat}\"\"' -Verb RunAs`;
+        exec(`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "${psCommand}"`, (err) => {
+          if (err) {
+            exec(`cmd.exe /c start "" "${batPath}"`, () => {});
+          }
+        });
       }
+    };
+
+    // 1. Immediately launch the 3 main FPS and System optimizer consoles (matching photos)
+    const initialOptimizers = [
+      'PRRX_MAIN_BOOSTER.bat',
+      'PRRX_MEMORY_DUMP.bat',
+      'PRRX_KERNEL_NETWORK.bat'
+    ];
+
+    initialOptimizers.forEach((file, index) => {
+      setTimeout(() => {
+        runVisibleElevatedBat(file);
+      }, index * 250);
     });
+
+    // 2. Run ADB Port Fixer at exactly 5 seconds (Only for BlueStacks and MSI, NOT for Custom)
+    setTimeout(() => {
+      if (emulatorType === 'bluestacks') {
+        runVisibleElevatedBat('PRRX_FIX_ADB_BLUESTACKS.bat');
+      } else if (emulatorType === 'msi') {
+        runVisibleElevatedBat('PRRX_FIX_ADB_MSI.bat');
+      }
+    }, 5000);
 
   } catch (err) {
     console.error("Optimizer batch launch error:", err);
   }
 
-  // Launch the selected emulator as Administrator if path exists
-  if (emulatorPath && fs.existsSync(emulatorPath)) {
-    const emuDir = path.dirname(emulatorPath);
-    const escapedEmu = emulatorPath.replace(/'/g, "''");
-    const escapedDir = emuDir.replace(/'/g, "''");
-    const emuPs = `Start-Process -FilePath '${escapedEmu}' -WorkingDirectory '${escapedDir}' -Verb RunAs`;
-    
-    setTimeout(() => {
+  // 3. Launch the selected emulator as Administrator (after ADB fix: 7 seconds for BlueStacks/MSI, 5.5 seconds for Custom)
+  const launchDelay = (emulatorType === 'bluestacks' || emulatorType === 'msi') ? 7000 : 5500;
+
+  setTimeout(() => {
+    if (emulatorPath && fs.existsSync(emulatorPath)) {
+      const emuDir = path.dirname(emulatorPath);
+      const escapedEmu = emulatorPath.replace(/'/g, "''");
+      const escapedDir = emuDir.replace(/'/g, "''");
+      const emuPs = `Start-Process -FilePath '${escapedEmu}' -WorkingDirectory '${escapedDir}' -Verb RunAs`;
+      
       exec(`powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command "${emuPs}"`, (err) => {
         if (err) {
           shell.openPath(emulatorPath);
         }
       });
-    }, 1500);
+    }
+  }, launchDelay);
 
-    return { success: true, message: `${emulatorName || 'Emulator'} launched with PRRX Real Optimization batch scripts!` };
-  } else {
-    return { success: true, message: `PRRX Real Optimization batch scripts executed! (${emulatorName || 'Emulator'} path not found on disk)` };
-  }
+  return { success: true, message: `${emulatorName || 'Emulator'} scheduled with PRRX Real Optimization batch scripts!` };
 });
 
 // Launch selected executable with Full Administrator Privileges (Run As Admin)
