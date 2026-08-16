@@ -14,7 +14,9 @@ import React, { Suspense } from 'react';
 import TitleBar from '@/components/TitleBar';
 import FpsOverlay from '@/components/ui/FpsOverlay';
 
-// Lazy load heavy components to ensure instant startup
+import DesktopLauncher from '@/pages/DesktopLauncher';
+
+// Lazy load other heavy components
 const Home = React.lazy(() => import('@/pages/Home.jsx'));
 const Functions = React.lazy(() => import('@/pages/Functions'));
 const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
@@ -24,7 +26,6 @@ const Status = React.lazy(() => import('@/pages/Status'));
 const Admin = React.lazy(() => import('@/pages/Admin'));
 const Freebies = React.lazy(() => import('@/pages/Freebies'));
 const Login = React.lazy(() => import('@/pages/Login'));
-const DesktopLauncher = React.lazy(() => import('@/pages/DesktopLauncher'));
 const LiveDemo = React.lazy(() => import('@/pages/LiveDemo'));
 const About = React.lazy(() => import('@/pages/About'));
 const AppLauncher = React.lazy(() => import('@/pages/AppLauncher'));
@@ -33,7 +34,7 @@ const AppLauncher = React.lazy(() => import('@/pages/AppLauncher'));
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoadingAuth } = useAuth();
 
-  if (isLoadingAuth) {
+  if (isLoadingAuth && !window.electronAPI) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)]">
         <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin" />
@@ -64,8 +65,8 @@ const DesktopRestrictedRoute = ({ children }) => {
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  // Show loading spinner while checking app public settings or auth (ONLY for website, bypassed on desktop)
+  if ((isLoadingPublicSettings || isLoadingAuth) && !window.electronAPI) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-[var(--bg-main)]">
         <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin"></div>

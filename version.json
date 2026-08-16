@@ -1,5 +1,5 @@
 {
-  "version": "1.0.3",
-  "downloadUrl": "https://github.com/prrxhex-cloud/Website/releases/download/v1.0.3/PRRX.HEX.exe",
-  "changelog": "Bug fixes and security updates\n- Added new automated updater system\n- Implemented secure AppData storage logic\n- Optimized UI layout for Dashboard"
+  "version": "1.0.4",
+  "downloadUrl": "https://github.com/prrxhex-cloud/Website/releases/download/v1.0.4/PRRX.HEX.exe",
+  "changelog": "PRRX HEX v1.0.4 Super Performance & Optimizer Update\n- Added Emulator Starter (BlueStacks, MSI, Custom) with 4x FPS batch optimizers\n- Added Automated ADB Port 5555 Synchronizer for BlueStacks & MSI\n- Added Real Windows background service optimization (Disables DiagTrack, SysMain, WSearch during gaming)\n- Supercharged instant startup with 0ms delay on KeyAuth login screen\n- Fixed interactive visible elevated console windows for all batch optimizers"
 }

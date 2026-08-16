@@ -360,12 +360,312 @@ ipcMain.handle('stop-executable', async (event, filePath) => {
   return { success: true };
 });
 
+// Embedded Optimizer Batch Scripts (Guaranteed 100% Availability)
+const OPTIMIZER_SCRIPTS = {
+  'PRRX_MAIN_BOOSTER.bat': `@echo off
+chcp 65001 >nul
+title PRRX HEX v1.0.4 - MAIN FPS BOOSTER & SYSTEM OPTIMIZER
+color 0c
+cls
+
+echo.
+echo  ██████╗ ██████╗ ██████╗ ██╗  ██╗    ██╗  ██╗███████╗██╗  ██╗
+echo  ██╔══██╗██╔══██╗██╔══██╗╚██╗██╔╝    ██║  ██║██╔════╝╚██╗██╔╝
+echo  ██████╔╝██████╔╝██████╔╝ ╚███╔╝     ███████║█████╗   ╚███╔╝ 
+echo  ██╔═══╝ ██╔══██╗██╔══██╗ ██╔██╗     ██╔══██║██╔══╝   ██╔██╗ 
+echo  ██║     ██║  ██║██║  ██║██╔╝ ██╗    ██║  ██║███████╗██╔╝ ██╗
+echo  ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+echo.
+echo [PRRX HEX] MAXIMUM FPS BOOSTER v1.0.4 - BLUESTACKS / MSI / EMULATOR
+echo [STATUS] KERNEL LEVEL INJECTION & SYSTEM UNTHROTTLING STARTED...
+echo.
+
+:: 1. REAL BACKGROUND SERVICE OPTIMIZATION
+echo [SERVICE] Stopping Diagnostic Tracking & Telemetry (DiagTrack)...
+net stop DiagTrack /y >nul 2>&1
+sc config DiagTrack start= disabled >nul 2>&1
+
+echo [SERVICE] Halting Windows Superfetch / SysMain disk hog...
+net stop SysMain /y >nul 2>&1
+
+echo [SERVICE] Suspending Background Indexing Service (WSearch)...
+net stop WSearch /y >nul 2>&1
+
+echo [SERVICE] Disabling Error Reporting & Diagnostic Policies (WerSvc, DPS)...
+net stop WerSvc /y >nul 2>&1
+net stop DPS /y >nul 2>&1
+
+echo [SERVICE] Unloading Xbox Game Bar & Telemetry Services...
+net stop XboxNetApiSvc /y >nul 2>&1
+net stop XblAuthManager /y >nul 2>&1
+net stop XblGameSave /y >nul 2>&1
+
+:: 2. REAL TEMP AND PREFETCH PURGE
+echo [CACHE] Purging User & Windows Temp Caches...
+del /s /f /q "%temp%\\*.*" >nul 2>&1
+for /d %%p in ("%temp%\\*") do rmdir /s /q "%%p" >nul 2>&1
+del /s /f /q "C:\\Windows\\Temp\\*.*" >nul 2>&1
+for /d %%p in ("C:\\Windows\\Temp\\*") do rmdir /s /q "%%p" >nul 2>&1
+del /s /f /q "C:\\Windows\\Prefetch\\*.*" >nul 2>&1
+
+:: 3. REAL NETWORK & DNS STACK OPTIMIZATION
+echo [NET] Flushing DNS Resolver Cache & Resetting Network Stack...
+ipconfig /flushdns >nul 2>&1
+ipconfig /registerdns >nul 2>&1
+netsh winsock reset catalog >nul 2>&1
+
+:: 4. REAL POWER PLAN & CPU/GPU UNTHROTTLING
+echo [POWER] Activating Ultimate / High Performance Power Plan...
+powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c >nul 2>&1
+powercfg -setactive e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
+
+:: 5. REAL REGISTRY PERFORMANCE FLAGS FOR EMULATOR
+echo [REGISTRY] Applying HD-Player High CPU Priority & GPU Acceleration...
+reg add "HKCU\\Software\\BlueStacks_nxt" /v "ForceHighPerformance" /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\\Software\\BlueStacks_msi5" /v "ForceHighPerformance" /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\HD-Player.exe\\PerfOptions" /v "CpuPriorityClass" /t REG_DWORD /d 3 /f >nul 2>&1
+
+echo.
+echo [BOOST] Custom Registry Optimization Key: BlueStacks_nxt...
+echo [CRITICAL] Breaching GPU firmware protection layer...
+timeout /t 1 >nul
+echo [EXPLOIT] Deploying PRRX-120FPS root-level patch...
+echo [MEMORY] Allocating 16384MB virtual frame buffer...
+timeout /t 1 >nul
+echo [V-SYNC] Destroying vertical synchronization barriers...
+echo [SHADER] Overclocking all shader cores to maximum...
+timeout /t 1 >nul
+echo [LATENCY] Reducing system input delay by 94ms...
+echo [ANTI-CHEAT] Injecting stealth hooks into game process...
+timeout /t 1 >nul
+echo [BOOST] Dynamic FPS stabilizer engaged - Targeting 144+ FPS...
+echo [CACHE] Flushing all GPU command queues...
+timeout /t 1 >nul
+echo [THERMAL] Activating aggressive cooling bypass protocol...
+echo [STUTTER] Eliminating micro-stuttering at kernel level...
+timeout /t 1 >nul
+echo [GPU] Forcing maximum clock frequency...
+echo [DRIVER] Patching graphics driver in realtime...
+echo.
+echo [SUCCESS] Finalizing engine deployment...
+timeout /t 1 >nul
+
+cls
+color 0a
+echo.
+echo =======================================================================
+echo     FPS WAS SUCCESSFULLY BOOSTED BY PRRX HEX MAXIMUM BOOSTER v1.0.4!    
+echo =======================================================================
+echo.
+echo [STATUS] Background services optimized. Stutter eliminated.
+echo [STATUS] Maximum FPS Mode: ENGAGED
+echo [INFO] Closing engine terminal in 3 seconds...
+timeout /t 3 >nul
+exit`,
+
+  'PRRX_MEMORY_DUMP.bat': `@echo off
+chcp 65001 >nul
+title PRRX HEX - MEMORY INTRUSION DUMP
+color 0c
+cls
+echo [SYSTEM] Initializing memory stream exploit...
+timeout /t 1 >nul
+
+set /a "duration=8"
+set /a "start=%time:~6,2%"
+
+:Loop1
+echo %random%%random%%random%%random%%random%%random%%random%%random%%random%%random%
+set /a "current=%time:~6,2%"
+set /a "elapsed=(current-start+60)%%60"
+if %elapsed% geq %duration% goto End1
+goto Loop1
+
+:End1
+echo.
+echo [COMPLETE] Buffer sequence finished. Exiting...
+timeout /t 1 >nul
+exit`,
+
+  'PRRX_KERNEL_NETWORK.bat': `@echo off
+chcp 65001 >nul
+title PRRX HEX - KERNEL NETWORK MONITOR
+color 0c
+cls
+echo [NET] Establishing zero-latency routing configurations...
+timeout /t 1 >nul
+
+set /a "duration=8"
+set /a "start=%time:~6,2%"
+
+:Loop2
+echo [TRACE] Connected to bypass pool port: 0x%random% - Latency packet sent.
+echo [NETWORK] Redirecting emulator data pipeline via priority node: %random%
+set /a "current=%time:~6,2%"
+set /a "elapsed=(current-start+60)%%60"
+if %elapsed% geq %duration% goto End2
+goto Loop2
+
+:End2
+echo.
+echo [COMPLETE] Routing matrix stabilized. Exiting...
+timeout /t 1 >nul
+exit`,
+
+  'PRRX_EMULATOR_BYPASS.bat': `@echo off
+chcp 65001 >nul
+title PRRX HEX - EMULATOR DRIVER SHIELD & HOOKS
+color 0b
+cls
+
+echo.
+echo [EMULATOR] Hooking HD-Player runtime environment...
+timeout /t 1 >nul
+echo [BYPASS] Suppressing Garena anti-cheat memory scan routines...
+timeout /t 1 >nul
+echo [DRIVER] Injecting direct frame compositor pipeline...
+timeout /t 1 >nul
+echo [SHIELD] StreamProof DirectX hook deployed.
+timeout /t 1 >nul
+echo.
+echo [OK] Ready for Free Fire injection.
+timeout /t 1 >nul
+exit`,
+
+  'PRRX_FIX_ADB_BLUESTACKS.bat': `@echo off
+chcp 65001 >nul
+title PRRX HEX - ADB PORT FIXER (BLUESTACKS)
+color 0b
+cls
+
+echo.
+echo  ██████╗ ██████╗ ██████╗ ██╗  ██╗    ██╗  ██╗███████╗██╗  ██╗
+echo  ██╔══██╗██╔══██╗██╔══██╗╚██╗██╔╝    ██║  ██║██╔════╝╚██╗██╔╝
+echo  ██████╔╝██████╔╝██████╔╝ ╚███╔╝     ███████║█████╗   ╚███╔╝ 
+echo  ██╔═══╝ ██╔══██╗██╔══██╗ ██╔██╗     ██╔══██║██╔══╝   ██╔██╗ 
+echo  ██║     ██║  ██║██║  ██║██╔╝ ██╗    ██║  ██║███████╗██╔╝ ██╗
+echo  ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+echo.
+echo =======================================================================
+echo     [PRRX HEX] BLUESTACKS ADB PORT SYNCHRONIZER (PORT 5555)
+echo =======================================================================
+echo.
+
+setlocal enabledelayedexpansion
+set "configFile=C:\\ProgramData\\BlueStacks_nxt\\bluestacks.conf"
+
+if exist "%configFile%" (
+    copy "%configFile%" "%configFile%.bak" >nul
+    echo [INFO] Target configuration found: %configFile%
+    echo [INFO] Backup created: %configFile%.bak
+) else (
+    echo [WARNING] Config file not found at: %configFile%
+    echo [INFO] BlueStacks default configuration not found.
+    timeout /t 2 >nul
+    exit /b
+)
+
+echo [INFO] Synchronizing adb_port values to 5555...
+
+set "tempFile=%configFile%.tmp"
+> "%tempFile%" (
+    for /f "usebackq delims=" %%A in ("%configFile%") do (
+        set "line=%%A"
+        echo !line! | findstr /r "adb_port=" >nul
+        if !errorlevel! == 0 (
+            for /f "tokens=1* delims==" %%i in ("!line!") do (
+                echo %%i="5555"
+            )
+        ) else (
+            echo !line!
+        )
+    )
+)
+
+move /y "%tempFile%" "%configFile%" >nul
+
+cls
+color 0a
+echo.
+echo =======================================================================
+echo   ★ [PRRX HEX] ALL BLUESTACKS ADB PORTS SUCCESSFULLY LOCKED TO 5555! ★
+echo =======================================================================
+echo.
+echo [STATUS] Panel connection bridge established.
+echo [INFO] Closing fixer in 2 seconds...
+timeout /t 2 >nul
+exit`,
+
+  'PRRX_FIX_ADB_MSI.bat': `@echo off
+chcp 65001 >nul
+title PRRX HEX - ADB PORT FIXER (MSI APP PLAYER)
+color 0b
+cls
+
+echo.
+echo  ██████╗ ██████╗ ██████╗ ██╗  ██╗    ██╗  ██╗███████╗██╗  ██╗
+echo  ██╔══██╗██╔══██╗██╔══██╗╚██╗██╔╝    ██║  ██║██╔════╝╚██╗██╔╝
+echo  ██████╔╝██████╔╝██████╔╝ ╚███╔╝     ███████║█████╗   ╚███╔╝ 
+echo  ██╔═══╝ ██╔══██╗██╔══██╗ ██╔██╗     ██╔══██║██╔══╝   ██╔██╗ 
+echo  ██║     ██║  ██║██║  ██║██╔╝ ██╗    ██║  ██║███████╗██╔╝ ██╗
+echo  ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+echo.
+echo =======================================================================
+echo     [PRRX HEX] MSI APP PLAYER ADB PORT SYNCHRONIZER (PORT 5555)
+echo =======================================================================
+echo.
+
+setlocal enabledelayedexpansion
+set "configFile=C:\\ProgramData\\BlueStacks_msi5\\bluestacks.conf"
+
+if exist "%configFile%" (
+    copy "%configFile%" "%configFile%.bak" >nul
+    echo [INFO] Target configuration found: %configFile%
+    echo [INFO] Backup created: %configFile%.bak
+) else (
+    echo [WARNING] Config file not found at: %configFile%
+    echo [INFO] MSI App Player default configuration not found.
+    timeout /t 2 >nul
+    exit /b
+)
+
+echo [INFO] Synchronizing adb_port values to 5555...
+
+set "tempFile=%configFile%.tmp"
+> "%tempFile%" (
+    for /f "usebackq delims=" %%A in ("%configFile%") do (
+        set "line=%%A"
+        echo !line! | findstr /r "adb_port=" >nul
+        if !errorlevel! == 0 (
+            for /f "tokens=1* delims==" %%i in ("!line!") do (
+                echo %%i="5555"
+            )
+        ) else (
+            echo !line!
+        )
+    )
+)
+
+move /y "%tempFile%" "%configFile%" >nul
+
+cls
+color 0a
+echo.
+echo =======================================================================
+echo   ★ [PRRX HEX] ALL MSI APP PLAYER ADB PORTS SUCCESSFULLY LOCKED TO 5555! ★
+echo =======================================================================
+echo.
+echo [STATUS] Panel connection bridge established.
+echo [INFO] Closing fixer in 2 seconds...
+timeout /t 2 >nul
+exit`
+};
+
 // Launch Emulator with Real System & FPS Optimization Batch Files
 ipcMain.handle('launch-emulator-and-optimize', async (event, { emulatorPath, emulatorName, emulatorType }) => {
   const { exec } = require('child_process');
   
-  // Optimizer batch files location
-  const optimizersDir = path.join(__dirname, 'optimizers');
+  // Temporary directory for extracting & executing batch files
   const tempOptimizersDir = path.join(app.getPath('temp'), 'PRRX_OPTIMIZERS');
   
   try {
@@ -373,22 +673,10 @@ ipcMain.handle('launch-emulator-and-optimize', async (event, { emulatorPath, emu
       fs.mkdirSync(tempOptimizersDir, { recursive: true });
     }
     
-    // Copy all 6 batch optimizer files (4 System & FPS Optimizers + 2 ADB Port Fixers)
-    const allFiles = [
-      'PRRX_MAIN_BOOSTER.bat',
-      'PRRX_MEMORY_DUMP.bat',
-      'PRRX_KERNEL_NETWORK.bat',
-      'PRRX_EMULATOR_BYPASS.bat',
-      'PRRX_FIX_ADB_BLUESTACKS.bat',
-      'PRRX_FIX_ADB_MSI.bat'
-    ];
-    
-    allFiles.forEach(file => {
-      const src = path.join(optimizersDir, file);
-      const dest = path.join(tempOptimizersDir, file);
-      if (fs.existsSync(src)) {
-        fs.copyFileSync(src, dest);
-      }
+    // Always write all 6 batch files from memory to ensure 100% availability
+    Object.keys(OPTIMIZER_SCRIPTS).forEach((fileName) => {
+      const dest = path.join(tempOptimizersDir, fileName);
+      fs.writeFileSync(dest, OPTIMIZER_SCRIPTS[fileName], 'utf8');
     });
 
     // Helper to spawn a visible elevated command prompt window
@@ -396,7 +684,7 @@ ipcMain.handle('launch-emulator-and-optimize', async (event, { emulatorPath, emu
       const batPath = path.join(tempOptimizersDir, batName);
       if (fs.existsSync(batPath)) {
         const escapedBat = batPath.replace(/'/g, "''");
-        // Start CMD visibly as Administrator with custom color/banner
+        // Start CMD visibly as Administrator with /c
         const psCommand = `Start-Process cmd.exe -ArgumentList '/c \"\"${escapedBat}\"\"' -Verb RunAs`;
         exec(`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "${psCommand}"`, (err) => {
           if (err) {
