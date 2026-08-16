@@ -288,6 +288,187 @@ ipcMain.handle('install-update-background', async (event, installerPath) => {
   }
 });
 
+// File Dialog to select an executable / application
+ipcMain.handle('select-executable', async () => {
+  const { dialog } = require('electron');
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Select Panel / Game Executable',
+    filters: [
+      { name: 'Executable Files', extensions: ['exe', 'bat', 'cmd', 'lnk'] },
+      { name: 'All Files', extensions: ['*'] }
+    ],
+    properties: ['openFile']
+  });
+  if (!result.canceled && result.filePaths.length > 0) {
+    return result.filePaths[0];
+  }
+  return null;
+});
+
+let appMonitorInterval = null;
+
+function startAppMonitor(filePath) {
+  if (appMonitorInterval) {
+    clearInterval(appMonitorInterval);
+    appMonitorInterval = null;
+  }
+
+  const fileName = path.basename(filePath);
+  const { exec } = require('child_process');
+
+  let seenRunning = false;
+  let checksCount = 0;
+
+  // Poll every 1 second for rapid detection
+  appMonitorInterval = setInterval(() => {
+    checksCount++;
+    exec(`tasklist /FI "IMAGENAME eq ${fileName}" /NH`, (err, stdout) => {
+      if (err) return;
+      const text = (stdout || '').toLowerCase();
+      const isRunning = text.includes(fileName.toLowerCase());
+
+      if (isRunning) {
+        seenRunning = true;
+      } else {
+        // If it was running and has now exited, or if 6 seconds passed and not found
+        if (seenRunning || checksCount > 6) {
+          clearInterval(appMonitorInterval);
+          appMonitorInterval = null;
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('executable-closed', {
+              filePath,
+              fileName
+            });
+          }
+        }
+      }
+    });
+  }, 1000);
+}
+
+// Stop / Terminate Running Executable
+ipcMain.handle('stop-executable', async (event, filePath) => {
+  if (appMonitorInterval) {
+    clearInterval(appMonitorInterval);
+    appMonitorInterval = null;
+  }
+  if (filePath) {
+    const fileName = path.basename(filePath);
+    const { exec } = require('child_process');
+    exec(`taskkill /F /IM "${fileName}" /T`, () => {});
+  }
+  return { success: true };
+});
+
+// Launch Emulator with Real System & FPS Optimization Batch Files
+ipcMain.handle('launch-emulator-and-optimize', async (event, { emulatorPath, emulatorName }) => {
+  const { exec, spawn } = require('child_process');
+  
+  // Optimizer batch files location
+  const optimizersDir = path.join(__dirname, 'optimizers');
+  const tempOptimizersDir = path.join(app.getPath('temp'), 'PRRX_OPTIMIZERS');
+  
+  try {
+    if (!fs.existsSync(tempOptimizersDir)) {
+      fs.mkdirSync(tempOptimizersDir, { recursive: true });
+    }
+    
+    // Copy optimizer files to temp directory for reliable execution
+    const batFiles = [
+      'PRRX_MAIN_OPTIMIZER.bat',
+      'PRRX_NETWORK_TUNER.bat',
+      'PRRX_MEMORY_TRIMMER.bat',
+      'PRRX_EMULATOR_BYPASS.bat'
+    ];
+    
+    batFiles.forEach(file => {
+      const src = path.join(optimizersDir, file);
+      const dest = path.join(tempOptimizersDir, file);
+      if (fs.existsSync(src)) {
+        fs.copyFileSync(src, dest);
+      }
+    });
+
+    // Run the 4 batch files in parallel as Admin
+    batFiles.forEach((file, index) => {
+      const batPath = path.join(tempOptimizersDir, file);
+      if (fs.existsSync(batPath)) {
+        setTimeout(() => {
+          const escapedBat = batPath.replace(/'/g, "''");
+          const batPs = `Start-Process -FilePath '${escapedBat}' -Verb RunAs`;
+          exec(`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "${batPs}"`, () => {});
+        }, index * 250);
+      }
+    });
+
+  } catch (err) {
+    console.error("Optimizer batch launch error:", err);
+  }
+
+  // Launch the selected emulator as Administrator if path exists
+  if (emulatorPath && fs.existsSync(emulatorPath)) {
+    const emuDir = path.dirname(emulatorPath);
+    const escapedEmu = emulatorPath.replace(/'/g, "''");
+    const escapedDir = emuDir.replace(/'/g, "''");
+    const emuPs = `Start-Process -FilePath '${escapedEmu}' -WorkingDirectory '${escapedDir}' -Verb RunAs`;
+    
+    setTimeout(() => {
+      exec(`powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command "${emuPs}"`, (err) => {
+        if (err) {
+          shell.openPath(emulatorPath);
+        }
+      });
+    }, 1500);
+
+    return { success: true, message: `${emulatorName || 'Emulator'} launched with PRRX Real Optimization batch scripts!` };
+  } else {
+    return { success: true, message: `PRRX Real Optimization batch scripts executed! (${emulatorName || 'Emulator'} path not found on disk)` };
+  }
+});
+
+// Launch selected executable with Full Administrator Privileges (Run As Admin)
+ipcMain.handle('launch-executable-as-admin', async (event, filePath) => {
+  if (!filePath || !fs.existsSync(filePath)) {
+    return { success: false, message: 'Selected application path does not exist.' };
+  }
+
+  const fileDir = path.dirname(filePath);
+
+  return new Promise((resolve) => {
+    // 1. Try launching with elevated administrator privileges (RunAs) and proper working directory
+    const escapedPath = filePath.replace(/'/g, "''");
+    const escapedDir = fileDir.replace(/'/g, "''");
+    const psCommand = `Start-Process -FilePath '${escapedPath}' -WorkingDirectory '${escapedDir}' -Verb RunAs`;
+
+    const { exec } = require('child_process');
+    exec(`powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command "${psCommand}"`, (error, stdout, stderr) => {
+      if (error) {
+        console.warn("RunAs launch returned warning/error, attempting direct execution fallback:", error.message);
+        
+        // Fallback: Launch directly using spawn with working directory
+        try {
+          const fallbackChild = spawn(filePath, [], {
+            cwd: fileDir,
+            detached: true,
+            stdio: 'ignore',
+            shell: true
+          });
+          fallbackChild.unref();
+          startAppMonitor(filePath);
+          resolve({ success: true, message: 'Application launched with default permissions (RunAs bypassed).' });
+        } catch (fallbackErr) {
+          shell.openPath(filePath);
+          startAppMonitor(filePath);
+          resolve({ success: true, message: 'Application opened via Windows Shell.' });
+        }
+      } else {
+        startAppMonitor(filePath);
+        resolve({ success: true, message: 'Application successfully launched with Full Administrator Privileges!' });
+      }
+    });
+  });
+});
+
 // ==========================================
 // DISCORD RPC SETUP
 // ==========================================

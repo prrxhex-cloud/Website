@@ -41,7 +41,7 @@ export default function DesktopLauncher() {
     if (window.electronAPI && window.electronAPI.onLoginSuccess) {
       window.electronAPI.onLoginSuccess();
     }
-    navigate('/dashboard');
+    navigate('/');
   };
 
   const handleKeyAuthLogin = async (isLicense) => {
@@ -88,7 +88,7 @@ export default function DesktopLauncher() {
           localStorage.removeItem('prrx_keyauth_license');
         }
 
-        loginWithKeyAuth(response.user);
+        loginWithKeyAuth(response.user, type);
         handleSuccess();
       } else {
         setError(response.message || 'KeyAuth authentication failed.');

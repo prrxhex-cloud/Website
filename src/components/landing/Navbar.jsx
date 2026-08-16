@@ -35,7 +35,15 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   const filteredNavLinks = window.electronAPI
-    ? navLinks.filter(item => !['/live-demo', '/functions', '/resellers'].includes(item.path))
+    ? [
+        { label: 'Home', path: '/' },
+        { label: 'Launcher Panel', path: '/app-launcher', badge: 'VIP', badgeColor: '#06b6d4' },
+        { label: 'Status', path: '/status' },
+        { label: 'Prices & VIP Keys', path: '/prices' },
+        { label: 'Freebies', path: '/freebies', badge: 'FREE', badgeColor: '#10b981' },
+        { label: 'Dashboard', path: '/dashboard' },
+        { label: 'Admin Portal', path: '/admin', badge: 'STAFF', badgeColor: '#8b5cf6' },
+      ]
     : navLinks;
 
   return (

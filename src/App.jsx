@@ -27,6 +27,7 @@ const Login = React.lazy(() => import('@/pages/Login'));
 const DesktopLauncher = React.lazy(() => import('@/pages/DesktopLauncher'));
 const LiveDemo = React.lazy(() => import('@/pages/LiveDemo'));
 const About = React.lazy(() => import('@/pages/About'));
+const AppLauncher = React.lazy(() => import('@/pages/AppLauncher'));
 
 // Protected Route Wrapper Component
 const ProtectedRoute = ({ children }) => {
@@ -96,9 +97,11 @@ const AuthenticatedApp = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/launcher" element={<DesktopLauncher />} />
+        <Route path="/app-launcher" element={<ProtectedRoute><AppLauncher /></ProtectedRoute>} />
 
         {/* PROTECTED ROUTES (Must login to access) */}
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/app-launcher" element={<ProtectedRoute><AppLauncher /></ProtectedRoute>} />
         <Route path="/status" element={<ProtectedRoute><Status /></ProtectedRoute>} />
         <Route path="/live-demo" element={<ProtectedRoute><DesktopRestrictedRoute><LiveDemo /></DesktopRestrictedRoute></ProtectedRoute>} />
         <Route path="/functions" element={<ProtectedRoute><DesktopRestrictedRoute><Functions /></DesktopRestrictedRoute></ProtectedRoute>} />

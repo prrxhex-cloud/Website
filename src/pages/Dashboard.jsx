@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
-import { Download, MessageCircle, DollarSign, Activity, Store, Shield, LogOut, User, Info } from 'lucide-react';
+import { Download, MessageCircle, DollarSign, Activity, Store, Shield, LogOut, User, Info, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfileEditor from '@/components/dashboard/ProfileEditor';
 import DashboardLicenseCard from '@/components/dashboard/DashboardLicenseCard';
@@ -92,6 +92,7 @@ export default function Dashboard() {
   );
 
   const quickActions = [
+    ...(window.electronAPI ? [{ label: 'Launcher Panel', desc: 'Run as admin with security protocols', icon: Play, action: () => navigate('/app-launcher') }] : []),
     { label: 'Download Panel', desc: 'Get the latest PRRX build', icon: Download, action: () => navigate('/') },
     { label: 'Live Chat', desc: 'Chat with users & support', icon: MessageCircle, action: () => navigate('/chat') },
     { label: 'View Prices', desc: 'Browse subscription plans', icon: DollarSign, action: () => navigate('/prices') },

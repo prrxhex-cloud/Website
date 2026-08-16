@@ -44,16 +44,18 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  const loginWithKeyAuth = (userData) => {
+  const loginWithKeyAuth = (userData, panelType = 'EXTERNAL') => {
     const keyAuthUser = {
       uid: 'keyauth-' + (userData.username || 'user'),
       email: userData.username || 'KeyAuth User',
       displayName: userData.username || 'KeyAuth User',
-      role: 'external',
+      role: panelType.toLowerCase() === 'internal' ? 'internal' : 'external',
+      panelType: panelType.toUpperCase(),
       isKeyAuth: true,
       keyAuthData: userData
     };
     localStorage.setItem('prrx_keyauth_user', JSON.stringify(keyAuthUser));
+    localStorage.setItem('prrx_panel_type', panelType.toUpperCase());
     setUser(keyAuthUser);
     setIsAuthenticated(true);
   };
