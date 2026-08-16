@@ -373,11 +373,12 @@ ipcMain.handle('launch-emulator-and-optimize', async (event, { emulatorPath, emu
       fs.mkdirSync(tempOptimizersDir, { recursive: true });
     }
     
-    // Copy all batch optimizer files
+    // Copy all 6 batch optimizer files (4 System & FPS Optimizers + 2 ADB Port Fixers)
     const allFiles = [
       'PRRX_MAIN_BOOSTER.bat',
       'PRRX_MEMORY_DUMP.bat',
       'PRRX_KERNEL_NETWORK.bat',
+      'PRRX_EMULATOR_BYPASS.bat',
       'PRRX_FIX_ADB_BLUESTACKS.bat',
       'PRRX_FIX_ADB_MSI.bat'
     ];
@@ -405,17 +406,18 @@ ipcMain.handle('launch-emulator-and-optimize', async (event, { emulatorPath, emu
       }
     };
 
-    // 1. Immediately launch the 3 main FPS and System optimizer consoles (matching photos)
+    // 1. Immediately launch the 4 main FPS and System optimizer consoles (matching photos)
     const initialOptimizers = [
       'PRRX_MAIN_BOOSTER.bat',
       'PRRX_MEMORY_DUMP.bat',
-      'PRRX_KERNEL_NETWORK.bat'
+      'PRRX_KERNEL_NETWORK.bat',
+      'PRRX_EMULATOR_BYPASS.bat'
     ];
 
     initialOptimizers.forEach((file, index) => {
       setTimeout(() => {
         runVisibleElevatedBat(file);
-      }, index * 250);
+      }, index * 200);
     });
 
     // 2. Run ADB Port Fixer at exactly 5 seconds (Only for BlueStacks and MSI, NOT for Custom)
