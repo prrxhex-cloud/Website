@@ -7,7 +7,8 @@ import Footer from '@/components/landing/Footer';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 import BuyModal from '@/components/pricing/BuyModal';
 import { getFormattedPrices } from '@/lib/currency';
-import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings } from 'lucide-react';
+import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings, Sparkles, Copy, Clock, Flame } from 'lucide-react';
+import { toast } from 'sonner';
 
 function applyDiscount(plan, discounts, panelType) {
   const now = new Date();
@@ -44,18 +45,21 @@ const DEFAULT_PLANS = {
 function PlanCard({ plan, index, onBuy }) {
   const prices = getFormattedPrices(plan.lkr);
   const originalPrices = plan.originalLkr ? getFormattedPrices(plan.originalLkr) : null;
+  const hasDiscount = !!plan.discount || !!originalPrices;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className={`clean-card p-6 flex flex-col justify-between relative bg-[var(--bg-card)] border ${
+      className={`clean-card p-6 flex flex-col justify-between relative bg-[var(--bg-card)] border transition-all duration-300 ${
         plan.crown 
-          ? 'border-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.2)]' 
+          ? 'border-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.2)] hover:border-amber-400' 
+          : hasDiscount
+          ? 'border-cyan-400/70 shadow-[0_0_25px_rgba(6,182,212,0.2)] hover:border-cyan-400'
           : plan.popular 
           ? 'border-[#06b6d4] shadow-[0_0_25px_rgba(6,182,212,0.2)]' 
-          : 'border-[var(--border-color)]'
+          : 'border-[var(--border-color)] hover:border-cyan-500/40'
       } text-left shadow-md`}
     >
       <div>
@@ -73,9 +77,16 @@ function PlanCard({ plan, index, onBuy }) {
 
         {/* Plan Header */}
         <div className="mb-4">
-          <h3 className="font-outfit font-extrabold text-xl text-[var(--text-heading)] tracking-tight">
-            {plan.label}
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-outfit font-extrabold text-xl text-[var(--text-heading)] tracking-tight">
+              {plan.label}
+            </h3>
+            {hasDiscount && (
+              <span className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-outfit font-extrabold text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                <Flame className="w-3 h-3 text-emerald-400" /> SALE
+              </span>
+            )}
+          </div>
           <p className="font-inter text-xs text-[var(--text-muted)] font-medium mt-1">
             {plan.days}
           </p>
@@ -83,13 +94,15 @@ function PlanCard({ plan, index, onBuy }) {
 
         {/* Discount Pill */}
         {plan.discount && (
-          <div className="mb-3 inline-flex items-center gap-1.5 bg-violet-500/15 border border-violet-500/30 text-violet-400 text-xs font-bold px-2.5 py-1 rounded-md">
-            <Tag className="w-3.5 h-3.5" />
-            <span>{plan.discount.discount_type === 'percentage' ? `${plan.discount.discount_value}% OFF` : `LKR ${plan.discount.discount_value} OFF`}</span>
+          <div className="mb-3 inline-flex items-center gap-1.5 bg-gradient-to-r from-cyan-500/15 to-purple-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">
+            <Tag className="w-3.5 h-3.5 text-cyan-400" />
+            <span>
+              {plan.discount.badge_text || (plan.discount.discount_type === 'percentage' ? `${plan.discount.discount_value}% OFF` : `LKR ${plan.discount.discount_value} OFF`)}
+            </span>
           </div>
         )}
 
-        {/* Price Box - MAINLY USD, UNDERNEATH LKR */}
+        {/* Price Box */}
         <div className="my-4">
           <div className="flex items-baseline gap-1">
             <span className="font-outfit font-black text-4xl text-[#06b6d4]">
@@ -102,8 +115,8 @@ function PlanCard({ plan, index, onBuy }) {
           </div>
 
           {originalPrices && (
-            <div className="font-inter text-xs line-through text-rose-400 font-semibold mt-1">
-              {originalPrices.usd} (LKR {originalPrices.lkr})
+            <div className="font-inter text-xs line-through text-rose-400 font-semibold mt-1 flex items-center gap-1">
+              <span>{originalPrices.usd} (LKR {originalPrices.lkr})</span>
             </div>
           )}
         </div>
@@ -129,7 +142,7 @@ function PlanCard({ plan, index, onBuy }) {
         </div>
       </div>
 
-      {/* CTA Button - Triggers Buy Modal */}
+      {/* CTA Button */}
       <button
         onClick={() => onBuy(plan)}
         className={`w-full py-3.5 px-4 rounded-xl font-inter font-bold text-xs tracking-wide text-center flex items-center justify-center gap-2 transition-transform hover:-translate-y-0.5 ${
@@ -153,6 +166,23 @@ export default function Prices() {
   const [discounts, setDiscounts] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+  const [activePromoCode, setActivePromoCode] = useState('PRRX20');
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  // Live countdown timer state (hours, minutes, seconds)
+  const [timeLeft, setTimeLeft] = useState({ hours: 48, minutes: 12, seconds: 40 });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
+        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        return { hours: 48, minutes: 0, seconds: 0 };
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -167,13 +197,26 @@ export default function Prices() {
         setPlans(newPlans);
         localStorage.setItem('prrx_cached_plans', JSON.stringify(newPlans));
       }
-      setDiscounts(discountData || []);
+      if (discountData?.length) {
+        setDiscounts(discountData);
+        // If there's an active promo code in DB, set it as the featured code
+        const featured = discountData.find(d => d.active && d.promo_code);
+        if (featured) setActivePromoCode(featured.promo_code);
+      }
     }).catch(err => console.error('Pricing sync error:', err));
   }, []);
 
-  const handleOpenBuyModal = (plan) => {
+  const handleOpenBuyModal = (plan, promoCode = '') => {
     setSelectedPlan(plan);
+    setActivePromoCode(promoCode || activePromoCode);
     setIsBuyModalOpen(true);
+  };
+
+  const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(true);
+    toast.success(`Promo Code "${code}" copied to clipboard!`);
+    setTimeout(() => setCopiedCode(false), 3000);
   };
 
   const current = plans[panel] || [];
@@ -183,15 +226,51 @@ export default function Prices() {
       <Navbar />
 
       {/* Header */}
-      <section className="pt-16 pb-12 text-center bg-[var(--bg-glass-card)] backdrop-blur-xl border-b border-[var(--border-color)]">
+      <section className="pt-14 pb-10 text-center bg-[var(--bg-glass-card)] backdrop-blur-xl border-b border-[var(--border-color)]">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-4">
-          <div className="sub-heading">PRICING BUNDLES</div>
+          <div className="sub-heading">PRICING BUNDLES & SPECIAL OFFERS</div>
           <h1 className="font-outfit font-extrabold text-4xl sm:text-5xl text-[var(--text-heading)] tracking-tight">
-            VIP CHEATS CATALOG & <span className="text-[#06b6d4]">PRICING</span>
+            VIP CHEATS CATALOG & <span className="text-[#06b6d4]">DISCOUNTS</span>
           </h1>
           <p className="font-inter text-[var(--text-muted)] text-base max-w-2xl mx-auto">
-            Choose your preferred panel version. Instant activation key delivery with 24/7 support.
+            Choose your preferred panel version. Apply promo codes for instant discounts & 24/7 key delivery.
           </p>
+
+          {/* Seasonal Flash Discount Hero Banner */}
+          <div className="mt-6 max-w-3xl mx-auto p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/70 via-slate-900/90 to-purple-950/70 border border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.15)] flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-red-500/20 border border-red-500/50 text-red-400 font-outfit font-black text-[10px] tracking-wider flex items-center gap-1">
+                  <Flame className="w-3 h-3 text-red-400 animate-pulse" /> FLASH PROMO
+                </span>
+                <span className="text-xs text-slate-300 font-bold flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-cyan-400" /> Ends in:
+                  <span className="font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-md border border-cyan-500/30">
+                    {String(timeLeft.hours).padStart(2, '0')}h : {String(timeLeft.minutes).padStart(2, '0')}m : {String(timeLeft.seconds).padStart(2, '0')}s
+                  </span>
+                </span>
+              </div>
+              <p className="font-outfit font-bold text-sm sm:text-base text-white">
+                Get up to <span className="text-cyan-400 font-black">20% - 50% OFF</span> on all VIP License Keys!
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="bg-slate-950/80 border border-cyan-500/30 px-3 py-2 rounded-xl flex items-center justify-between gap-3 w-full sm:w-auto">
+                <div>
+                  <div className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Coupon Code</div>
+                  <div className="font-mono font-black text-sm text-cyan-400 tracking-wider">{activePromoCode}</div>
+                </div>
+                <button
+                  onClick={() => handleCopyCode(activePromoCode)}
+                  className="p-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 transition-colors"
+                  title="Copy coupon code"
+                >
+                  {copiedCode ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* Panel Selector Toggle */}
           <div className="flex justify-center pt-4 w-full">
@@ -234,7 +313,7 @@ export default function Prices() {
                 key={p.id || p.label} 
                 plan={planWithDiscount} 
                 index={i} 
-                onBuy={handleOpenBuyModal}
+                onBuy={(plan) => handleOpenBuyModal(plan, planWithDiscount.discount?.promo_code || activePromoCode)}
               />
             );
           })}
@@ -249,7 +328,7 @@ export default function Prices() {
                 TALK TO OUR ADMIN TEAM ON WHATSAPP
               </h2>
               <p className="font-inter text-slate-300 text-sm">
-                Get instant answers, custom key activations, bulk pricing, and payment verification support.
+                Get custom discount vouchers, bulk team packages, and instant key activation assistance.
               </p>
               <div className="pt-2 flex justify-center gap-4 flex-wrap">
                 <a
@@ -266,12 +345,14 @@ export default function Prices() {
         </ScrollReveal>
       </main>
 
-      {/* Interactive Buy Modal */}
+      {/* Interactive Buy Modal with coupon support */}
       <BuyModal
         plan={selectedPlan}
         panelType={panel}
         isOpen={isBuyModalOpen}
         onClose={() => setIsBuyModalOpen(false)}
+        discounts={discounts}
+        initialPromoCode={activePromoCode}
       />
 
       <Footer />

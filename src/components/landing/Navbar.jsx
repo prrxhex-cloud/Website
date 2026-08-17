@@ -48,17 +48,22 @@ export default function Navbar() {
 
   return (
     <div className="sticky top-0 z-50 w-full font-inter">
-      {/* Top Announcement Bar */}
-      <div className="bg-slate-950 border-b border-white/10 text-white text-xs py-1.5 px-4">
+      {/* Top Announcement Bar with Flash Discount */}
+      <div className="bg-gradient-to-r from-slate-950 via-cyan-950/40 to-slate-950 border-b border-cyan-500/20 text-white text-xs py-1.5 px-4">
         <div className="max-w-[1240px] mx-auto flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 font-medium">
-            <span className="bg-red-500/20 border border-red-500/50 text-red-300 font-extrabold text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Zap className="w-3 h-3 text-red-400 fill-current animate-pulse" /> OB46 READY
+            <span className="bg-gradient-to-r from-red-500/30 to-amber-500/30 border border-red-500/50 text-red-300 font-extrabold text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Zap className="w-3 h-3 text-amber-400 fill-current animate-pulse" /> FLASH SALE
             </span>
-            <span className="hidden sm:inline">🔥 <strong>NEW UPDATE RELEASED!</strong> Free Fire OB46 Anti-Cheat Bypassed v5.8 is NOW LIVE & 100% UNDETECTED!</span>
+            <span className="hidden sm:inline">
+              🎉 <strong>LIMITED TIME:</strong> Use Coupon <code className="bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded font-mono font-bold border border-cyan-500/30">PRRX20</code> for <strong>20% OFF</strong> all VIP keys!
+            </span>
+            <span className="sm:hidden text-[11px]">
+              🎉 Code <code className="bg-cyan-500/20 text-cyan-300 px-1 rounded font-mono font-bold">PRRX20</code> for 20% OFF!
+            </span>
           </div>
-          <button onClick={() => navigate('/prices')} className="text-[#06b6d4] font-bold text-xs hover:underline flex items-center gap-0.5 ml-auto">
-            Get Instant Key <ChevronRight className="w-3.5 h-3.5" />
+          <button onClick={() => navigate('/prices')} className="text-[#06b6d4] hover:text-cyan-300 font-bold text-xs hover:underline flex items-center gap-0.5 ml-auto">
+            <span>Claim Discount</span> <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
