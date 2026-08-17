@@ -7,7 +7,9 @@ import Footer from '@/components/landing/Footer';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 import BuyModal from '@/components/pricing/BuyModal';
 import { getFormattedPrices } from '@/lib/currency';
-import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings, Sparkles, Copy, Clock, Flame } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings, Sparkles, Copy, Clock, Flame, LogIn, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 function applyDiscount(plan, discounts, panelType) {
@@ -158,6 +160,8 @@ function PlanCard({ plan, index, onBuy }) {
 }
 
 export default function Prices() {
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [panel, setPanel] = useState('external');
   const [plans, setPlans] = useState(() => {
     const cached = localStorage.getItem('prrx_cached_plans');
@@ -207,6 +211,9 @@ export default function Prices() {
   }, []);
 
   const handleOpenBuyModal = (plan, promoCode = '') => {
+    if (!isAuthenticated) {
+      toast.info('Please sign in to claim VIP discounts and automated key delivery!');
+    }
     setSelectedPlan(plan);
     setActivePromoCode(promoCode || activePromoCode);
     setIsBuyModalOpen(true);
@@ -233,7 +240,7 @@ export default function Prices() {
             VIP CHEATS CATALOG & <span className="text-[#06b6d4]">DISCOUNTS</span>
           </h1>
           <p className="font-inter text-[var(--text-muted)] text-base max-w-2xl mx-auto">
-            Choose your preferred panel version. Apply promo codes for instant discounts & 24/7 key delivery.
+            Choose your preferred panel version. Sign in to apply promo codes for instant discounts & 24/7 key delivery.
           </p>
 
           {/* Seasonal Flash Discount Hero Banner */}
@@ -251,11 +258,19 @@ export default function Prices() {
                 </span>
               </div>
               <p className="font-outfit font-bold text-sm sm:text-base text-white">
-                Get up to <span className="text-cyan-400 font-black">20% - 50% OFF</span> on all VIP License Keys!
+                {isAuthenticated ? (
+                  <span>
+                    🎉 Welcome, <span className="text-emerald-400">{user?.displayName || user?.email}</span>! Up to <span className="text-cyan-400 font-black">50% OFF</span> VIP discounts unlocked!
+                  </span>
+                ) : (
+                  <span>
+                    Sign in to claim up to <span className="text-cyan-400 font-black">20% - 50% OFF</span> VIP discounts & instant keys!
+                  </span>
+                )}
               </p>
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
               <div className="bg-slate-950/80 border border-cyan-500/30 px-3 py-2 rounded-xl flex items-center justify-between gap-3 w-full sm:w-auto">
                 <div>
                   <div className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Coupon Code</div>
@@ -269,6 +284,15 @@ export default function Prices() {
                   {copiedCode ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
+
+              {!isAuthenticated && (
+                <button
+                  onClick={() => navigate('/login?redirect=/prices')}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 font-outfit font-extrabold text-xs flex items-center gap-1.5 shadow-md shrink-0 w-full sm:w-auto justify-center"
+                >
+                  <LogIn className="w-4 h-4" /> Sign In to Claim
+                </button>
+              )}
             </div>
           </div>
 

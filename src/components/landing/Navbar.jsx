@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useSound } from '../../context/SoundContext';
 import { useTheme } from '@/lib/ThemeContext';
 import { usePwa } from '@/context/PwaContext';
+import { useAuth } from '@/lib/AuthContext';
 import logoImg from '@/assets/logo.jpeg';
 
 const navLinks = [
@@ -26,10 +27,19 @@ export default function Navbar() {
   const { soundEnabled, toggleSound } = useSound();
   const { theme, toggleTheme } = useTheme();
   const { promptInstall, isInstalled } = usePwa();
+  const { isAuthenticated } = useAuth();
 
   const handleNav = (path) => {
     setMenuOpen(false);
     navigate(path);
+  };
+
+  const handleClaimDiscount = () => {
+    if (!isAuthenticated) {
+      navigate('/login?redirect=/prices');
+    } else {
+      navigate('/prices');
+    }
   };
 
   const isActive = (path) => location.pathname === path;
@@ -56,14 +66,14 @@ export default function Navbar() {
               <Zap className="w-3 h-3 text-amber-400 fill-current animate-pulse" /> FLASH SALE
             </span>
             <span className="hidden sm:inline">
-              🎉 <strong>LIMITED TIME:</strong> Use Coupon <code className="bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded font-mono font-bold border border-cyan-500/30">PRRX20</code> for <strong>20% OFF</strong> all VIP keys!
+              🎉 <strong>LIMITED TIME:</strong> Sign in with code <code className="bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded font-mono font-bold border border-cyan-500/30">PRRX20</code> for <strong>20% OFF</strong> all VIP keys!
             </span>
             <span className="sm:hidden text-[11px]">
               🎉 Code <code className="bg-cyan-500/20 text-cyan-300 px-1 rounded font-mono font-bold">PRRX20</code> for 20% OFF!
             </span>
           </div>
-          <button onClick={() => navigate('/prices')} className="text-[#06b6d4] hover:text-cyan-300 font-bold text-xs hover:underline flex items-center gap-0.5 ml-auto">
-            <span>Claim Discount</span> <ChevronRight className="w-3.5 h-3.5" />
+          <button onClick={handleClaimDiscount} className="text-[#06b6d4] hover:text-cyan-300 font-bold text-xs hover:underline flex items-center gap-0.5 ml-auto">
+            <span>{isAuthenticated ? 'View Discounts' : 'Login to Claim Discount'}</span> <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

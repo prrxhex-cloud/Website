@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { signInWithPopup, auth, googleProvider } from '@/lib/firebase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 
@@ -12,13 +12,18 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if there's a specific redirect requested
+  const searchParams = new URLSearchParams(location.search);
+  const redirectPath = searchParams.get('redirect') || '/prices';
 
   const handleGoogleLogin = async () => {
     setError('');
     setLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate('/dashboard');
+      navigate(redirectPath);
     } catch (err) {
       setError(err.message.includes('popup') ? 'Google login was cancelled.' : err.message);
     }

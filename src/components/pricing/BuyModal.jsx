@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShieldCheck, Coins, CreditCard, QrCode, MessageCircle, Tag, Check, Sparkles, AlertCircle } from 'lucide-react';
+import { X, ShieldCheck, Coins, CreditCard, QrCode, MessageCircle, Tag, Check, Sparkles, AlertCircle, LogIn, UserCheck } from 'lucide-react';
 import { getFormattedPrices } from '@/lib/currency';
+import { useAuth } from '@/lib/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const WHATSAPP_NUMBER = '94761386077';
 
@@ -15,6 +17,8 @@ const STANDARD_PROMO_CODES = {
 };
 
 export default function BuyModal({ plan, panelType, isOpen, onClose, discounts = [], initialPromoCode = '' }) {
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [selectedGateway, setSelectedGateway] = useState('whatsapp');
   const [promoInput, setPromoInput] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
@@ -121,8 +125,10 @@ export default function BuyModal({ plan, panelType, isOpen, onClose, discounts =
       discountDetailsText = `\n🏷️ Applied Promo: ${activeDiscountInfo.promo_code || 'SEASONAL SALE'} (${activeDiscountInfo.discount_value}${activeDiscountInfo.discount_type === 'percentage' ? '%' : ' LKR'} OFF)\n💵 Original Price: ${originalPrices?.usd} (LKR ${originalPrices?.lkr})\n🎉 Total Saved: ${savingsPrices.usd} (LKR ${savingsPrices.lkr})\n`;
     }
 
-    const message = `Hello PRRX HEX Admin! I want to buy a VIP License Key.
+    const userDetailsText = user ? `\n👤 VIP Member Account: ${user.email} (${user.displayName || 'VIP Member'})\n` : '';
 
+    const message = `Hello PRRX HEX Admin! I want to buy a VIP License Key.
+${userDetailsText}
 🛒 Selected Item: ${itemName}
 💻 Platform Support: ${platform}
 ⏱️ License Duration: ${plan.days || plan.label}${discountDetailsText}
@@ -373,15 +379,40 @@ Please provide bank transfer details & process my key order!`;
             </div>
           </div>
 
+          {/* User Account / VIP Tag */}
+          {isAuthenticated && user && (
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs">
+              <div className="flex items-center gap-2">
+                <UserCheck className="w-4 h-4 text-emerald-400" />
+                <span className="text-slate-300 font-medium truncate max-w-[220px]">
+                  Logged in as: <strong className="text-emerald-400">{user.email}</strong>
+                </span>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-md">
+                VIP AUTHENTICATED
+              </span>
+            </div>
+          )}
+
           {/* CTA Action Button */}
           <div className="pt-4 border-t border-[var(--border-color)] mt-4">
-            <button
-              onClick={handleGetLicenseKey}
-              className="btn-primary-cyan btn-glow w-full py-3.5 rounded-2xl font-inter font-black text-sm flex items-center justify-center gap-2.5 shadow-lg tracking-wide"
-            >
-              <ShieldCheck className="w-5 h-5" />
-              <span>GET LICENSE KEY NOW ({prices.usd})</span>
-            </button>
+            {!isAuthenticated ? (
+              <button
+                onClick={() => navigate('/login?redirect=/prices')}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 font-inter font-black text-sm flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(6,182,212,0.3)] tracking-wide transition-all hover:scale-[1.02]"
+              >
+                <LogIn className="w-5 h-5" />
+                <span>SIGN IN WITH GOOGLE TO CLAIM DISCOUNT</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleGetLicenseKey}
+                className="btn-primary-cyan btn-glow w-full py-3.5 rounded-2xl font-inter font-black text-sm flex items-center justify-center gap-2.5 shadow-lg tracking-wide"
+              >
+                <ShieldCheck className="w-5 h-5" />
+                <span>GET LICENSE KEY NOW ({prices.usd})</span>
+              </button>
+            )}
           </div>
         </motion.div>
       </div>
