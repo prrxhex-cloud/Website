@@ -96,23 +96,22 @@ const AuthenticatedApp = () => {
       </div>
     }>
       <Routes>
+        {/* PUBLIC STOREFRONT ROUTES (Accessible to all visitors) */}
+        <Route path="/" element={<Home />} />
+        <Route path="/prices" element={<Prices />} />
+        <Route path="/status" element={<Status />} />
+        <Route path="/live-demo" element={<DesktopRestrictedRoute><LiveDemo /></DesktopRestrictedRoute>} />
+        <Route path="/functions" element={<DesktopRestrictedRoute><Functions /></DesktopRestrictedRoute>} />
+        <Route path="/resellers" element={<DesktopRestrictedRoute><Resellers /></DesktopRestrictedRoute>} />
+        <Route path="/freebies" element={<Freebies />} />
+        <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/launcher" element={<DesktopLauncher />} />
-        <Route path="/app-launcher" element={<ProtectedRoute><AppLauncher /></ProtectedRoute>} />
 
-        {/* PROTECTED ROUTES (Must login to access) */}
-        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/app-launcher" element={<ProtectedRoute><AppLauncher /></ProtectedRoute>} />
-        <Route path="/status" element={<ProtectedRoute><Status /></ProtectedRoute>} />
-        <Route path="/live-demo" element={<ProtectedRoute><DesktopRestrictedRoute><LiveDemo /></DesktopRestrictedRoute></ProtectedRoute>} />
-        <Route path="/functions" element={<ProtectedRoute><DesktopRestrictedRoute><Functions /></DesktopRestrictedRoute></ProtectedRoute>} />
-        
-        <Route path="/prices" element={<ProtectedRoute><Prices /></ProtectedRoute>} />
-        <Route path="/resellers" element={<ProtectedRoute><DesktopRestrictedRoute><Resellers /></DesktopRestrictedRoute></ProtectedRoute>} />
-        <Route path="/freebies" element={<ProtectedRoute><Freebies /></ProtectedRoute>} />
+        {/* AUTHENTICATED & PROTECTED ROUTES (Requires Login) */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+        <Route path="/app-launcher" element={<ProtectedRoute><AppLauncher /></ProtectedRoute>} />
 
         <Route path="*" element={<PageNotFound />} />
       </Routes>
