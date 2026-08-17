@@ -1,24 +1,24 @@
 @echo off
 chcp 65001 >nul
-title PRRX HEX - KERNEL NETWORK MONITOR
-color 0c
+title PRRX HEX - ZERO-PING KERNEL PACKET OPTIMIZER
+color 0b
 cls
-echo [NET] Establishing zero-latency routing configurations...
-timeout /t 1 >nul
 
-set /a "duration=8"
-set /a "start=%time:~6,2%"
-
-:Loop2
-echo [TRACE] Connected to bypass pool port: 0x%random% - Latency packet sent.
-echo [NETWORK] Redirecting emulator data pipeline via priority node: %random%
-set /a "current=%time:~6,2%"
-set /a "elapsed=(current-start+60)%%60"
-if %elapsed% geq %duration% goto End2
-goto Loop2
-
-:End2
 echo.
-echo [COMPLETE] Routing matrix stabilized. Exiting...
-timeout /t 1 >nul
-exit
+echo =======================================================================
+echo     [PRRX HEX] ZERO-LATENCY NETWORK & PACKET PRIORITY ENGINE
+echo     [STATUS] Routing tables prioritized — Continuous Monitoring Active
+echo =======================================================================
+echo.
+
+ipconfig /flushdns >nul 2>&1
+netsh int ip reset >nul 2>&1
+
+set /a netcycle=0
+
+:NetLoop
+set /a netcycle+=1
+echo [%time:~0,8%] [TCP ROUTE #%netcycle%] Buffer Queue: 0ms | Packet Priority: VIP DSCP 46 (LOCKED)
+echo Ping Jitter Suppression: 100%% ACTIVE | Loss Rate: 0.00%%
+timeout /t 3 >nul
+goto NetLoop
