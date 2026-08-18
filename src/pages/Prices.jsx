@@ -13,19 +13,22 @@ import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings, Spar
 import { toast } from 'sonner';
 
 function applyDiscount(plan, discounts, panelType) {
+  if (!plan) return { label: 'VIP Plan', lkr: 0, days: 'Access', popular: false, crown: false };
   const now = new Date();
-  const match = discounts.find(d => {
-    if (!d.active) return false;
+  const discList = Array.isArray(discounts) ? discounts : [];
+  const match = discList.find(d => {
+    if (!d || !d.active) return false;
     if (d.expires_at && new Date(d.expires_at) < now) return false;
     const panelMatch = d.panel_type === 'both' || d.panel_type === panelType;
     const labelMatch = !d.plan_label || d.plan_label.toLowerCase() === plan.label?.toLowerCase();
     return panelMatch && labelMatch;
   });
   if (!match) return { ...plan, discount: null };
-  const originalLkr = plan.lkr || 0;
+  const originalLkr = Number(plan.lkr) || 0;
+  const val = Number(match.discount_value) || 0;
   const discountedLkr = match.discount_type === 'percentage'
-    ? Math.round(originalLkr * (1 - match.discount_value / 100))
-    : Math.max(0, originalLkr - match.discount_value);
+    ? Math.round(originalLkr * (1 - val / 100))
+    : Math.max(0, originalLkr - val);
   return { ...plan, originalLkr, lkr: discountedLkr, discount: match };
 }
 
@@ -45,9 +48,9 @@ const DEFAULT_PLANS = {
 };
 
 function PlanCard({ plan, index, onBuy }) {
-  const prices = getFormattedPrices(plan.lkr);
-  const originalPrices = plan.originalLkr ? getFormattedPrices(plan.originalLkr) : null;
-  const hasDiscount = !!plan.discount || !!originalPrices;
+  const prices = getFormattedPrices(plan?.lkr);
+  const originalPrices = plan?.originalLkr ? getFormattedPrices(plan.originalLkr) : null;
+  const hasDiscount = !!plan?.discount || !!originalPrices;
 
   return (
     <motion.div
@@ -55,23 +58,23 @@ function PlanCard({ plan, index, onBuy }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
       className={`clean-card p-6 flex flex-col justify-between relative bg-[var(--bg-card)] border transition-all duration-300 ${
-        plan.crown 
+        plan?.crown 
           ? 'border-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.2)] hover:border-amber-400' 
           : hasDiscount
           ? 'border-cyan-400/70 shadow-[0_0_25px_rgba(6,182,212,0.2)] hover:border-cyan-400'
-          : plan.popular 
+          : plan?.popular 
           ? 'border-[#06b6d4] shadow-[0_0_25px_rgba(6,182,212,0.2)]' 
           : 'border-[var(--border-color)] hover:border-cyan-500/40'
       } text-left shadow-md`}
     >
       <div>
         {/* Badges */}
-        {plan.crown && (
+        {plan?.crown && (
           <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-outfit font-extrabold text-[11px] tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1">
             <Crown className="w-3.5 h-3.5" /> BEST VALUE
           </div>
         )}
-        {plan.popular && !plan.crown && (
+        {plan?.popular && !plan?.crown && (
           <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white font-outfit font-extrabold text-[11px] tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1">
             <Star className="w-3.5 h-3.5" /> MOST POPULAR
           </div>
@@ -81,7 +84,7 @@ function PlanCard({ plan, index, onBuy }) {
         <div className="mb-4">
           <div className="flex items-center justify-between">
             <h3 className="font-outfit font-extrabold text-xl text-[var(--text-heading)] tracking-tight">
-              {plan.label}
+              {plan?.label}
             </h3>
             {hasDiscount && (
               <span className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-outfit font-extrabold text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
@@ -90,12 +93,12 @@ function PlanCard({ plan, index, onBuy }) {
             )}
           </div>
           <p className="font-inter text-xs text-[var(--text-muted)] font-medium mt-1">
-            {plan.days}
+            {plan?.days}
           </p>
         </div>
 
         {/* Discount Pill */}
-        {plan.discount && (
+        {plan?.discount && (
           <div className="mb-3 inline-flex items-center gap-1.5 bg-gradient-to-r from-cyan-500/15 to-purple-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">
             <Tag className="w-3.5 h-3.5 text-cyan-400" />
             <span>
@@ -148,7 +151,7 @@ function PlanCard({ plan, index, onBuy }) {
       <button
         onClick={() => onBuy(plan)}
         className={`w-full py-3.5 px-4 rounded-xl font-inter font-bold text-xs tracking-wide text-center flex items-center justify-center gap-2 transition-transform hover:-translate-y-0.5 ${
-          plan.crown 
+          plan?.crown 
             ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md' 
             : 'btn-primary-cyan btn-glow shadow-md'
         }`}
@@ -164,8 +167,18 @@ export default function Prices() {
   const navigate = useNavigate();
   const [panel, setPanel] = useState('external');
   const [plans, setPlans] = useState(() => {
-    const cached = localStorage.getItem('prrx_cached_plans');
-    return cached ? JSON.parse(cached) : DEFAULT_PLANS;
+    try {
+      const cached = localStorage.getItem('prrx_cached_plans');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && Array.isArray(parsed.external) && Array.isArray(parsed.internal)) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse cached plans', e);
+    }
+    return DEFAULT_PLANS;
   });
   const [discounts, setDiscounts] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -189,25 +202,48 @@ export default function Prices() {
   }, []);
 
   useEffect(() => {
-    Promise.all([
-      getDocs(query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
-      getDocs(query(collection(db, 'discounts'), orderBy('created_date', 'desc'))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() })))
-    ]).then(([planData, discountData]) => {
-      if (planData?.length) {
-        const newPlans = {
-          external: planData.filter(p => p.panel_type === 'external').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
-          internal: planData.filter(p => p.panel_type === 'internal').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
-        };
-        setPlans(newPlans);
-        localStorage.setItem('prrx_cached_plans', JSON.stringify(newPlans));
+    let isMounted = true;
+    const fetchPlansAndDiscounts = async () => {
+      try {
+        const planQuery = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'));
+        const discountQuery = query(collection(db, 'discounts'), orderBy('created_date', 'desc'));
+        
+        const [planSnap, discountSnap] = await Promise.allSettled([
+          getDocs(planQuery),
+          getDocs(discountQuery)
+        ]);
+
+        if (!isMounted) return;
+
+        if (planSnap.status === 'fulfilled' && planSnap.value && !planSnap.value.empty) {
+          const planData = planSnap.value.docs.map(d => ({ id: d.id, ...d.data() }));
+          if (planData.length > 0) {
+            const newPlans = {
+              external: planData.filter(p => p.panel_type === 'external').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
+              internal: planData.filter(p => p.panel_type === 'internal').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
+            };
+            if (newPlans.external.length > 0 || newPlans.internal.length > 0) {
+              setPlans(newPlans);
+              localStorage.setItem('prrx_cached_plans', JSON.stringify(newPlans));
+            }
+          }
+        }
+
+        if (discountSnap.status === 'fulfilled' && discountSnap.value && !discountSnap.value.empty) {
+          const discountData = discountSnap.value.docs.map(d => ({ id: d.id, ...d.data() }));
+          if (Array.isArray(discountData) && discountData.length > 0) {
+            setDiscounts(discountData);
+            const featured = discountData.find(d => d.active && d.promo_code);
+            if (featured?.promo_code) setActivePromoCode(featured.promo_code);
+          }
+        }
+      } catch (err) {
+        console.warn('Pricing fallback to defaults:', err);
       }
-      if (discountData?.length) {
-        setDiscounts(discountData);
-        // If there's an active promo code in DB, set it as the featured code
-        const featured = discountData.find(d => d.active && d.promo_code);
-        if (featured) setActivePromoCode(featured.promo_code);
-      }
-    }).catch(err => console.error('Pricing sync error:', err));
+    };
+
+    fetchPlansAndDiscounts();
+    return () => { isMounted = false; };
   }, []);
 
   const handleOpenBuyModal = (plan, promoCode = '') => {
@@ -220,13 +256,17 @@ export default function Prices() {
   };
 
   const handleCopyCode = (code) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(true);
-    toast.success(`Promo Code "${code}" copied to clipboard!`);
-    setTimeout(() => setCopiedCode(false), 3000);
+    try {
+      navigator.clipboard.writeText(code);
+      setCopiedCode(true);
+      toast.success(`Promo Code "${code}" copied to clipboard!`);
+      setTimeout(() => setCopiedCode(false), 3000);
+    } catch (e) {
+      toast.info(`Promo Code: ${code}`);
+    }
   };
 
-  const current = plans[panel] || [];
+  const current = Array.isArray(plans?.[panel]) && plans[panel].length > 0 ? plans[panel] : (DEFAULT_PLANS[panel] || []);
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter transition-colors duration-300">
@@ -334,7 +374,7 @@ export default function Prices() {
             const planWithDiscount = applyDiscount(p, discounts, panel);
             return (
               <PlanCard 
-                key={p.id || p.label} 
+                key={p?.id || p?.label || i} 
                 plan={planWithDiscount} 
                 index={i} 
                 onBuy={(plan) => handleOpenBuyModal(plan, planWithDiscount.discount?.promo_code || activePromoCode)}
