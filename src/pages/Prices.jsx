@@ -132,7 +132,7 @@ function PlanCard({ plan, index, onBuy }) {
         <div className="space-y-3 mb-6">
           {[
             '100% Undetected Anti-Cheat Bypass',
-            'Aimbot, ESP & Speed Hack Included',
+            'All Functions Included',
             'Instant Auto-Key Delivery',
             'Main Account Safe (HWID Spoof)',
             '24/7 Priority Support',

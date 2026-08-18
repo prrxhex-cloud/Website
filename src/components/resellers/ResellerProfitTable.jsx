@@ -167,7 +167,7 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-[var(--border-color)] bg-[var(--bg-subtle)] text-[11px] font-outfit font-black tracking-wider text-[var(--text-heading)] uppercase">
-                <th className="py-4 px-4 sm:px-6">PACKAGE ITEM</th>
+                <th className="py-4 px-4 sm:px-6">PER-ITEM</th>
                 <th className="py-4 px-3 sm:px-4">SELLING PRICE</th>
                 <th className="py-4 px-3 sm:px-4">COMMISSION</th>
                 <th className="py-4 px-3 sm:px-4 text-emerald-400">PROFIT PER ITEM (AUTO)</th>
