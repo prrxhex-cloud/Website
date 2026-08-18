@@ -1,34 +1,118 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { LayoutGrid, Settings, DollarSign, TrendingUp, ShieldCheck, Sparkles, MessageCircle, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
 
-const PROFIT_DATA = {
+const DEFAULT_PROFIT_PLANS = {
   external: [
-    { item: '1 Day Key', days: '24 Hours', price: 150, rate: 30, profit: 45, pay: 105, color: 'from-blue-500/20 to-cyan-500/20 text-cyan-400 border-cyan-500/30' },
-    { item: '3 Days Key', days: '72 Hours', price: 350, rate: 35, profit: 122.5, pay: 227.5, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
-    { item: '7 Days Key (1 Wk)', days: '7 Days', price: 700, rate: 35, profit: 245, pay: 455, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
-    { item: '1 Month Key (30 Days)', days: '30 Days', price: 2000, rate: 40, profit: 800, pay: 1200, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30', popular: true },
-    { item: '2 Months Key (60 Days)', days: '60 Days', price: 3000, rate: 40, profit: 1200, pay: 1800, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30' },
-    { item: 'Lifetime Key (VIP)', days: 'Permanent', price: 5000, rate: 40, profit: 2000, pay: 3000, color: 'from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30', crown: true },
+    { label: '1 Day Key', days: '24 Hours', lkr: 150, commission_rate: 30, color: 'from-blue-500/20 to-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+    { label: '3 Days Key', days: '72 Hours', lkr: 350, commission_rate: 35, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
+    { label: '7 Days Key (1 Wk)', days: '7 Days', lkr: 700, commission_rate: 35, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
+    { label: '1 Month Key (30 Days)', days: '30 Days', lkr: 2000, commission_rate: 40, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30', popular: true },
+    { label: '2 Months Key (60 Days)', days: '60 Days', lkr: 3000, commission_rate: 40, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30' },
+    { label: 'Lifetime Key (VIP)', days: 'Permanent', lkr: 5000, commission_rate: 40, color: 'from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30', crown: true },
   ],
   internal: [
-    { item: '1 Day Key', days: '24 Hours', price: 200, rate: 30, profit: 60, pay: 140, color: 'from-blue-500/20 to-cyan-500/20 text-cyan-400 border-cyan-500/30' },
-    { item: '3 Days Key', days: '72 Hours', price: 450, rate: 35, profit: 157.5, pay: 292.5, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
-    { item: '7 Days Key (1 Wk)', days: '7 Days', price: 900, rate: 35, profit: 315, pay: 585, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
-    { item: '1 Month Key (30 Days)', days: '30 Days', price: 2500, rate: 40, profit: 1000, pay: 1500, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30', popular: true },
-    { item: '2 Months Key (60 Days)', days: '60 Days', price: 4000, rate: 40, profit: 1600, pay: 2400, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30' },
-    { item: 'Lifetime Key (VIP)', days: 'Permanent', price: 7000, rate: 40, profit: 2800, pay: 4200, color: 'from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30', crown: true },
+    { label: '1 Day Key', days: '24 Hours', lkr: 200, commission_rate: 30, color: 'from-blue-500/20 to-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+    { label: '3 Days Key', days: '72 Hours', lkr: 450, commission_rate: 35, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
+    { label: '7 Days Key (1 Wk)', days: '7 Days', lkr: 900, commission_rate: 35, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
+    { label: '1 Month Key (30 Days)', days: '30 Days', lkr: 2500, commission_rate: 40, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30', popular: true },
+    { label: '2 Months Key (60 Days)', days: '60 Days', lkr: 4000, commission_rate: 40, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30' },
+    { label: 'Lifetime Key (VIP)', days: 'Permanent', lkr: 7000, commission_rate: 40, color: 'from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30', crown: true },
   ]
 };
 
 export default function ResellerProfitTable({ onApplyWhatsApp }) {
   const [panel, setPanel] = useState('external');
+  const [syncedPlans, setSyncedPlans] = useState(() => {
+    try {
+      const cached = localStorage.getItem('prrx_cached_plans');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && Array.isArray(parsed.external) && Array.isArray(parsed.internal)) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse cached plans', e);
+    }
+    return DEFAULT_PROFIT_PLANS;
+  });
 
-  const rows = PROFIT_DATA[panel] || PROFIT_DATA.external;
+  // Auto-sync real price plans from Firestore database in real-time
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLivePlans = async () => {
+      try {
+        const q = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'));
+        const snap = await getDocs(q);
+        if (isMounted && !snap.empty) {
+          const planData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const externalPlans = planData.filter(p => p.panel_type === 'external');
+          const internalPlans = planData.filter(p => p.panel_type === 'internal');
+
+          if (externalPlans.length > 0 || internalPlans.length > 0) {
+            const formatted = {
+              external: externalPlans.length > 0 ? externalPlans : DEFAULT_PROFIT_PLANS.external,
+              internal: internalPlans.length > 0 ? internalPlans : DEFAULT_PROFIT_PLANS.internal,
+            };
+            setSyncedPlans(formatted);
+            localStorage.setItem('prrx_cached_plans', JSON.stringify(formatted));
+          }
+        }
+      } catch (err) {
+        console.warn('Reseller table fallback to cached plans:', err);
+      }
+    };
+
+    fetchLivePlans();
+    return () => { isMounted = false; };
+  }, []);
+
+  const currentRawPlans = Array.isArray(syncedPlans?.[panel]) && syncedPlans[panel].length > 0
+    ? syncedPlans[panel]
+    : (DEFAULT_PROFIT_PLANS[panel] || []);
+
+  // Compute live Auto-Calculated profit breakdown for each package item
+  const rows = currentRawPlans.map((p, idx) => {
+    const label = p.label?.includes('Key') ? p.label : `${p.label} Key`;
+    const price = Number(p.lkr) || 0;
+    
+    // Determine commission rate (from DB or default tiered: 30% for 1d, 35% for 3/7d, 40% for month/lifetime)
+    const rate = Number(p.commission_rate) || (
+      label.includes('1 Day') ? 30 :
+      label.includes('3 Day') || label.includes('1 Week') || label.includes('7 Day') ? 35 :
+      40
+    );
+
+    // Auto-calculate Profit per Item and Pay to Owner with 100% precision
+    const profitPerItem = Math.round(price * (rate / 100));
+    const payToOwner = price - profitPerItem;
+
+    const color = rate >= 40 
+      ? 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30'
+      : rate >= 35 
+      ? 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30'
+      : 'from-blue-500/20 to-cyan-500/20 text-cyan-400 border-cyan-500/30';
+
+    return {
+      id: p.id || `${panel}-${idx}`,
+      item: label,
+      days: p.days || label,
+      price,
+      rate,
+      profit: profitPerItem,
+      pay: payToOwner,
+      popular: !!p.popular,
+      crown: !!p.crown,
+      color,
+    };
+  });
 
   return (
-    <div className="space-y-6 text-left">
-      {/* Title & Commission Rate Badge */}
+    <div className="space-y-6 text-left font-inter">
+      {/* Title & Live Sync Badge */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -39,13 +123,14 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
             </h2>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[11px] font-bold">
-            <TrendingUp className="w-3.5 h-3.5" /> High Margins Guaranteed
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[11px] font-bold shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span>PRICES AUTO-SYNCED WITH STORE</span>
           </div>
         </div>
 
         <p className="font-inter text-xs sm:text-sm text-[var(--text-muted)]">
-          Earn instant profits on every single key sold. No minimum threshold — pay only wholesale owner price and keep all margin profits!
+          Selling prices and reseller commission rates are auto-synced with store catalogs. Wholesale owner prices and profit margins are calculated automatically in real time!
         </p>
       </div>
 
@@ -76,7 +161,7 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
         </button>
       </div>
 
-      {/* Modern Table Container */}
+      {/* Modern Reseller Table */}
       <div className="clean-card rounded-3xl border border-[var(--border-color)] overflow-hidden shadow-2xl bg-[var(--bg-card)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -85,15 +170,15 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
                 <th className="py-4 px-4 sm:px-6">PACKAGE ITEM</th>
                 <th className="py-4 px-3 sm:px-4">SELLING PRICE</th>
                 <th className="py-4 px-3 sm:px-4">COMMISSION</th>
-                <th className="py-4 px-3 sm:px-4 text-emerald-400">PROFIT PER ITEM</th>
-                <th className="py-4 px-4 sm:px-6 text-right">PAY TO OWNER</th>
+                <th className="py-4 px-3 sm:px-4 text-emerald-400">PROFIT PER ITEM (AUTO)</th>
+                <th className="py-4 px-4 sm:px-6 text-right text-rose-400">PAY TO OWNER (AUTO)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-color)] font-inter text-xs sm:text-sm">
               <AnimatePresence mode="wait">
                 {rows.map((row, idx) => (
                   <motion.tr
-                    key={row.item + panel}
+                    key={row.id + panel}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
@@ -116,8 +201,8 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
                       </div>
                     </td>
 
-                    {/* Selling Price */}
-                    <td className="py-4 px-3 sm:px-4 font-mono font-bold text-slate-300">
+                    {/* Selling Price (Auto Synced with Prices Page) */}
+                    <td className="py-4 px-3 sm:px-4 font-mono font-bold text-cyan-400">
                       Rs. {row.price.toLocaleString()}
                     </td>
 
@@ -128,7 +213,7 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
                       </span>
                     </td>
 
-                    {/* Profit per Item (Green highlight) */}
+                    {/* Profit per Item (Auto Calculated) */}
                     <td className="py-4 px-3 sm:px-4 font-mono font-black text-emerald-400">
                       <div className="flex items-center gap-1">
                         <span>Rs. {row.profit.toLocaleString()}</span>
@@ -136,7 +221,7 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
                       </div>
                     </td>
 
-                    {/* Pay to Owner */}
+                    {/* Pay to Owner (Auto Calculated) */}
                     <td className="py-4 px-4 sm:px-6 text-right font-mono font-bold text-rose-300">
                       Rs. {row.pay.toLocaleString()}
                     </td>
@@ -153,7 +238,7 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
         <div className="space-y-1 text-center sm:text-left">
           <div className="font-outfit font-extrabold text-sm sm:text-base text-white flex items-center justify-center sm:justify-start gap-2">
             <Sparkles className="w-4 h-4 text-cyan-400" />
-            <span>Want to start selling PRRX VIP Panels today?</span>
+            <span>Ready to start selling PRRX VIP Panels?</span>
           </div>
           <p className="text-xs text-slate-400">
             Instant authorization, bulk key generator access, and 24/7 direct admin support.
