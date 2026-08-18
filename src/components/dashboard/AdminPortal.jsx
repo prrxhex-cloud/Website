@@ -13,6 +13,8 @@ import AccountRequestsTab from './AccountRequestsTab';
 import BeneficiaryAccountsTab from './BeneficiaryAccountsTab';
 import ResellersTab from './ResellersTab';
 import KeyBankTab from './KeyBankTab';
+import StorePricesTab from './StorePricesTab';
+import ResellerPlansTab from './ResellerPlansTab';
 import PricePlansTab from './PricePlansTab';
 import DownloadLinksTab from './DownloadLinksTab';
 import AdminOverviewTab from './AdminOverviewTab';
@@ -494,18 +496,19 @@ function AdminPanel({ adminUser, onLogout }) {
     { key: 'resellers',  label: 'Resellers',  icon: Store },
     { key: 'keys',       label: 'Key Bank',   icon: Key },
     { key: 'beneficiaries', label: 'Beneficiaries', icon: CreditCard },
-    { key: 'prices',     label: 'Prices',     icon: DollarSign },
-    { key: 'discounts',  label: 'Discounts',  icon: Tag },
-    { key: 'status',     label: 'Status',     icon: Activity },
-    { key: 'links',      label: 'DL Links',   icon: Link2 },
-    { key: 'community',  label: 'Community',  icon: Users },
-    { key: 'freebies',   label: 'Freebies',   icon: Gift },
-    { key: 'admins',     label: 'Admins',     icon: Shield },
-    { key: 'discord',    label: 'Discord',    icon: Bell },
-    { key: 'users',      label: 'Users',      icon: Users },
-    { key: 'messages',   label: 'Messages',   icon: MessageCircle },
-    { key: 'announcements', label: 'Posts',   icon: Megaphone },
-    { key: 'panel_images', label: 'Panel Imgs', icon: ImageIcon },
+    { key: 'prices',         label: 'Store Prices',      icon: DollarSign },
+    { key: 'reseller_plans', label: 'Reseller Packages', icon: Store },
+    { key: 'discounts',      label: 'Discounts',         icon: Tag },
+    { key: 'status',         label: 'Status',            icon: Activity },
+    { key: 'links',          label: 'DL Links',          icon: Link2 },
+    { key: 'community',      label: 'Community',         icon: Users },
+    { key: 'freebies',       label: 'Freebies',          icon: Gift },
+    { key: 'admins',         label: 'Admins',            icon: Shield },
+    { key: 'discord',        label: 'Discord',           icon: Bell },
+    { key: 'users',          label: 'Users',             icon: Users },
+    { key: 'messages',       label: 'Messages',          icon: MessageCircle },
+    { key: 'announcements',  label: 'Posts',             icon: Megaphone },
+    { key: 'panel_images',   label: 'Panel Imgs',        icon: ImageIcon },
     { key: 'functions_screenshots', label: 'Func Screenshots', icon: ImageIcon },
   ];
 
@@ -583,7 +586,8 @@ function AdminPanel({ adminUser, onLogout }) {
         {visitedTabs.has('resellers') && <div style={{ display: tab === 'resellers' ? 'block' : 'none' }}><ResellersTab /></div>}
         {visitedTabs.has('keys') && <div style={{ display: tab === 'keys' ? 'block' : 'none' }}><KeyBankTab /></div>}
         {visitedTabs.has('beneficiaries') && <div style={{ display: tab === 'beneficiaries' ? 'block' : 'none' }}><BeneficiaryAccountsTab /></div>}
-        {visitedTabs.has('prices') && <div style={{ display: tab === 'prices' ? 'block' : 'none' }}><PricePlansTab /></div>}
+        {visitedTabs.has('prices') && <div style={{ display: tab === 'prices' ? 'block' : 'none' }}><StorePricesTab /></div>}
+        {visitedTabs.has('reseller_plans') && <div style={{ display: tab === 'reseller_plans' ? 'block' : 'none' }}><ResellerPlansTab /></div>}
         {visitedTabs.has('discounts') && <div style={{ display: tab === 'discounts' ? 'block' : 'none' }}><DiscountsTab /></div>}
         {visitedTabs.has('status') && <div style={{ display: tab === 'status' ? 'block' : 'none' }}><StatusTab /></div>}
         {visitedTabs.has('links') && <div style={{ display: tab === 'links' ? 'block' : 'none' }}><DownloadLinksTab /></div>}
@@ -593,11 +597,11 @@ function AdminPanel({ adminUser, onLogout }) {
         {visitedTabs.has('discord') && <div style={{ display: tab === 'discord' ? 'block' : 'none' }}><DiscordSettingsTab /></div>}
         {visitedTabs.has('users') && <div style={{ display: tab === 'users' ? 'block' : 'none' }}><UsersTab /></div>}
         {visitedTabs.has('messages') && <div style={{ display: tab === 'messages' ? 'block' : 'none' }}><AdminMessagesTab /></div>}
-            {visitedTabs.has('announcements') && <div style={{ display: tab === 'announcements' ? 'block' : 'none' }}><AdminAnnouncementsTab /></div>}
-            {visitedTabs.has('panel_images') && <div style={{ display: tab === 'panel_images' ? 'block' : 'none' }}><PanelImagesTab /></div>}
-            {visitedTabs.has('functions_screenshots') && <div style={{ display: tab === 'functions_screenshots' ? 'block' : 'none' }}><FunctionsScreenshotsTab /></div>}
-          </div>
-        </>
+        {visitedTabs.has('announcements') && <div style={{ display: tab === 'announcements' ? 'block' : 'none' }}><AdminAnnouncementsTab /></div>}
+        {visitedTabs.has('panel_images') && <div style={{ display: tab === 'panel_images' ? 'block' : 'none' }}><PanelImagesTab /></div>}
+        {visitedTabs.has('functions_screenshots') && <div style={{ display: tab === 'functions_screenshots' ? 'block' : 'none' }}><FunctionsScreenshotsTab /></div>}
+      </div>
+    </>
       ) : (
         <div className="rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl p-3 sm:p-8 overflow-x-auto" style={{ minHeight: '650px' }}>
           <DiscordBotManagement />
