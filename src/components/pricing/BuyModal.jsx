@@ -122,7 +122,7 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
   const savingsPrices = savingsLkr > 0 ? getFormattedPrices(savingsLkr) : null;
 
   const platform = panelType === 'internal' ? 'Android APK / Windows 10/11' : 'Windows 10/11';
-  const itemName = `PRRX ${panelType === 'internal' ? 'Internal' : 'External'} Panel — ${plan?.label || 'VIP Plan'}`;
+  const itemName = plan?.customTitle || `PRRX ${panelType === 'internal' ? 'Internal' : 'External'} Panel — ${plan?.label || 'VIP Plan'}`;
 
   const handleGetLicenseKey = () => {
     if (selectedGateway !== 'whatsapp') return;

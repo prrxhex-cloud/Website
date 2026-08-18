@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getFormattedPrices } from '@/lib/currency';
-import { LayoutGrid, Settings, Zap, Store, Crown, Star, Check, Sparkles, MessageCircle, Flame, ArrowRight } from 'lucide-react';
-
-const WHATSAPP_NUMBER = '94761386077';
+import BuyModal from '@/components/pricing/BuyModal';
+import { LayoutGrid, Settings, Zap, Store, Crown, Star, Check, Sparkles, MessageCircle, Flame, AlertTriangle, ShieldCheck, Lock } from 'lucide-react';
+import { toast } from 'sonner';
 
 const DEFAULT_PROFIT_PLANS = {
   external: [
@@ -30,6 +30,9 @@ const DEFAULT_PROFIT_PLANS = {
 
 export default function ResellerPackages({ panel, onPanelChange }) {
   const [packageType, setPackageType] = useState('reseller'); // 'reseller' or 'jit'
+  const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
   const [plans, setPlans] = useState(() => {
     try {
       const cached = localStorage.getItem('prrx_cached_plans');
@@ -73,28 +76,39 @@ export default function ResellerPackages({ panel, onPanelChange }) {
     return () => { isMounted = false; };
   }, []);
 
+  const handleSelectPackageType = (type) => {
+    setPackageType(type);
+    if (type === 'jit') {
+      toast.warning('⚠️ Restricted Access: Only Our Verified Paid Members Can Buy Just In Time Packages!');
+    }
+  };
+
   const currentPlans = Array.isArray(plans?.[panel]) && plans[panel].length > 0
     ? plans[panel]
     : (DEFAULT_PROFIT_PLANS[panel] || []);
 
-  const handleOrderWhatsApp = (p, ownerPrice, profitAmount, commissionRate) => {
+  const handleOpenCheckout = (p, ownerPrice, profitAmount, commissionRate) => {
     const typeLabel = packageType === 'reseller' ? 'Reseller Wholesale Package' : 'Just In Time Package';
     const panelLabel = panel === 'internal' ? 'Internal Panel (V7A)' : 'External Panel (Free Fire)';
 
-    const message = `Hello PRRX HEX Admin! 👋
-I want to order this Reseller Package:
+    const checkoutPlanObj = {
+      ...p,
+      customTitle: `PRRX ${panel === 'internal' ? 'Internal' : 'External'} ${typeLabel} — ${p.label}`,
+      label: `${p.label} (${typeLabel})`,
+      lkr: ownerPrice,
+      originalLkr: Number(p.lkr) || (ownerPrice + profitAmount),
+      days: p.days || 'Duration Access',
+      badgeLabel: packageType === 'reseller' ? 'RESELLER WHOLESALE' : 'JUST IN TIME VIP',
+      discount: {
+        badge_text: `${commissionRate}% RESELLER MARGIN`,
+        discount_value: commissionRate,
+        discount_type: 'percentage',
+        promo_code: packageType === 'reseller' ? 'WHOLESALE' : 'JUSTINTIME'
+      }
+    };
 
-📦 Package: ${p.label} Key (${p.days || 'Access'})
-💻 Panel Version: ${panelLabel}
-🏷️ Model: ${typeLabel}
-💵 Owner Wholesale Price: LKR ${ownerPrice.toLocaleString()}
-📈 Commission Rate: ${commissionRate}% Rate
-🎉 Profit Per Key: LKR ${profitAmount.toLocaleString()}
-
-Please provide bank transfer details & activate my keys!`;
-
-    const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`, '_blank');
+    setSelectedPlanForCheckout(checkoutPlanObj);
+    setIsCheckoutOpen(true);
   };
 
   return (
@@ -109,7 +123,7 @@ Please provide bank transfer details & activate my keys!`;
           PACKAGES
         </h2>
         <p className="font-inter text-xs sm:text-sm text-[var(--text-muted)] max-w-2xl mx-auto">
-          Choose between <strong>Reseller Wholesale Packages</strong> (Maximum Margins) and <strong>Just In Time Packages</strong> (Fast Turnaround).
+          Choose between <strong>Reseller Wholesale Packages</strong> (Maximum Margins) and <strong>Just In Time Packages</strong> (Instant Turnaround).
         </p>
       </div>
 
@@ -117,7 +131,7 @@ Please provide bank transfer details & activate my keys!`;
       <div className="flex justify-center">
         <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-1.5 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-2 max-w-xl w-full">
           <button
-            onClick={() => setPackageType('reseller')}
+            onClick={() => handleSelectPackageType('reseller')}
             className={`w-full sm:w-1/2 px-5 py-3 rounded-xl font-outfit font-extrabold text-xs tracking-wider transition-all flex items-center justify-center gap-2 ${
               packageType === 'reseller'
                 ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-[0_0_20px_rgba(6,182,212,0.4)]'
@@ -129,7 +143,7 @@ Please provide bank transfer details & activate my keys!`;
           </button>
 
           <button
-            onClick={() => setPackageType('jit')}
+            onClick={() => handleSelectPackageType('jit')}
             className={`w-full sm:w-1/2 px-5 py-3 rounded-xl font-outfit font-extrabold text-xs tracking-wider transition-all flex items-center justify-center gap-2 ${
               packageType === 'jit'
                 ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)]'
@@ -141,6 +155,26 @@ Please provide bank transfer details & activate my keys!`;
           </button>
         </div>
       </div>
+
+      {/* Just In Time Warning Message Notice */}
+      <AnimatePresence>
+        {packageType === 'jit' && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="max-w-2xl mx-auto p-4 rounded-2xl bg-gradient-to-r from-amber-950/80 via-amber-900/50 to-amber-950/80 border border-amber-500/50 shadow-[0_0_25px_rgba(245,158,11,0.2)] flex items-center gap-3 text-amber-300 text-xs sm:text-sm font-outfit font-bold"
+          >
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5 text-amber-400 animate-pulse" />
+            </div>
+            <div>
+              <span className="text-amber-200 uppercase tracking-wide block font-black text-xs">⚠️ RESTRICTED ACCESS NOTICE:</span>
+              <span>Only Our Verified Paid Members Can Buy This Packages. Unauthorized orders will require verification before key issuance.</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Panel Switcher (External vs Internal) */}
       <div className="flex justify-center">
@@ -290,9 +324,9 @@ Please provide bank transfer details & activate my keys!`;
                 </div>
               </div>
 
-              {/* Order CTA */}
+              {/* Order CTA (Opens Interactive Checkout Modal) */}
               <button
-                onClick={() => handleOrderWhatsApp(p, ownerPrice, profitAmount, rate)}
+                onClick={() => handleOpenCheckout(p, ownerPrice, profitAmount, rate)}
                 className={`w-full py-3.5 px-4 rounded-xl font-outfit font-extrabold text-xs tracking-wider text-center flex items-center justify-center gap-2 transition-transform hover:-translate-y-0.5 shadow-md ${
                   isCrown
                     ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'
@@ -308,6 +342,15 @@ Please provide bank transfer details & activate my keys!`;
           );
         })}
       </div>
+
+      {/* Interactive Checkout Modal (Same as Prices page!) */}
+      <BuyModal
+        plan={selectedPlanForCheckout}
+        panelType={panel}
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        discounts={[]}
+      />
     </div>
   );
 }
