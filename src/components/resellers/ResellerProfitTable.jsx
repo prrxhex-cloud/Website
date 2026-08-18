@@ -2,24 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { LayoutGrid, Settings, DollarSign, TrendingUp, ShieldCheck, Sparkles, MessageCircle, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
+import { LayoutGrid, Settings, DollarSign, TrendingUp, ShieldCheck, Sparkles, MessageCircle, Zap, Store } from 'lucide-react';
 
 const DEFAULT_PROFIT_PLANS = {
   external: [
-    { label: '1 Day Key', days: '24 Hours', lkr: 150, commission_rate: 30, color: 'from-blue-500/20 to-cyan-500/20 text-cyan-400 border-cyan-500/30' },
-    { label: '3 Days Key', days: '72 Hours', lkr: 350, commission_rate: 35, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
-    { label: '7 Days Key (1 Wk)', days: '7 Days', lkr: 700, commission_rate: 35, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
-    { label: '1 Month Key (30 Days)', days: '30 Days', lkr: 2000, commission_rate: 40, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30', popular: true },
-    { label: '2 Months Key (60 Days)', days: '60 Days', lkr: 3000, commission_rate: 40, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30' },
-    { label: 'Lifetime Key (VIP)', days: 'Permanent', lkr: 5000, commission_rate: 40, color: 'from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30', crown: true },
+    { label: '1 Week',   days: '7+ Days',   lkr: 400,  jit_rate: 25, reseller_rate: 35, popular: true,  crown: false },
+    { label: '2 Weeks',  days: '14+ Days',  lkr: 650,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false },
+    { label: '1 Month',  days: '30+ Days',  lkr: 1250, jit_rate: 30, reseller_rate: 40, popular: true,  crown: false },
+    { label: '2 Months', days: '60+ Days',  lkr: 1800, jit_rate: 30, reseller_rate: 40, popular: false, crown: false },
+    { label: '1 Year',   days: '365 Days',  lkr: 2499, jit_rate: 30, reseller_rate: 40, popular: false, crown: false },
+    { label: '2 Years',  days: '730 Days',  lkr: 3400, jit_rate: 30, reseller_rate: 40, popular: false, crown: false },
+    { label: 'Until We Developing', days: 'Forever ∞', lkr: 5000, jit_rate: 30, reseller_rate: 40, popular: false, crown: true },
   ],
   internal: [
-    { label: '1 Day Key', days: '24 Hours', lkr: 200, commission_rate: 30, color: 'from-blue-500/20 to-cyan-500/20 text-cyan-400 border-cyan-500/30' },
-    { label: '3 Days Key', days: '72 Hours', lkr: 450, commission_rate: 35, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
-    { label: '7 Days Key (1 Wk)', days: '7 Days', lkr: 900, commission_rate: 35, color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30' },
-    { label: '1 Month Key (30 Days)', days: '30 Days', lkr: 2500, commission_rate: 40, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30', popular: true },
-    { label: '2 Months Key (60 Days)', days: '60 Days', lkr: 4000, commission_rate: 40, color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30' },
-    { label: 'Lifetime Key (VIP)', days: 'Permanent', lkr: 7000, commission_rate: 40, color: 'from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30', crown: true },
+    { label: '1 Week',   days: '7+ Days',   lkr: 500,  jit_rate: 25, reseller_rate: 35, popular: true,  crown: false },
+    { label: '2 Weeks',  days: '14+ Days',  lkr: 800,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false },
+    { label: '1 Month',  days: '30+ Days',  lkr: 1600, jit_rate: 30, reseller_rate: 40, popular: true,  crown: false },
+    { label: '2 Months', days: '60+ Days',  lkr: 2400, jit_rate: 30, reseller_rate: 40, popular: false, crown: false },
+    { label: '1 Year',   days: '365 Days',  lkr: 3500, jit_rate: 30, reseller_rate: 40, popular: false, crown: false },
+    { label: '2 Years',  days: '730 Days',  lkr: 4800, jit_rate: 30, reseller_rate: 40, popular: false, crown: false },
+    { label: 'Until We Developing', days: 'Forever ∞', lkr: 7000, jit_rate: 30, reseller_rate: 40, popular: false, crown: true },
   ]
 };
 
@@ -79,34 +81,31 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
     const label = p.label?.includes('Key') ? p.label : `${p.label} Key`;
     const price = Number(p.lkr) || 0;
     
-    // Determine commission rate (from DB or default tiered: 30% for 1d, 35% for 3/7d, 40% for month/lifetime)
-    const rate = Number(p.commission_rate) || (
-      label.includes('1 Day') ? 30 :
-      label.includes('3 Day') || label.includes('1 Week') || label.includes('7 Day') ? 35 :
-      40
-    );
+    // Just In Time
+    const jitRate = Number(p.jit_rate) || (label.includes('1 Day') ? 20 : label.includes('1 Week') ? 25 : 30);
+    const jitProfit = Math.round(price * (jitRate / 100));
+    const jitPay = p.jit_pay !== undefined ? Number(p.jit_pay) : (price - jitProfit);
 
-    // Auto-calculate Profit per Item and Pay to Owner with 100% precision
-    const profitPerItem = Math.round(price * (rate / 100));
-    const payToOwner = price - profitPerItem;
-
-    const color = rate >= 40 
-      ? 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30'
-      : rate >= 35 
-      ? 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30'
-      : 'from-blue-500/20 to-cyan-500/20 text-cyan-400 border-cyan-500/30';
+    // Reseller
+    const resellerRate = Number(p.reseller_rate ?? p.commission_rate) || (label.includes('1 Day') ? 30 : label.includes('1 Week') ? 35 : 40);
+    const resellerProfit = Math.round(price * (resellerRate / 100));
+    const resellerPay = p.reseller_pay !== undefined ? Number(p.reseller_pay) : (price - resellerProfit);
 
     return {
       id: p.id || `${panel}-${idx}`,
       item: label,
       days: p.days || label,
       price,
-      rate,
-      profit: profitPerItem,
-      pay: payToOwner,
+      // JIT
+      jitRate,
+      jitProfit,
+      jitPay,
+      // Reseller
+      resellerRate,
+      resellerProfit,
+      resellerPay,
       popular: !!p.popular,
       crown: !!p.crown,
-      color,
     };
   });
 
@@ -119,7 +118,7 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
             <span className="w-2.5 h-6 bg-gradient-to-b from-rose-500 to-red-600 rounded-sm" />
             <h2 className="font-outfit font-black text-xl sm:text-2xl text-[var(--text-heading)] tracking-tight flex items-center gap-2">
               Per-Item Reseller Profit Breakdown{' '}
-              <span className="text-rose-400 font-extrabold text-base sm:text-lg">(30% - 40%)</span>
+              <span className="text-rose-400 font-extrabold text-base sm:text-lg">(Just In Time & Reseller)</span>
             </h2>
           </div>
 
@@ -130,7 +129,7 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
         </div>
 
         <p className="font-inter text-xs sm:text-sm text-[var(--text-muted)]">
-          Selling prices and reseller commission rates are auto-synced with store catalogs. Wholesale owner prices and profit margins are calculated automatically in real time!
+          Compare wholesale pricing between <strong>Just In Time</strong> and <strong>Reseller</strong> tiers. All commission margins, profits, and owner payouts are calculated live in real time!
         </p>
       </div>
 
@@ -161,31 +160,59 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
         </button>
       </div>
 
-      {/* Modern Reseller Table */}
+      {/* Modern Multi-Tier Reseller Table */}
       <div className="clean-card rounded-3xl border border-[var(--border-color)] overflow-hidden shadow-2xl bg-[var(--bg-card)]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[780px]">
             <thead>
-              <tr className="border-b border-[var(--border-color)] bg-[var(--bg-subtle)] text-[11px] font-outfit font-black tracking-wider text-[var(--text-heading)] uppercase">
-                <th className="py-4 px-4 sm:px-6">PER-ITEM</th>
-                <th className="py-4 px-3 sm:px-4">SELLING PRICE</th>
-                <th className="py-4 px-3 sm:px-4">COMMISSION</th>
-                <th className="py-4 px-3 sm:px-4 text-emerald-400">PROFIT PER ITEM (AUTO)</th>
-                <th className="py-4 px-4 sm:px-6 text-right text-rose-400">PAY TO OWNER (AUTO)</th>
+              {/* Group Tier Level 1 */}
+              <tr className="border-b border-[var(--border-color)] bg-[var(--bg-subtle)] text-[11px] font-outfit font-black tracking-wider uppercase">
+                <th rowSpan={2} className="py-3 px-4 sm:px-6 text-[var(--text-heading)] align-middle border-r border-[var(--border-color)]">
+                  PER-ITEM
+                </th>
+                <th rowSpan={2} className="py-3 px-3 sm:px-4 text-cyan-400 align-middle border-r border-[var(--border-color)]">
+                  SELLING PRICE
+                </th>
+                <th colSpan={3} className="py-2.5 px-3 text-center bg-amber-500/10 text-amber-400 border-r border-[var(--border-color)] font-bold">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>JUST IN TIME</span>
+                  </div>
+                </th>
+                <th colSpan={3} className="py-2.5 px-3 text-center bg-cyan-500/10 text-cyan-400 font-bold">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <Store className="w-3.5 h-3.5" />
+                    <span>RESELLER</span>
+                  </div>
+                </th>
+              </tr>
+
+              {/* Group Tier Level 2 (Sub-columns) */}
+              <tr className="border-b border-[var(--border-color)] bg-[var(--bg-card)] text-[10px] font-outfit font-extrabold tracking-wider text-[var(--text-muted)] uppercase">
+                {/* JIT Sub-Columns */}
+                <th className="py-2.5 px-3 bg-amber-950/10 text-amber-300/90">COMMISSION</th>
+                <th className="py-2.5 px-3 bg-amber-950/10 text-emerald-400">PROFIT / ITEM</th>
+                <th className="py-2.5 px-3 bg-amber-950/10 text-rose-300 border-r border-[var(--border-color)] text-right">PAY TO OWNER</th>
+
+                {/* Reseller Sub-Columns */}
+                <th className="py-2.5 px-3 bg-cyan-950/10 text-cyan-300/90">COMMISSION</th>
+                <th className="py-2.5 px-3 bg-cyan-950/10 text-emerald-400">PROFIT / ITEM</th>
+                <th className="py-2.5 px-3 bg-cyan-950/10 text-rose-300 text-right pr-4 sm:pr-6">PAY TO OWNER</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--border-color)] font-inter text-xs sm:text-sm">
+
+            <tbody className="divide-y divide-[var(--border-color)] font-inter text-xs">
               <AnimatePresence mode="wait">
                 {rows.map((row, idx) => (
                   <motion.tr
                     key={row.id + panel}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
+                    transition={{ delay: idx * 0.04 }}
                     className="hover:bg-white/[0.03] transition-colors group"
                   >
                     {/* Item Name */}
-                    <td className="py-4 px-4 sm:px-6 font-outfit font-bold text-[var(--text-heading)]">
+                    <td className="py-3.5 px-4 sm:px-6 font-outfit font-bold text-[var(--text-heading)] border-r border-[var(--border-color)] whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <span>{row.item}</span>
                         {row.popular && (
@@ -201,29 +228,35 @@ export default function ResellerProfitTable({ onApplyWhatsApp }) {
                       </div>
                     </td>
 
-                    {/* Selling Price (Auto Synced with Prices Page) */}
-                    <td className="py-4 px-3 sm:px-4 font-mono font-bold text-cyan-400">
+                    {/* Selling Price */}
+                    <td className="py-3.5 px-3 sm:px-4 font-mono font-bold text-cyan-400 border-r border-[var(--border-color)] whitespace-nowrap">
                       Rs. {row.price.toLocaleString()}
                     </td>
 
-                    {/* Commission Rate Badge */}
-                    <td className="py-4 px-3 sm:px-4">
-                      <span className={`inline-block px-2.5 py-1 rounded-lg font-outfit font-black text-xs border bg-gradient-to-r ${row.color}`}>
-                        {row.rate}% Rate
+                    {/* === JUST IN TIME COLUMNS === */}
+                    <td className="py-3.5 px-3 font-mono font-bold text-amber-300/90 whitespace-nowrap bg-amber-950/5">
+                      <span className="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px]">
+                        {row.jitRate}% Rate
                       </span>
                     </td>
-
-                    {/* Profit per Item (Auto Calculated) */}
-                    <td className="py-4 px-3 sm:px-4 font-mono font-black text-emerald-400">
-                      <div className="flex items-center gap-1">
-                        <span>Rs. {row.profit.toLocaleString()}</span>
-                        <span className="text-[10px] text-emerald-500/80 font-normal">/ item</span>
-                      </div>
+                    <td className="py-3.5 px-3 font-mono font-black text-emerald-400 whitespace-nowrap bg-amber-950/5">
+                      Rs. {row.jitProfit.toLocaleString()}
+                    </td>
+                    <td className="py-3.5 px-3 font-mono font-bold text-rose-300 border-r border-[var(--border-color)] text-right whitespace-nowrap bg-amber-950/5">
+                      Rs. {row.jitPay.toLocaleString()}
                     </td>
 
-                    {/* Pay to Owner (Auto Calculated) */}
-                    <td className="py-4 px-4 sm:px-6 text-right font-mono font-bold text-rose-300">
-                      Rs. {row.pay.toLocaleString()}
+                    {/* === RESELLER COLUMNS === */}
+                    <td className="py-3.5 px-3 font-mono font-bold text-cyan-300/90 whitespace-nowrap bg-cyan-950/5">
+                      <span className="px-2 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[11px]">
+                        {row.resellerRate}% Rate
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-3 font-mono font-black text-emerald-400 whitespace-nowrap bg-cyan-950/5">
+                      Rs. {row.resellerProfit.toLocaleString()}
+                    </td>
+                    <td className="py-3.5 px-3 pr-4 sm:pr-6 font-mono font-bold text-rose-300 text-right whitespace-nowrap bg-cyan-950/5">
+                      Rs. {row.resellerPay.toLocaleString()}
                     </td>
                   </motion.tr>
                 ))}
