@@ -12,13 +12,31 @@ import { useNavigate } from 'react-router-dom';
 import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings, Sparkles, Copy, Clock, Flame, LogIn, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Helper to check if a discount is currently active and not expired
+export function isDiscountActive(d) {
+  if (!d || !d.active) return false;
+  if (!d.expires_at) return true;
+  let expiryDate = new Date(d.expires_at);
+  if (typeof d.expires_at === 'string' && d.expires_at.length === 10) {
+    expiryDate = new Date(`${d.expires_at}T23:59:59`);
+  }
+  return !isNaN(expiryDate.getTime()) && expiryDate.getTime() > Date.now();
+}
+
+export function getDiscountExpiryDate(d) {
+  if (!d?.expires_at) return null;
+  if (typeof d.expires_at === 'string' && d.expires_at.length === 10) {
+    return new Date(`${d.expires_at}T23:59:59`);
+  }
+  const date = new Date(d.expires_at);
+  return isNaN(date.getTime()) ? null : date;
+}
+
 function applyDiscount(plan, discounts, panelType) {
   if (!plan) return { label: 'VIP Plan', lkr: 0, days: 'Access', popular: false, crown: false };
-  const now = new Date();
   const discList = Array.isArray(discounts) ? discounts : [];
   const match = discList.find(d => {
-    if (!d || !d.active) return false;
-    if (d.expires_at && new Date(d.expires_at) < now) return false;
+    if (!isDiscountActive(d)) return false;
     const panelMatch = d.panel_type === 'both' || d.panel_type === panelType;
     const labelMatch = !d.plan_label || d.plan_label.toLowerCase() === plan.label?.toLowerCase();
     return panelMatch && labelMatch;
@@ -186,21 +204,10 @@ export default function Prices() {
   const [activePromoCode, setActivePromoCode] = useState('PRRX20');
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Live countdown timer state (hours, minutes, seconds)
-  const [timeLeft, setTimeLeft] = useState({ hours: 48, minutes: 12, seconds: 40 });
+  // Live real-time countdown timer state based on database expires_at
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, hasExpiry: false, isExpired: false });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
-        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        return { hours: 48, minutes: 0, seconds: 0 };
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
+  // 1. Fetch live plans and discounts from Firestore
   useEffect(() => {
     let isMounted = true;
     const fetchPlansAndDiscounts = async () => {
@@ -233,7 +240,7 @@ export default function Prices() {
           const discountData = discountSnap.value.docs.map(d => ({ id: d.id, ...d.data() }));
           if (Array.isArray(discountData) && discountData.length > 0) {
             setDiscounts(discountData);
-            const featured = discountData.find(d => d.active && d.promo_code);
+            const featured = discountData.find(d => isDiscountActive(d) && d.promo_code);
             if (featured?.promo_code) setActivePromoCode(featured.promo_code);
           }
         }
@@ -245,6 +252,43 @@ export default function Prices() {
     fetchPlansAndDiscounts();
     return () => { isMounted = false; };
   }, []);
+
+  // 2. Active unexpired discount resolution
+  const activeDiscountObj = Array.isArray(discounts) 
+    ? (discounts.find(d => isDiscountActive(d) && d.promo_code === activePromoCode) || discounts.find(d => isDiscountActive(d)) || null)
+    : null;
+
+  // 3. Real-Time Expiration Countdown Clock
+  useEffect(() => {
+    const updateCountdown = () => {
+      if (!activeDiscountObj) {
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0, hasExpiry: false, isExpired: true });
+        return;
+      }
+
+      const expiryDate = getDiscountExpiryDate(activeDiscountObj);
+      if (!expiryDate) {
+        // No expiration date set -> active indefinitely
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0, hasExpiry: false, isExpired: false });
+        return;
+      }
+
+      const diff = expiryDate.getTime() - Date.now();
+      if (diff > 0) {
+        const totalHours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+        setTimeLeft({ hours: totalHours, minutes, seconds, hasExpiry: true, isExpired: false });
+      } else {
+        // Expired!
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0, hasExpiry: true, isExpired: true });
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [activeDiscountObj]);
 
   const handleOpenBuyModal = (plan, promoCode = '') => {
     if (!isAuthenticated) {
@@ -268,14 +312,11 @@ export default function Prices() {
 
   const current = Array.isArray(plans?.[panel]) && plans[panel].length > 0 ? plans[panel] : (DEFAULT_PLANS[panel] || []);
 
-  // Compute real active discount text dynamically from database
-  const activeDiscountObj = Array.isArray(discounts) 
-    ? (discounts.find(d => d.active && d.promo_code === activePromoCode) || discounts.find(d => d.active) || discounts[0])
-    : null;
-
   const displayDiscountText = activeDiscountObj?.discount_value
     ? (activeDiscountObj.badge_text || (activeDiscountObj.discount_type === 'percentage' ? `${activeDiscountObj.discount_value}% OFF` : `LKR ${activeDiscountObj.discount_value} OFF`))
-    : 'VIP DISCOUNT';
+    : 'VIP SPECIAL';
+
+  const hasActiveDiscount = !!activeDiscountObj && !timeLeft.isExpired;
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter transition-colors duration-300">
@@ -292,58 +333,64 @@ export default function Prices() {
             Choose your preferred panel version. Sign in to apply promo codes for instant discounts & 24/7 key delivery.
           </p>
 
-          {/* Seasonal Flash Discount Hero Banner */}
-          <div className="mt-6 max-w-3xl mx-auto p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/70 via-slate-900/90 to-purple-950/70 border border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.15)] flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full bg-red-500/20 border border-red-500/50 text-red-400 font-outfit font-black text-[10px] tracking-wider flex items-center gap-1">
-                  <Flame className="w-3 h-3 text-red-400 animate-pulse" /> FLASH PROMO
-                </span>
-                <span className="text-xs text-slate-300 font-bold flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-cyan-400" /> Ends in:
-                  <span className="font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-md border border-cyan-500/30">
-                    {String(timeLeft.hours).padStart(2, '0')}h : {String(timeLeft.minutes).padStart(2, '0')}m : {String(timeLeft.seconds).padStart(2, '0')}s
+          {/* Dynamic Flash Discount Hero Banner (Only shown if active discount exists and not expired) */}
+          {hasActiveDiscount && (
+            <div className="mt-6 max-w-3xl mx-auto p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/70 via-slate-900/90 to-purple-950/70 border border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.15)] flex flex-col sm:flex-row items-center justify-between gap-4 text-left animate-fadeIn">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-red-500/20 border border-red-500/50 text-red-400 font-outfit font-black text-[10px] tracking-wider flex items-center gap-1">
+                    <Flame className="w-3 h-3 text-red-400 animate-pulse" /> FLASH PROMO
                   </span>
-                </span>
-              </div>
-              <p className="font-outfit font-bold text-sm sm:text-base text-white">
-                {isAuthenticated ? (
-                  <span>
-                    🎉 Welcome, <span className="text-emerald-400">{user?.displayName || user?.email}</span>! <span className="text-cyan-400 font-black">{displayDiscountText}</span> VIP discount unlocked!
-                  </span>
-                ) : (
-                  <span>
-                    Sign in to claim <span className="text-cyan-400 font-black">{displayDiscountText}</span> VIP discount & instant keys!
-                  </span>
-                )}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-              <div className="bg-slate-950/80 border border-cyan-500/30 px-3 py-2 rounded-xl flex items-center justify-between gap-3 w-full sm:w-auto">
-                <div>
-                  <div className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Coupon Code</div>
-                  <div className="font-mono font-black text-sm text-cyan-400 tracking-wider">{activePromoCode}</div>
+                  {timeLeft.hasExpiry && (
+                    <span className="text-xs text-slate-300 font-bold flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-cyan-400" /> Ends in:
+                      <span className="font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-md border border-cyan-500/30">
+                        {String(timeLeft.hours).padStart(2, '0')}h : {String(timeLeft.minutes).padStart(2, '0')}m : {String(timeLeft.seconds).padStart(2, '0')}s
+                      </span>
+                    </span>
+                  )}
                 </div>
-                <button
-                  onClick={() => handleCopyCode(activePromoCode)}
-                  className="p-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 transition-colors"
-                  title="Copy coupon code"
-                >
-                  {copiedCode ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                </button>
+                <p className="font-outfit font-bold text-sm sm:text-base text-white">
+                  {isAuthenticated ? (
+                    <span>
+                      🎉 Welcome, <span className="text-emerald-400">{user?.displayName || user?.email}</span>! <span className="text-cyan-400 font-black">{displayDiscountText}</span> VIP discount unlocked!
+                    </span>
+                  ) : (
+                    <span>
+                      Sign in to claim <span className="text-cyan-400 font-black">{displayDiscountText}</span> VIP discount & instant keys!
+                    </span>
+                  )}
+                </p>
               </div>
 
-              {!isAuthenticated && (
-                <button
-                  onClick={() => navigate('/login?redirect=/prices')}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 font-outfit font-extrabold text-xs flex items-center gap-1.5 shadow-md shrink-0 w-full sm:w-auto justify-center"
-                >
-                  <LogIn className="w-4 h-4" /> Sign In to Claim
-                </button>
-              )}
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+                {activeDiscountObj?.promo_code && (
+                  <div className="bg-slate-950/80 border border-cyan-500/30 px-3 py-2 rounded-xl flex items-center justify-between gap-3 w-full sm:w-auto">
+                    <div>
+                      <div className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Coupon Code</div>
+                      <div className="font-mono font-black text-sm text-cyan-400 tracking-wider">{activeDiscountObj.promo_code}</div>
+                    </div>
+                    <button
+                      onClick={() => handleCopyCode(activeDiscountObj.promo_code)}
+                      className="p-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 transition-colors"
+                      title="Copy coupon code"
+                    >
+                      {copiedCode ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+                )}
+
+                {!isAuthenticated && (
+                  <button
+                    onClick={() => navigate('/login?redirect=/prices')}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 font-outfit font-extrabold text-xs flex items-center gap-1.5 shadow-md shrink-0 w-full sm:w-auto justify-center"
+                  >
+                    <LogIn className="w-4 h-4" /> Sign In to Claim
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Panel Selector Toggle */}
           <div className="flex justify-center pt-4 w-full">

@@ -49,7 +49,13 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
     const discList = Array.isArray(discounts) ? discounts : [];
     const firestoreMatch = discList.find(d => {
       if (!d || !d.active) return false;
-      if (d.expires_at && new Date(d.expires_at) < new Date()) return false;
+      if (d.expires_at) {
+        let exp = new Date(d.expires_at);
+        if (typeof d.expires_at === 'string' && d.expires_at.length === 10) {
+          exp = new Date(`${d.expires_at}T23:59:59`);
+        }
+        if (exp.getTime() <= Date.now()) return false;
+      }
       const codeMatch = d.promo_code && d.promo_code.toUpperCase() === rawCode;
       const panelMatch = d.panel_type === 'both' || d.panel_type === panelType;
       const labelMatch = !d.plan_label || d.plan_label.toLowerCase() === plan?.label?.toLowerCase();
