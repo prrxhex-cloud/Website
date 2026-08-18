@@ -3,13 +3,13 @@ import { motion } from 'framer-motion';
 import { auth, db } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { User, Lock, Eye, EyeOff, AlertTriangle, Clock, ShieldCheck, LogIn, MessageCircle } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, AlertTriangle, Clock, ShieldCheck, LogIn, MessageCircle, X } from 'lucide-react';
 import { isLocked, getRemainingLockout, recordFailedAttempt, recordSuccess, formatMs } from '@/components/security/SecurityGuard';
 import logoImg from '@/assets/logo.jpeg';
 
 const STORE_KEY = 'reseller';
 
-export default function ResellerLogin({ onLogin, onApplyWhatsApp, isSideCard = false }) {
+export default function ResellerLogin({ onLogin, onApplyWhatsApp, onClose }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -51,6 +51,7 @@ export default function ResellerLogin({ onLogin, onApplyWhatsApp, isSideCard = f
         recordSuccess(STORE_KEY, email);
         const userData = snapshot.docs[0].data();
         onLogin({ ...userData, uid: user.uid });
+        if (onClose) onClose();
       } else {
         await auth.signOut();
         const { lockedUntil } = recordFailedAttempt(STORE_KEY, email);
@@ -76,12 +77,22 @@ export default function ResellerLogin({ onLogin, onApplyWhatsApp, isSideCard = f
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={`clean-card p-6 sm:p-8 shadow-2xl space-y-5 bg-[var(--bg-card)] border border-[var(--border-color)] text-left rounded-3xl relative overflow-hidden ${
-        isSideCard ? 'w-full' : 'w-full max-w-md mx-auto'
-      }`}
+      initial={{ opacity: 0, scale: 0.95, y: 15 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, y: 15 }}
+      className="w-full max-w-md clean-card p-6 sm:p-8 shadow-2xl space-y-5 bg-[var(--bg-card)] border border-[var(--border-color)] text-left rounded-3xl relative overflow-hidden"
     >
+      {/* Close button if in modal */}
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-white flex items-center justify-center transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
+
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="w-14 h-14 rounded-2xl bg-slate-900/80 border border-cyan-500/40 p-1 shadow-[0_0_25px_rgba(6,182,212,0.3)] mx-auto mb-2 flex items-center justify-center">
