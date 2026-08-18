@@ -9,7 +9,8 @@ import BuyModal from '@/components/pricing/BuyModal';
 import { getFormattedPrices } from '@/lib/currency';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings, Sparkles, Copy, Clock, Flame, LogIn, UserCheck } from 'lucide-react';
+import { normalizeDurationKey } from '@/components/dashboard/KeyBankTab';
+import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings, Sparkles, Copy, Clock, Flame, LogIn, UserCheck, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Helper to check if a discount is currently active and not expired
@@ -53,15 +54,23 @@ function applyDiscount(plan, discounts, panelType) {
 const DEFAULT_PLANS = {
   external: [
     { label: '1 Day',    lkr: 150,  days: '1 Day Access',     popular: false, crown: false, sort_order: 0 },
-    { label: '1 Week',   lkr: 500,  days: '7 Days Access',   popular: false, crown: false, sort_order: 1 },
-    { label: '1 Month',  lkr: 1500, days: '30 Days Access',  popular: true,  crown: false, sort_order: 2 },
-    { label: 'Lifetime', lkr: 5000, days: 'Forever Access', popular: false, crown: true,  sort_order: 3 },
+    { label: '1 Week',   lkr: 400,  days: '7 Days Access',   popular: true,  crown: false, sort_order: 1 },
+    { label: '2 Weeks',  lkr: 650,  days: '14 Days Access',  popular: false, crown: false, sort_order: 2 },
+    { label: '1 Month',  lkr: 1250, days: '30 Days Access',  popular: true,  crown: false, sort_order: 3 },
+    { label: '2 Months', lkr: 1800, days: '60 Days Access',  popular: false, crown: false, sort_order: 4 },
+    { label: '1 Year',   lkr: 2499, days: '365 Days Access', popular: false, crown: false, sort_order: 5 },
+    { label: '2 Years',  lkr: 3400, days: '730 Days Access', popular: false, crown: false, sort_order: 6 },
+    { label: 'Lifetime', lkr: 5000, days: 'Forever Access',  popular: false, crown: true,  sort_order: 7 },
   ],
   internal: [
     { label: '1 Day',    lkr: 200,  days: '1 Day Access',     popular: false, crown: false, sort_order: 0 },
-    { label: '1 Week',   lkr: 700,  days: '7 Days Access',   popular: false, crown: false, sort_order: 1 },
-    { label: '1 Month',  lkr: 2000, days: '30 Days Access',  popular: true,  crown: false, sort_order: 2 },
-    { label: 'Lifetime', lkr: 7000, days: 'Forever Access', popular: false, crown: true,  sort_order: 3 },
+    { label: '1 Week',   lkr: 500,  days: '7 Days Access',   popular: true,  crown: false, sort_order: 1 },
+    { label: '2 Weeks',  lkr: 800,  days: '14 Days Access',  popular: false, crown: false, sort_order: 2 },
+    { label: '1 Month',  lkr: 1600, days: '30 Days Access',  popular: true,  crown: false, sort_order: 3 },
+    { label: '2 Months', lkr: 2400, days: '60 Days Access',  popular: false, crown: false, sort_order: 4 },
+    { label: '1 Year',   lkr: 3500, days: '365 Days Access', popular: false, crown: false, sort_order: 5 },
+    { label: '2 Years',  lkr: 4800, days: '730 Days Access', popular: false, crown: false, sort_order: 6 },
+    { label: 'Lifetime', lkr: 7000, days: 'Forever Access',  popular: false, crown: true,  sort_order: 7 },
   ],
 };
 
@@ -74,8 +83,8 @@ function PlanCard({ plan, index, onBuy }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className={`clean-card p-6 flex flex-col justify-between relative bg-[var(--bg-card)] border transition-all duration-300 ${
+      transition={{ delay: index * 0.08 }}
+      className={`clean-card p-6 flex flex-col justify-between relative bg-[var(--bg-card)] border transition-all duration-300 rounded-3xl ${
         plan?.crown 
           ? 'border-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.2)] hover:border-amber-400' 
           : hasDiscount
@@ -83,7 +92,7 @@ function PlanCard({ plan, index, onBuy }) {
           : plan?.popular 
           ? 'border-[#06b6d4] shadow-[0_0_25px_rgba(6,182,212,0.2)]' 
           : 'border-[var(--border-color)] hover:border-cyan-500/40'
-      } text-left shadow-md`}
+      } text-left shadow-xl`}
     >
       <div>
         {/* Badges */}
@@ -142,6 +151,21 @@ function PlanCard({ plan, index, onBuy }) {
               <span>{originalPrices.usd} (LKR {originalPrices.lkr})</span>
             </div>
           )}
+
+          {/* Live Key Inventory Stock Pill */}
+          <div className="mt-3">
+            {plan?.stockCount !== undefined && plan.stockCount > 0 ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[10px] font-bold shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                {plan.stockCount} {plan.stockCount === 1 ? 'Key' : 'Keys'} in Stock
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-400 font-mono text-[10px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                Instant Auto-Key Gen
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="border-t border-[var(--border-color)] my-4" />
@@ -199,6 +223,7 @@ export default function Prices() {
     return DEFAULT_PLANS;
   });
   const [discounts, setDiscounts] = useState([]);
+  const [keysStock, setKeysStock] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
   const [activePromoCode, setActivePromoCode] = useState('PRRX20');
@@ -207,17 +232,19 @@ export default function Prices() {
   // Live real-time countdown timer state based on database expires_at
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, hasExpiry: false, isExpired: false });
 
-  // 1. Fetch live plans and discounts from Firestore
+  // 1. Fetch live plans, discounts, and available key stock from Firestore
   useEffect(() => {
     let isMounted = true;
     const fetchPlansAndDiscounts = async () => {
       try {
         const planQuery = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'));
         const discountQuery = query(collection(db, 'discounts'), orderBy('created_date', 'desc'));
+        const keyQuery = query(collection(db, 'license_keys'));
         
-        const [planSnap, discountSnap] = await Promise.allSettled([
+        const [planSnap, discountSnap, keySnap] = await Promise.allSettled([
           getDocs(planQuery),
-          getDocs(discountQuery)
+          getDocs(discountQuery),
+          getDocs(keyQuery)
         ]);
 
         if (!isMounted) return;
@@ -244,6 +271,10 @@ export default function Prices() {
             if (featured?.promo_code) setActivePromoCode(featured.promo_code);
           }
         }
+
+        if (keySnap.status === 'fulfilled' && keySnap.value) {
+          setKeysStock(keySnap.value.docs.map(d => ({ id: d.id, ...d.data() })));
+        }
       } catch (err) {
         console.warn('Pricing fallback to defaults:', err);
       }
@@ -268,7 +299,6 @@ export default function Prices() {
 
       const expiryDate = getDiscountExpiryDate(activeDiscountObj);
       if (!expiryDate) {
-        // No expiration date set -> active indefinitely
         setTimeLeft({ hours: 0, minutes: 0, seconds: 0, hasExpiry: false, isExpired: false });
         return;
       }
@@ -280,7 +310,6 @@ export default function Prices() {
         const seconds = Math.floor((diff / 1000) % 60);
         setTimeLeft({ hours: totalHours, minutes, seconds, hasExpiry: true, isExpired: false });
       } else {
-        // Expired!
         setTimeLeft({ hours: 0, minutes: 0, seconds: 0, hasExpiry: true, isExpired: true });
       }
     };
@@ -310,7 +339,18 @@ export default function Prices() {
     }
   };
 
-  const current = Array.isArray(plans?.[panel]) && plans[panel].length > 0 ? plans[panel] : (DEFAULT_PLANS[panel] || []);
+  const rawPlans = Array.isArray(plans?.[panel]) && plans[panel].length > 0 ? plans[panel] : (DEFAULT_PLANS[panel] || []);
+
+  // Compute live available keys count for each plan
+  const current = rawPlans.map(p => {
+    const norm = normalizeDurationKey(p.label || p.days);
+    const count = keysStock.filter(k => 
+      k.status === 'available' && 
+      (k.product_type === panel || k.product_type === 'both') && 
+      normalizeDurationKey(k.duration) === norm
+    ).length;
+    return { ...p, stockCount: count };
+  });
 
   const displayDiscountText = activeDiscountObj?.discount_value
     ? (activeDiscountObj.badge_text || (activeDiscountObj.discount_type === 'percentage' ? `${activeDiscountObj.discount_value}% OFF` : `LKR ${activeDiscountObj.discount_value} OFF`))
@@ -333,7 +373,7 @@ export default function Prices() {
             Choose your preferred panel version. Sign in to apply promo codes for instant discounts & 24/7 key delivery.
           </p>
 
-          {/* Dynamic Flash Discount Hero Banner (Only shown if active discount exists and not expired) */}
+          {/* Dynamic Flash Discount Hero Banner */}
           {hasActiveDiscount && (
             <div className="mt-6 max-w-3xl mx-auto p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/70 via-slate-900/90 to-purple-950/70 border border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.15)] flex flex-col sm:flex-row items-center justify-between gap-4 text-left animate-fadeIn">
               <div className="space-y-1">

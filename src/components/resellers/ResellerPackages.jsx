@@ -4,6 +4,7 @@ import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getFormattedPrices } from '@/lib/currency';
 import BuyModal from '@/components/pricing/BuyModal';
+import { normalizeDurationKey } from '@/components/dashboard/KeyBankTab';
 import { LayoutGrid, Settings, Zap, Store, Crown, Star, Check, Sparkles, MessageCircle, Flame, AlertTriangle, ShieldCheck, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,6 +33,7 @@ export default function ResellerPackages({ panel, onPanelChange }) {
   const [packageType, setPackageType] = useState('reseller'); // 'reseller' or 'jit'
   const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [keysStock, setKeysStock] = useState([]);
 
   const [plans, setPlans] = useState(() => {
     try {
@@ -50,12 +52,20 @@ export default function ResellerPackages({ panel, onPanelChange }) {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchLivePlans = async () => {
+    const fetchLivePlansAndStock = async () => {
       try {
-        const q = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'));
-        const snap = await getDocs(q);
-        if (isMounted && !snap.empty) {
-          const planData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const planQuery = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'));
+        const keyQuery = query(collection(db, 'license_keys'));
+
+        const [planSnap, keySnap] = await Promise.allSettled([
+          getDocs(planQuery),
+          getDocs(keyQuery)
+        ]);
+
+        if (!isMounted) return;
+
+        if (planSnap.status === 'fulfilled' && planSnap.value && !planSnap.value.empty) {
+          const planData = planSnap.value.docs.map(d => ({ id: d.id, ...d.data() }));
           const externalPlans = planData.filter(p => p.panel_type === 'external');
           const internalPlans = planData.filter(p => p.panel_type === 'internal');
 
@@ -68,11 +78,16 @@ export default function ResellerPackages({ panel, onPanelChange }) {
             localStorage.setItem('prrx_cached_plans', JSON.stringify(formatted));
           }
         }
+
+        if (keySnap.status === 'fulfilled' && keySnap.value) {
+          setKeysStock(keySnap.value.docs.map(d => ({ id: d.id, ...d.data() })));
+        }
       } catch (err) {
         console.warn('Fallback to defaults:', err);
       }
     };
-    fetchLivePlans();
+
+    fetchLivePlansAndStock();
     return () => { isMounted = false; };
   }, []);
 
@@ -83,13 +98,22 @@ export default function ResellerPackages({ panel, onPanelChange }) {
     }
   };
 
-  const currentPlans = Array.isArray(plans?.[panel]) && plans[panel].length > 0
+  const rawPlans = Array.isArray(plans?.[panel]) && plans[panel].length > 0
     ? plans[panel]
     : (DEFAULT_PROFIT_PLANS[panel] || []);
 
+  const currentPlans = rawPlans.map(p => {
+    const norm = normalizeDurationKey(p.label || p.days);
+    const count = keysStock.filter(k => 
+      k.status === 'available' && 
+      (k.product_type === panel || k.product_type === 'both') && 
+      normalizeDurationKey(k.duration) === norm
+    ).length;
+    return { ...p, stockCount: count };
+  });
+
   const handleOpenCheckout = (p, ownerPrice, profitAmount, commissionRate) => {
     const typeLabel = packageType === 'reseller' ? 'Reseller Wholesale Package' : 'Just In Time Package';
-    const panelLabel = panel === 'internal' ? 'Internal Panel (V7A)' : 'External Panel (Free Fire)';
 
     const checkoutPlanObj = {
       ...p,
@@ -301,6 +325,21 @@ export default function ResellerPackages({ panel, onPanelChange }) {
                     <span>Retail Selling Price:</span>
                     <span className="font-bold text-[var(--text-primary)]">LKR {sellingPrices.lkr}</span>
                   </div>
+
+                  {/* Live Stock Count Badge */}
+                  <div className="mt-2.5">
+                    {p.stockCount !== undefined && p.stockCount > 0 ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[10px] font-bold shadow-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        {p.stockCount} {p.stockCount === 1 ? 'Key' : 'Keys'} in Stock
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-400 font-mono text-[10px] font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                        Instant Auto-Key Gen
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="border-t border-[var(--border-color)] my-4" />
@@ -343,7 +382,7 @@ export default function ResellerPackages({ panel, onPanelChange }) {
         })}
       </div>
 
-      {/* Interactive Checkout Modal (Same as Prices page!) */}
+      {/* Interactive Checkout Modal */}
       <BuyModal
         plan={selectedPlanForCheckout}
         panelType={panel}
