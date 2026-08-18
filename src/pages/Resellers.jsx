@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
+import ResellerPackages from '@/components/resellers/ResellerPackages';
 import ResellerProfitTable from '@/components/resellers/ResellerProfitTable';
 import ResellerLogin from '@/components/resellers/ResellerLogin';
 import ResellerPortal from '@/components/resellers/ResellerPortal';
@@ -12,6 +13,7 @@ const SESSION_KEY = 'prrx_reseller_logged_in';
 const WHATSAPP_NUMBER = '94761386077';
 
 export default function Resellers() {
+  const [panel, setPanel] = useState('external');
   const [resellerUser, setResellerUser] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem(SESSION_KEY));
@@ -47,7 +49,7 @@ Please provide me with reseller onboarding details, bulk key packages, and porta
       <Navbar />
 
       {/* Main Page Container */}
-      <div className="flex-1 relative z-10 pt-10 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full space-y-8">
+      <div className="flex-1 relative z-10 pt-10 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full space-y-16">
         <AnimatePresence mode="wait">
           {!resellerUser ? (
             <motion.div
@@ -55,7 +57,7 @@ Please provide me with reseller onboarding details, bulk key packages, and porta
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="space-y-8"
+              className="space-y-16"
             >
               {/* Header Showcase Banner with Top Corner Reseller Login Button */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-cyan-950/40 via-[var(--bg-card)] to-purple-950/40 border border-[var(--border-color)] shadow-xl relative overflow-hidden">
@@ -84,9 +86,18 @@ Please provide me with reseller onboarding details, bulk key packages, and porta
                 </div>
               </div>
 
-              {/* Full Width Per-Item Profit Breakdown Table */}
+              {/* 1. Packages Price Boxes Section (Reseller Wholesale & Just In Time) */}
               <div className="w-full">
-                <ResellerProfitTable onApplyWhatsApp={handleApplyWhatsApp} />
+                <ResellerPackages panel={panel} onPanelChange={setPanel} />
+              </div>
+
+              {/* 2. Full Width Per-Item Profit Breakdown Table */}
+              <div className="w-full pt-4 border-t border-[var(--border-color)]">
+                <ResellerProfitTable
+                  panel={panel}
+                  onPanelChange={setPanel}
+                  onApplyWhatsApp={handleApplyWhatsApp}
+                />
               </div>
             </motion.div>
           ) : (

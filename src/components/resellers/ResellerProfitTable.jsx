@@ -25,8 +25,10 @@ const DEFAULT_PROFIT_PLANS = {
   ]
 };
 
-export default function ResellerProfitTable({ onApplyWhatsApp }) {
-  const [panel, setPanel] = useState('external');
+export default function ResellerProfitTable({ onApplyWhatsApp, panel: propPanel, onPanelChange }) {
+  const [internalPanel, setInternalPanel] = useState('external');
+  const panel = propPanel || internalPanel;
+  const setPanel = onPanelChange || setInternalPanel;
   const [syncedPlans, setSyncedPlans] = useState(() => {
     try {
       const cached = localStorage.getItem('prrx_cached_plans');
