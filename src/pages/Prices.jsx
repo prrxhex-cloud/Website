@@ -268,6 +268,15 @@ export default function Prices() {
 
   const current = Array.isArray(plans?.[panel]) && plans[panel].length > 0 ? plans[panel] : (DEFAULT_PLANS[panel] || []);
 
+  // Compute real active discount text dynamically from database
+  const activeDiscountObj = Array.isArray(discounts) 
+    ? (discounts.find(d => d.active && d.promo_code === activePromoCode) || discounts.find(d => d.active) || discounts[0])
+    : null;
+
+  const displayDiscountText = activeDiscountObj?.discount_value
+    ? (activeDiscountObj.badge_text || (activeDiscountObj.discount_type === 'percentage' ? `${activeDiscountObj.discount_value}% OFF` : `LKR ${activeDiscountObj.discount_value} OFF`))
+    : 'VIP DISCOUNT';
+
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter transition-colors duration-300">
       <Navbar />
@@ -300,11 +309,11 @@ export default function Prices() {
               <p className="font-outfit font-bold text-sm sm:text-base text-white">
                 {isAuthenticated ? (
                   <span>
-                    🎉 Welcome, <span className="text-emerald-400">{user?.displayName || user?.email}</span>! Up to <span className="text-cyan-400 font-black">50% OFF</span> VIP discounts unlocked!
+                    🎉 Welcome, <span className="text-emerald-400">{user?.displayName || user?.email}</span>! <span className="text-cyan-400 font-black">{displayDiscountText}</span> VIP discount unlocked!
                   </span>
                 ) : (
                   <span>
-                    Sign in to claim up to <span className="text-cyan-400 font-black">20% - 50% OFF</span> VIP discounts & instant keys!
+                    Sign in to claim <span className="text-cyan-400 font-black">{displayDiscountText}</span> VIP discount & instant keys!
                   </span>
                 )}
               </p>
