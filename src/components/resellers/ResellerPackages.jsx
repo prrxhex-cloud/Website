@@ -5,27 +5,27 @@ import { db } from '@/lib/firebase';
 import { getFormattedPrices } from '@/lib/currency';
 import BuyModal from '@/components/pricing/BuyModal';
 import { normalizeDurationKey } from '@/components/dashboard/KeyBankTab';
-import { LayoutGrid, Settings, Zap, Store, Crown, Star, Check, Sparkles, MessageCircle, Flame, AlertTriangle, ShieldCheck, Lock } from 'lucide-react';
+import { LayoutGrid, Settings, Zap, Store, Crown, Star, Check, Sparkles, MessageCircle, Flame, AlertTriangle, ShieldCheck, Lock, Package } from 'lucide-react';
 import { toast } from 'sonner';
 
 const DEFAULT_PROFIT_PLANS = {
   external: [
-    { label: '1 Week',   days: '7+ Days',   lkr: 400,  jit_rate: 25, reseller_rate: 35, popular: true,  crown: false, sort_order: 0 },
-    { label: '2 Weeks',  days: '14+ Days',  lkr: 650,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 1 },
-    { label: '1 Month',  days: '30+ Days',  lkr: 1250, jit_rate: 30, reseller_rate: 40, popular: true,  crown: false, sort_order: 2 },
-    { label: '2 Months', days: '60+ Days',  lkr: 1800, jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 3 },
-    { label: '1 Year',   days: '365 Days',  lkr: 2499, jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 4 },
-    { label: '2 Years',  days: '730 Days',  lkr: 3400, jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 5 },
-    { label: 'Until We Developing', days: 'Forever ∞', lkr: 5000, jit_rate: 30, reseller_rate: 40, popular: false, crown: true, sort_order: 6 },
+    { label: '1 Week',   days: '7 Days Access',   lkr: 400,  reseller_keys_count: 10, jit_rate: 25, reseller_rate: 35, popular: true,  crown: false, sort_order: 0 },
+    { label: '2 Weeks',  days: '14 Days Access',  lkr: 650,  reseller_keys_count: 10, jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 1 },
+    { label: '1 Month',  days: '30 Days Access',  lkr: 1250, reseller_keys_count: 10, jit_rate: 30, reseller_rate: 40, popular: true,  crown: false, sort_order: 2 },
+    { label: '2 Months', days: '60 Days Access',  lkr: 1800, reseller_keys_count: 5,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 3 },
+    { label: '1 Year',   days: '365 Days Access', lkr: 2499, reseller_keys_count: 5,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 4 },
+    { label: '2 Years',  days: '730 Days Access', lkr: 3400, reseller_keys_count: 3,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 5 },
+    { label: 'Until We Developing', days: 'Forever Access', lkr: 5000, reseller_keys_count: 2, jit_rate: 30, reseller_rate: 40, popular: false, crown: true, sort_order: 6 },
   ],
   internal: [
-    { label: '1 Week',   days: '7+ Days',   lkr: 500,  jit_rate: 25, reseller_rate: 35, popular: true,  crown: false, sort_order: 0 },
-    { label: '2 Weeks',  days: '14+ Days',  lkr: 800,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 1 },
-    { label: '1 Month',  days: '30+ Days',  lkr: 1600, jit_rate: 30, reseller_rate: 40, popular: true,  crown: false, sort_order: 2 },
-    { label: '2 Months', days: '60+ Days',  lkr: 2400, jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 3 },
-    { label: '1 Year',   days: '365 Days',  lkr: 3500, jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 4 },
-    { label: '2 Years',  days: '730 Days',  lkr: 4800, jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 5 },
-    { label: 'Until We Developing', days: 'Forever ∞', lkr: 7000, jit_rate: 30, reseller_rate: 40, popular: false, crown: true, sort_order: 6 },
+    { label: '1 Week',   days: '7 Days Access',   lkr: 500,  reseller_keys_count: 10, jit_rate: 25, reseller_rate: 35, popular: true,  crown: false, sort_order: 0 },
+    { label: '2 Weeks',  days: '14 Days Access',  lkr: 800,  reseller_keys_count: 10, jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 1 },
+    { label: '1 Month',  days: '30 Days Access',  lkr: 1600, reseller_keys_count: 10, jit_rate: 30, reseller_rate: 40, popular: true,  crown: false, sort_order: 2 },
+    { label: '2 Months', days: '60 Days Access',  lkr: 2400, reseller_keys_count: 5,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 3 },
+    { label: '1 Year',   days: '365 Days Access', lkr: 3500, reseller_keys_count: 5,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 4 },
+    { label: '2 Years',  days: '730 Days Access', lkr: 4800, reseller_keys_count: 3,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 5 },
+    { label: 'Until We Developing', days: 'Forever Access', lkr: 7000, reseller_keys_count: 2, jit_rate: 30, reseller_rate: 40, popular: false, crown: true, sort_order: 6 },
   ]
 };
 
@@ -112,20 +112,20 @@ export default function ResellerPackages({ panel, onPanelChange }) {
     return { ...p, stockCount: count };
   });
 
-  const handleOpenCheckout = (p, ownerPrice, profitAmount, commissionRate) => {
+  const handleOpenCheckout = (p, cardData) => {
     const typeLabel = packageType === 'reseller' ? 'Reseller Wholesale Package' : 'Just In Time Package';
 
     const checkoutPlanObj = {
       ...p,
-      customTitle: `PRRX ${panel === 'internal' ? 'Internal' : 'External'} ${typeLabel} — ${p.label}`,
-      label: `${p.label} (${typeLabel})`,
-      lkr: ownerPrice,
-      originalLkr: Number(p.lkr) || (ownerPrice + profitAmount),
-      days: p.days || 'Duration Access',
-      badgeLabel: packageType === 'reseller' ? 'RESELLER WHOLESALE' : 'JUST IN TIME VIP',
+      customTitle: `PRRX ${panel === 'internal' ? 'Internal' : 'External'} ${typeLabel} — ${cardData.mainTitle} (${cardData.timePeriod})`,
+      label: `${cardData.mainTitle} · ${cardData.timePeriod}`,
+      lkr: cardData.wholesalePrice,
+      originalLkr: cardData.retailPrice,
+      days: `${cardData.timePeriod} (${cardData.keyCount} Keys Delivered)`,
+      badgeLabel: packageType === 'reseller' ? `${cardData.keyCount} KEYS WHOLESALE` : 'JUST IN TIME VIP',
       discount: {
-        badge_text: `${commissionRate}% RESELLER MARGIN`,
-        discount_value: commissionRate,
+        badge_text: `${cardData.rate}% RESELLER MARGIN`,
+        discount_value: cardData.rate,
         discount_type: 'percentage',
         promo_code: packageType === 'reseller' ? 'WHOLESALE' : 'JUSTINTIME'
       }
@@ -147,7 +147,7 @@ export default function ResellerPackages({ panel, onPanelChange }) {
           PACKAGES
         </h2>
         <p className="font-inter text-xs sm:text-sm text-[var(--text-muted)] max-w-2xl mx-auto">
-          Choose between <strong>Reseller Wholesale Packages</strong> (Maximum Margins) and <strong>Just In Time Packages</strong> (Instant Turnaround).
+          Choose between <strong>Reseller Wholesale Key Bundles</strong> (e.g. 10 Keys / 5 Keys) and <strong>Just In Time Packages</strong> (Single Instant Keys).
         </p>
       </div>
 
@@ -232,28 +232,60 @@ export default function ResellerPackages({ panel, onPanelChange }) {
       {/* Price Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {currentPlans.map((p, i) => {
-          const sellingPrice = Number(p.lkr) || 0;
+          const unitSellingPrice = Number(p.lkr) || 0;
+          const timePeriod = p.label || '1 Week';
 
-          // Determine rate & owner wholesale price
+          // Bundle Key Count from Admin or default
+          const keyCount = packageType === 'reseller'
+            ? (Number(p.reseller_keys_count) || (p.label?.includes('1 Week') ? 10 : p.label?.includes('2 Weeks') ? 10 : p.label?.includes('1 Month') ? 10 : 5))
+            : 1;
+
+          // Main Title & Subtitle
+          const mainTitle = packageType === 'reseller'
+            ? (p.reseller_title || `${keyCount} Keys`)
+            : `${p.label} Key`;
+
+          const subTimePeriod = packageType === 'reseller'
+            ? `${timePeriod} Access`
+            : `${timePeriod} Access (Instant)`;
+
+          // Rates & Calculations
           let rate = 40;
-          let ownerPrice = 0;
-          let profitAmount = 0;
+          let unitOwnerPrice = 0;
+          let unitProfit = 0;
 
           if (packageType === 'reseller') {
             rate = Number(p.reseller_rate ?? p.commission_rate) || (p.label?.includes('1 Day') ? 30 : p.label?.includes('1 Week') ? 35 : 40);
-            profitAmount = Math.round(sellingPrice * (rate / 100));
-            ownerPrice = p.reseller_pay !== undefined ? Number(p.reseller_pay) : (sellingPrice - profitAmount);
+            unitProfit = Math.round(unitSellingPrice * (rate / 100));
+            unitOwnerPrice = p.reseller_pay !== undefined && p.reseller_pay !== '' ? Number(p.reseller_pay) : (unitSellingPrice - unitProfit);
           } else {
             rate = Number(p.jit_rate) || (p.label?.includes('1 Day') ? 20 : p.label?.includes('1 Week') ? 25 : 30);
-            profitAmount = Math.round(sellingPrice * (rate / 100));
-            ownerPrice = p.jit_pay !== undefined ? Number(p.jit_pay) : (sellingPrice - profitAmount);
+            unitProfit = Math.round(unitSellingPrice * (rate / 100));
+            unitOwnerPrice = p.jit_pay !== undefined && p.jit_pay !== '' ? Number(p.jit_pay) : (unitSellingPrice - unitProfit);
           }
 
-          const prices = getFormattedPrices(ownerPrice);
-          const sellingPrices = getFormattedPrices(sellingPrice);
+          // Total Bundle Numbers (Auto-Math)
+          const totalWholesaleLkr = unitOwnerPrice * keyCount;
+          const totalRetailLkr = unitSellingPrice * keyCount;
+          const totalProfitLkr = unitProfit * keyCount;
+
+          const prices = getFormattedPrices(totalWholesaleLkr);
+          const retailPrices = getFormattedPrices(totalRetailLkr);
 
           const isCrown = p.crown;
           const isPopular = p.popular;
+
+          const cardData = {
+            mainTitle,
+            timePeriod: subTimePeriod,
+            keyCount,
+            rate,
+            wholesalePrice: totalWholesaleLkr,
+            retailPrice: totalRetailLkr,
+            profit: totalProfitLkr,
+            unitProfit,
+            unitOwnerPrice
+          };
 
           return (
             <motion.div
@@ -282,11 +314,11 @@ export default function ResellerPackages({ panel, onPanelChange }) {
                   </div>
                 )}
 
-                {/* Header */}
+                {/* Header (Main Title: e.g. 10 Keys | Subtitle: e.g. 1 Week Access) */}
                 <div className="mb-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-outfit font-black text-2xl text-[var(--text-heading)] tracking-tight">
-                      {p.label}
+                      {mainTitle}
                     </h3>
                     <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
                       packageType === 'reseller'
@@ -296,12 +328,12 @@ export default function ResellerPackages({ panel, onPanelChange }) {
                       {rate}% MARGIN
                     </span>
                   </div>
-                  <p className="font-inter text-xs text-[var(--text-muted)] font-medium mt-1">
-                    {p.days || 'Duration Access'}
+                  <p className="font-inter text-xs text-cyan-400 font-bold mt-1">
+                    {subTimePeriod}
                   </p>
                 </div>
 
-                {/* Price Box */}
+                {/* Price Box with Auto-Math Total Bundle Price */}
                 <div className="my-4">
                   <div className="flex items-baseline gap-1">
                     <span className={`font-outfit font-black text-4xl ${
@@ -312,18 +344,25 @@ export default function ResellerPackages({ panel, onPanelChange }) {
                   </div>
 
                   <div className="font-inter text-xs font-bold text-[var(--text-heading)] mt-0.5">
-                    LKR {prices.lkr} <span className="text-[10px] text-[var(--text-muted)] font-normal">(Wholesale Price)</span>
+                    LKR {prices.lkr} <span className="text-[10px] text-[var(--text-muted)] font-normal">({packageType === 'reseller' ? `${keyCount} Keys Bundle` : 'Wholesale Price'})</span>
                   </div>
 
                   {/* Reseller Profit Gain Pill */}
-                  <div className="mt-2.5 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs font-mono font-bold text-emerald-400">
-                    <span>Your Profit:</span>
-                    <span>+Rs. {profitAmount.toLocaleString()} / key</span>
+                  <div className="mt-2.5 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono font-bold text-emerald-400 space-y-0.5">
+                    <div className="flex justify-between">
+                      <span>Your Total Profit:</span>
+                      <span>+Rs. {totalProfitLkr.toLocaleString()}</span>
+                    </div>
+                    {packageType === 'reseller' && keyCount > 1 && (
+                      <div className="text-[10px] text-emerald-400/80 font-normal text-right">
+                        (Rs. {unitProfit.toLocaleString()} profit / key)
+                      </div>
+                    )}
                   </div>
 
-                  <div className="font-inter text-[11px] text-[var(--text-muted)] mt-1.5 flex justify-between">
-                    <span>Retail Selling Price:</span>
-                    <span className="font-bold text-[var(--text-primary)]">LKR {sellingPrices.lkr}</span>
+                  <div className="font-inter text-[11px] text-[var(--text-muted)] mt-2 flex justify-between">
+                    <span>Retail Value ({keyCount} Keys):</span>
+                    <span className="font-bold text-[var(--text-primary)]">LKR {retailPrices.lkr}</span>
                   </div>
 
                   {/* Live Stock Count Badge */}
@@ -347,9 +386,9 @@ export default function ResellerPackages({ panel, onPanelChange }) {
                 {/* Features checklist */}
                 <div className="space-y-2.5 mb-6 text-xs font-inter text-[var(--text-primary)]">
                   {[
+                    `${keyCount}x ${timePeriod} VIP Keys Delivered`,
                     '100% Undetected Anti-Cheat Bypass',
                     'All Functions Included',
-                    'Instant Auto-Key Delivery',
                     'Main Account Safe (HWID Spoof)',
                     '24/7 Priority Reseller Support',
                   ].map((feat, idx) => (
@@ -365,7 +404,7 @@ export default function ResellerPackages({ panel, onPanelChange }) {
 
               {/* Order CTA (Opens Interactive Checkout Modal) */}
               <button
-                onClick={() => handleOpenCheckout(p, ownerPrice, profitAmount, rate)}
+                onClick={() => handleOpenCheckout(p, cardData)}
                 className={`w-full py-3.5 px-4 rounded-xl font-outfit font-extrabold text-xs tracking-wider text-center flex items-center justify-center gap-2 transition-transform hover:-translate-y-0.5 shadow-md ${
                   isCrown
                     ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { DollarSign, Plus, Trash2, Check, Percent, TrendingUp, ShieldCheck, Zap, Store } from 'lucide-react';
+import { DollarSign, Plus, Trash2, Check, Percent, TrendingUp, ShieldCheck, Zap, Store, Layers, Package } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function PricePlansTab() {
@@ -11,21 +11,21 @@ export default function PricePlansTab() {
   const [saving, setSaving] = useState(false);
 
   const DEFAULT_DB_PLANS = [
-    { panel_type: 'external', label: '1 Week',   lkr: 400,  days: '7+ Days',   jit_rate: 25, reseller_rate: 35, popular: true,  crown: false, sort_order: 0 },
-    { panel_type: 'external', label: '2 Weeks',  lkr: 650,  days: '14+ Days',  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 1 },
-    { panel_type: 'external', label: '1 Month',  lkr: 1250, days: '30+ Days',  jit_rate: 30, reseller_rate: 40, popular: true,  crown: false, sort_order: 2 },
-    { panel_type: 'external', label: '2 Months', lkr: 1800, days: '60+ Days',  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 3 },
-    { panel_type: 'external', label: '1 Year',   lkr: 2499, days: '365 Days',  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 4 },
-    { panel_type: 'external', label: '2 Years',  lkr: 3400, days: '730 Days',  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 5 },
-    { panel_type: 'external', label: 'Until We Developing', lkr: 5000, days: 'Forever ∞', jit_rate: 30, reseller_rate: 40, popular: false, crown: true, sort_order: 6 },
+    { panel_type: 'external', label: '1 Week',   days: '7 Days Access',   lkr: 400,  reseller_keys_count: 10, jit_rate: 25, reseller_rate: 35, popular: true,  crown: false, sort_order: 0 },
+    { panel_type: 'external', label: '2 Weeks',  days: '14 Days Access',  lkr: 650,  reseller_keys_count: 10, jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 1 },
+    { panel_type: 'external', label: '1 Month',  days: '30 Days Access',  lkr: 1250, reseller_keys_count: 10, jit_rate: 30, reseller_rate: 40, popular: true,  crown: false, sort_order: 2 },
+    { panel_type: 'external', label: '2 Months', days: '60 Days Access',  lkr: 1800, reseller_keys_count: 5,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 3 },
+    { panel_type: 'external', label: '1 Year',   days: '365 Days Access', lkr: 2499, reseller_keys_count: 5,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 4 },
+    { panel_type: 'external', label: '2 Years',  days: '730 Days Access', lkr: 3400, reseller_keys_count: 3,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 5 },
+    { panel_type: 'external', label: 'Until We Developing', days: 'Forever Access', lkr: 5000, reseller_keys_count: 2, jit_rate: 30, reseller_rate: 40, popular: false, crown: true, sort_order: 6 },
 
-    { panel_type: 'internal', label: '1 Week',   lkr: 500,  days: '7+ Days',   jit_rate: 25, reseller_rate: 35, popular: true,  crown: false, sort_order: 0 },
-    { panel_type: 'internal', label: '2 Weeks',  lkr: 800,  days: '14+ Days',  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 1 },
-    { panel_type: 'internal', label: '1 Month',  lkr: 1600, days: '30+ Days',  jit_rate: 30, reseller_rate: 40, popular: true,  crown: false, sort_order: 2 },
-    { panel_type: 'internal', label: '2 Months', lkr: 2400, days: '60+ Days',  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 3 },
-    { panel_type: 'internal', label: '1 Year',   lkr: 3500, days: '365 Days',  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 4 },
-    { panel_type: 'internal', label: '2 Years',  lkr: 4800, days: '730 Days',  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 5 },
-    { panel_type: 'internal', label: 'Until We Developing', lkr: 7000, days: 'Forever ∞', jit_rate: 30, reseller_rate: 40, popular: false, crown: true, sort_order: 6 },
+    { panel_type: 'internal', label: '1 Week',   days: '7 Days Access',   lkr: 500,  reseller_keys_count: 10, jit_rate: 25, reseller_rate: 35, popular: true,  crown: false, sort_order: 0 },
+    { panel_type: 'internal', label: '2 Weeks',  days: '14 Days Access',  lkr: 800,  reseller_keys_count: 10, jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 1 },
+    { panel_type: 'internal', label: '1 Month',  days: '30 Days Access',  lkr: 1600, reseller_keys_count: 10, jit_rate: 30, reseller_rate: 40, popular: true,  crown: false, sort_order: 2 },
+    { panel_type: 'internal', label: '2 Months', days: '60 Days Access',  lkr: 2400, reseller_keys_count: 5,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 3 },
+    { panel_type: 'internal', label: '1 Year',   days: '365 Days Access', lkr: 3500, reseller_keys_count: 5,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 4 },
+    { panel_type: 'internal', label: '2 Years',  days: '730 Days Access', lkr: 4800, reseller_keys_count: 3,  jit_rate: 30, reseller_rate: 40, popular: false, crown: false, sort_order: 5 },
+    { panel_type: 'internal', label: 'Until We Developing', days: 'Forever Access', lkr: 7000, reseller_keys_count: 2, jit_rate: 30, reseller_rate: 40, popular: false, crown: true, sort_order: 6 },
   ];
 
   const load = async () => {
@@ -68,6 +68,7 @@ export default function PricePlansTab() {
       const lkrNum = Number(form.lkr) || 0;
       const jitRateNum = Number(form.jit_rate) || 25;
       const resellerRateNum = Number(form.reseller_rate ?? form.commission_rate) || 40;
+      const keysCountNum = Number(form.reseller_keys_count) || 10;
 
       // Allow custom pay to owner if specified, or auto-calculate
       const jitProfit = Math.round(lkrNum * (jitRateNum / 100));
@@ -78,9 +79,11 @@ export default function PricePlansTab() {
 
       const payload = {
         panel_type: form.panel_type,
-        label: form.label,
+        label: form.label, // Time Period (e.g. 1 Week, 1 Month)
+        days: form.days || `${form.label} Access`,
         lkr: lkrNum,
-        days: form.days || form.label,
+        reseller_keys_count: keysCountNum, // Bundle key count (e.g. 5, 10)
+        reseller_title: form.reseller_title || `${keysCountNum} Keys`, // Main Title
         jit_rate: jitRateNum,
         jit_pay: jitPayNum,
         reseller_rate: resellerRateNum,
@@ -94,7 +97,7 @@ export default function PricePlansTab() {
 
       if (form.id) {
         await updateDoc(doc(db, 'price_plans', form.id), payload);
-        toast.success('Plan, Just In Time & Reseller rates updated!');
+        toast.success('Plan, Key Bundle Quantity & Rates updated!');
       } else {
         const newId = crypto.randomUUID();
         await setDoc(doc(db, 'price_plans', newId), {
@@ -129,6 +132,7 @@ export default function PricePlansTab() {
 
   const PlanRow = ({ p }) => {
     const price = Number(p.lkr) || 0;
+    const keysCount = Number(p.reseller_keys_count) || (p.label?.includes('1 Week') ? 10 : p.label?.includes('2 Weeks') ? 10 : p.label?.includes('1 Month') ? 10 : 5);
     
     // Just In Time
     const jitRate = Number(p.jit_rate) || 25;
@@ -140,21 +144,29 @@ export default function PricePlansTab() {
     const resellerProfit = Math.round(price * (resellerRate / 100));
     const resellerPay = p.reseller_pay !== undefined ? Number(p.reseller_pay) : (price - resellerProfit);
 
+    // Reseller Bundle Math
+    const totalBundlePay = resellerPay * keysCount;
+    const totalBundleRetail = price * keysCount;
+    const totalBundleProfit = resellerProfit * keysCount;
+
     return (
       <div className="p-4 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] space-y-3 transition-all">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-outfit font-black text-sm text-[var(--text-heading)]">{p.label}</span>
+            <span className="px-2 py-0.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] font-bold">
+              📦 Bundle: {keysCount} Keys
+            </span>
             {p.popular && <span className="font-inter text-[10px] px-2 py-0.5 rounded-full bg-[#06b6d4]/15 text-[#06b6d4] border border-[#06b6d4]/30 font-bold">⭐ Popular</span>}
             {p.crown && <span className="font-inter text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 border border-amber-500/30 font-bold">👑 Best Value</span>}
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
             <span className="font-mono font-bold text-xs text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-md border border-cyan-500/30">
-              Selling: Rs. {price.toLocaleString()}
+              Per Key: Rs. {price.toLocaleString()}
             </span>
             <button
-              onClick={() => setForm({ ...p, jit_rate: jitRate, reseller_rate: resellerRate, jit_pay: jitPay, reseller_pay: resellerPay })}
+              onClick={() => setForm({ ...p, reseller_keys_count: keysCount, jit_rate: jitRate, reseller_rate: resellerRate, jit_pay: jitPay, reseller_pay: resellerPay })}
               className="p-1.5 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-cyan-400 text-[var(--text-muted)] hover:text-cyan-400 text-xs font-bold font-inter flex items-center gap-1 transition-colors"
             >
               <DollarSign className="w-3.5 h-3.5" /> Edit
@@ -174,7 +186,7 @@ export default function PricePlansTab() {
           {/* Just In Time */}
           <div className="p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/20 space-y-1">
             <div className="text-[10px] font-outfit font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">
-              <Zap className="w-3 h-3 text-amber-400" /> JUST IN TIME
+              <Zap className="w-3 h-3 text-amber-400" /> JUST IN TIME (1 Key)
             </div>
             <div className="flex justify-between">
               <span className="text-[10px] text-slate-400">Commission:</span>
@@ -190,22 +202,23 @@ export default function PricePlansTab() {
             </div>
           </div>
 
-          {/* Reseller */}
+          {/* Reseller Wholesale Bundle */}
           <div className="p-2.5 rounded-xl bg-cyan-950/20 border border-cyan-500/20 space-y-1">
-            <div className="text-[10px] font-outfit font-black text-cyan-400 uppercase tracking-wider flex items-center gap-1">
-              <Store className="w-3 h-3 text-cyan-400" /> RESELLER
+            <div className="text-[10px] font-outfit font-black text-cyan-400 uppercase tracking-wider flex items-center justify-between">
+              <span className="flex items-center gap-1"><Store className="w-3 h-3 text-cyan-400" /> RESELLER ({keysCount} KEYS)</span>
+              <span className="text-cyan-300">{resellerRate}% Rate</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[10px] text-slate-400">Commission:</span>
-              <span className="font-bold text-cyan-300">{resellerRate}% Rate</span>
+              <span className="text-[10px] text-slate-400">Bundle Price:</span>
+              <span className="font-bold text-cyan-300">Rs. {totalBundlePay.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[10px] text-slate-400">Profit/Item:</span>
-              <span className="font-bold text-emerald-400">Rs. {resellerProfit.toLocaleString()}</span>
+              <span className="text-[10px] text-slate-400">Total Profit:</span>
+              <span className="font-bold text-emerald-400">+Rs. {totalBundleProfit.toLocaleString()}</span>
             </div>
             <div className="flex justify-between border-t border-cyan-500/10 pt-0.5">
-              <span className="text-[10px] text-slate-400">Pay to Owner:</span>
-              <span className="font-bold text-rose-300">Rs. {resellerPay.toLocaleString()}</span>
+              <span className="text-[10px] text-slate-400">Retail Value:</span>
+              <span className="font-bold text-slate-300">Rs. {totalBundleRetail.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -215,6 +228,7 @@ export default function PricePlansTab() {
 
   // Form Live Calculations
   const formPrice = Number(form?.lkr) || 0;
+  const formKeysCount = Number(form?.reseller_keys_count) || 10;
 
   const formJitRate = Number(form?.jit_rate) || 25;
   const formJitProfit = Math.round(formPrice * (formJitRate / 100));
@@ -224,27 +238,31 @@ export default function PricePlansTab() {
   const formResellerProfit = Math.round(formPrice * (formResellerRate / 100));
   const formResellerPay = form?.reseller_pay !== undefined && form.reseller_pay !== '' ? Number(form.reseller_pay) : (formPrice - formResellerProfit);
 
+  const formBundleWholesalePay = formResellerPay * formKeysCount;
+  const formBundleRetailValue = formPrice * formKeysCount;
+  const formBundleTotalProfit = formResellerProfit * formKeysCount;
+
   return (
     <div className="space-y-6 text-left">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h3 className="font-outfit font-extrabold text-base text-[var(--text-heading)]">
-            PRICE PLANS, JUST IN TIME & RESELLER COMMISSION RATES
+            PRICE PLANS, KEY BUNDLES & RESELLER COMMISSION RATES
           </h3>
           <p className="font-inter text-xs text-[var(--text-muted)]">
-            Configure Selling Price, Just In Time Rates, and Reseller Rates. All changes auto-sync live across the website!
+            Configure Time Period (e.g. 1 Week), Reseller Key Bundle Quantity (e.g. 10 Keys, 5 Keys), and auto-calculated wholesale prices!
           </p>
         </div>
 
         <div className="flex gap-2">
           <button
-            onClick={() => setForm({ panel_type: 'external', label: '', lkr: '', days: '', jit_rate: 25, reseller_rate: 40, popular: false, crown: false, sort_order: plans.length + 1 })}
+            onClick={() => setForm({ panel_type: 'external', label: '', days: '', lkr: '', reseller_keys_count: 10, jit_rate: 25, reseller_rate: 40, popular: false, crown: false, sort_order: plans.length + 1 })}
             className="flex items-center gap-1.5 font-outfit font-bold text-xs px-3.5 py-2 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" /> New External Plan
           </button>
           <button
-            onClick={() => setForm({ panel_type: 'internal', label: '', lkr: '', days: '', jit_rate: 25, reseller_rate: 40, popular: false, crown: false, sort_order: plans.length + 1 })}
+            onClick={() => setForm({ panel_type: 'internal', label: '', days: '', lkr: '', reseller_keys_count: 10, jit_rate: 25, reseller_rate: 40, popular: false, crown: false, sort_order: plans.length + 1 })}
             className="flex items-center gap-1.5 font-outfit font-bold text-xs px-3.5 py-2 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 hover:bg-purple-500/25 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" /> New Internal Plan
@@ -254,38 +272,64 @@ export default function PricePlansTab() {
 
       {form && (
         <div className="rounded-3xl p-6 space-y-5 bg-[var(--bg-card)] border border-cyan-500/30 shadow-2xl">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
             <span className="font-outfit font-black text-sm text-cyan-400 tracking-wider">
-              {form.id ? 'EDIT' : 'NEW'} {form.panel_type?.toUpperCase()} PLAN RATES & COMMISSIONS
+              {form.id ? 'EDIT' : 'NEW'} {form.panel_type?.toUpperCase()} PLAN & KEY BUNDLE SETTINGS
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* 1. Time Period */}
             <div>
-              <label className="text-xs font-bold text-[var(--text-heading)] block mb-1">Plan Label (e.g. 1 Month Key)</label>
+              <label className="text-xs font-bold text-[var(--text-heading)] block mb-1">
+                Time Period (e.g. 1 Week, 1 Month)
+              </label>
               <input
                 value={form.label}
                 onChange={e => setForm(p => ({ ...p, label: e.target.value }))}
-                placeholder="1 Month Key"
+                placeholder="1 Week"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] font-inter text-xs text-[var(--text-primary)] focus:outline-none focus:border-cyan-400"
               />
             </div>
 
+            {/* 2. Reseller Key Bundle Quantity */}
             <div>
-              <label className="text-xs font-bold text-[var(--text-heading)] block mb-1">Selling Price in LKR (Synced to Prices Page)</label>
+              <label className="text-xs font-bold text-cyan-400 block mb-1">
+                📦 Reseller Bundle Keys Count (e.g. 10, 5)
+              </label>
+              <input
+                value={form.reseller_keys_count !== undefined ? form.reseller_keys_count : 10}
+                onChange={e => setForm(p => ({ ...p, reseller_keys_count: e.target.value }))}
+                placeholder="10"
+                type="number"
+                min="1"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-subtle)] border border-cyan-500/40 font-mono text-xs font-bold text-cyan-300 focus:outline-none focus:border-cyan-400"
+              />
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                Card Main Title will show: <strong>{form.reseller_keys_count || 10} Keys</strong>
+              </span>
+            </div>
+
+            {/* 3. Retail Selling Price Per Key */}
+            <div>
+              <label className="text-xs font-bold text-[var(--text-heading)] block mb-1">
+                Single Key Retail Price (LKR)
+              </label>
               <input
                 value={form.lkr}
                 onChange={e => setForm(p => ({ ...p, lkr: e.target.value }))}
-                placeholder="1250"
+                placeholder="400"
                 type="number"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] font-inter text-xs text-[var(--text-primary)] focus:outline-none focus:border-cyan-400 font-mono font-bold text-cyan-400"
               />
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* JUST IN TIME SECTION */}
             <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/30 space-y-3">
               <div className="font-outfit font-black text-xs text-amber-400 flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-amber-400" /> JUST IN TIME COLUMN SETTINGS
+                <Zap className="w-4 h-4 text-amber-400" /> JUST IN TIME SETTINGS (Instant 1 Key)
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -310,15 +354,18 @@ export default function PricePlansTab() {
                 </div>
               </div>
               <div className="text-[11px] font-mono text-slate-400 flex justify-between pt-1 border-t border-amber-500/20">
-                <span>Auto Profit/Item:</span>
+                <span>Profit per Key:</span>
                 <span className="text-emerald-400 font-bold">Rs. {formJitProfit.toLocaleString()}</span>
               </div>
             </div>
 
-            {/* RESELLER SECTION */}
+            {/* RESELLER WHOLESALE BUNDLE SECTION */}
             <div className="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 space-y-3">
-              <div className="font-outfit font-black text-xs text-cyan-400 flex items-center gap-1.5">
-                <Store className="w-4 h-4 text-cyan-400" /> RESELLER COLUMN SETTINGS
+              <div className="font-outfit font-black text-xs text-cyan-400 flex items-center justify-between">
+                <span className="flex items-center gap-1.5"><Store className="w-4 h-4 text-cyan-400" /> RESELLER WHOLESALE BUNDLE</span>
+                <span className="text-[11px] font-bold text-cyan-300 bg-cyan-900/50 px-2 py-0.5 rounded-md">
+                  {formKeysCount} Keys Pack
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -332,7 +379,7 @@ export default function PricePlansTab() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-slate-300 block mb-1">Pay to Owner (LKR)</label>
+                  <label className="text-[11px] text-slate-300 block mb-1">Single Pay to Owner (LKR)</label>
                   <input
                     value={form.reseller_pay !== undefined ? form.reseller_pay : formResellerPay}
                     onChange={e => setForm(p => ({ ...p, reseller_pay: e.target.value }))}
@@ -342,9 +389,21 @@ export default function PricePlansTab() {
                   />
                 </div>
               </div>
-              <div className="text-[11px] font-mono text-slate-400 flex justify-between pt-1 border-t border-cyan-500/20">
-                <span>Auto Profit/Item:</span>
-                <span className="text-emerald-400 font-bold">Rs. {formResellerProfit.toLocaleString()}</span>
+
+              {/* Live Bundle Math Preview */}
+              <div className="p-2.5 rounded-xl bg-slate-950/50 border border-cyan-500/20 text-[11px] font-mono space-y-1">
+                <div className="flex justify-between text-slate-300">
+                  <span>Total Bundle Wholesale:</span>
+                  <span className="font-bold text-cyan-300">Rs. {formBundleWholesalePay.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-slate-300">
+                  <span>Total Reseller Profit:</span>
+                  <span className="font-bold text-emerald-400">+Rs. {formBundleTotalProfit.toLocaleString()} (Rs. {formResellerProfit}/key)</span>
+                </div>
+                <div className="flex justify-between text-slate-400 border-t border-white/5 pt-1">
+                  <span>Total Retail Value:</span>
+                  <span className="font-bold text-slate-300">Rs. {formBundleRetailValue.toLocaleString()}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -372,7 +431,7 @@ export default function PricePlansTab() {
               disabled={saving || !form.label || !form.lkr}
               className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl font-outfit font-extrabold text-xs text-slate-950 bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 transition-all shadow-md disabled:opacity-50"
             >
-              <Check className="w-3.5 h-3.5" /> Save Plan & Rates
+              <Check className="w-3.5 h-3.5" /> Save Plan, Bundle & Rates
             </button>
           </div>
         </div>
