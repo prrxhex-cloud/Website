@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShieldCheck, Volume2, VolumeX, ChevronRight, Zap, Sun, Moon, ChevronDown, Smartphone } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useSound } from '../../context/SoundContext';
 import { useTheme } from '@/lib/ThemeContext';
 import { usePwa } from '@/context/PwaContext';
 import { useAuth } from '@/lib/AuthContext';
+import { isDiscountActive } from '@/pages/Prices';
 import logoImg from '@/assets/logo.jpeg';
 
 const navLinks = [
@@ -22,12 +25,36 @@ const navLinks = [
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeDiscount, setActiveDiscount] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { soundEnabled, toggleSound } = useSound();
   const { theme, toggleTheme } = useTheme();
   const { promptInstall, isInstalled } = usePwa();
   const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchDiscounts = async () => {
+      try {
+        const q = query(collection(db, 'discounts'), orderBy('created_date', 'desc'));
+        const snap = await getDocs(q);
+        if (isMounted && !snap.empty) {
+          const discountList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const valid = discountList.find(d => isDiscountActive(d));
+          if (valid) {
+            setActiveDiscount(valid);
+          } else {
+            setActiveDiscount(null);
+          }
+        }
+      } catch (err) {
+        console.warn('Navbar discount fetch error:', err);
+      }
+    };
+    fetchDiscounts();
+    return () => { isMounted = false; };
+  }, []);
 
   const handleNav = (path) => {
     setMenuOpen(false);
@@ -56,29 +83,35 @@ export default function Navbar() {
       ]
     : navLinks;
 
+  const discountValText = activeDiscount?.discount_type === 'percentage'
+    ? `${activeDiscount.discount_value}% OFF`
+    : `LKR ${activeDiscount?.discount_value} OFF`;
+
   return (
     <div className="sticky top-0 z-50 w-full font-inter">
-      {/* Top Announcement Bar with Flash Discount */}
-      <div className="bg-gradient-to-r from-slate-950 via-cyan-950/40 to-slate-950 border-b border-cyan-500/20 text-white text-xs py-1.5 px-4">
-        <div className="max-w-[1240px] mx-auto flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2 font-medium">
-            <span className="bg-gradient-to-r from-red-500/30 to-amber-500/30 border border-red-500/50 text-red-300 font-extrabold text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Zap className="w-3 h-3 text-amber-400 fill-current animate-pulse" /> FLASH SALE
-            </span>
-            <span className="hidden sm:inline">
-              🎉 <strong>LIMITED TIME:</strong> Sign in with code <code className="bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded font-mono font-bold border border-cyan-500/30">PRRX20</code> for <strong>20% OFF</strong> all VIP keys!
-            </span>
-            <span className="sm:hidden text-[11px]">
-              🎉 Code <code className="bg-cyan-500/20 text-cyan-300 px-1 rounded font-mono font-bold">PRRX20</code> for 20% OFF!
-            </span>
+      {/* Top Announcement Bar with Flash Discount - ONLY SHOWN WHEN A DISCOUNT IS ACTIVELY VALID */}
+      {activeDiscount && (
+        <div className="bg-gradient-to-r from-slate-950 via-cyan-950/40 to-slate-950 border-b border-cyan-500/20 text-white text-xs py-1.5 px-4 animate-fadeIn">
+          <div className="max-w-[1240px] mx-auto flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2 font-medium">
+              <span className="bg-gradient-to-r from-red-500/30 to-amber-500/30 border border-red-500/50 text-red-300 font-extrabold text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Zap className="w-3 h-3 text-amber-400 fill-current animate-pulse" /> FLASH SALE
+              </span>
+              <span className="hidden sm:inline">
+                🎉 <strong>LIMITED TIME:</strong> Sign in with code <code className="bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded font-mono font-bold border border-cyan-500/30">{activeDiscount.promo_code}</code> for <strong>{discountValText}</strong> all VIP keys!
+              </span>
+              <span className="sm:hidden text-[11px]">
+                🎉 Code <code className="bg-cyan-500/20 text-cyan-300 px-1 rounded font-mono font-bold">{activeDiscount.promo_code}</code> for {discountValText}!
+              </span>
+            </div>
+            <button onClick={handleClaimDiscount} className="text-[#06b6d4] hover:text-cyan-300 font-bold text-xs hover:underline flex items-center gap-0.5 ml-auto">
+              <span>{isAuthenticated ? 'View Discounts' : 'Login to Claim Discount'}</span> <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <button onClick={handleClaimDiscount} className="text-[#06b6d4] hover:text-cyan-300 font-bold text-xs hover:underline flex items-center gap-0.5 ml-auto">
-            <span>{isAuthenticated ? 'View Discounts' : 'Login to Claim Discount'}</span> <ChevronRight className="w-3.5 h-3.5" />
-          </button>
         </div>
-      </div>
+      )}
 
-      {/* Main Navigation Header (Simplified as per Photo 1) */}
+      {/* Main Navigation Header */}
       <header className="clean-glass-header transition-all">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 h-[72px] flex items-center justify-between">
           
@@ -100,133 +133,135 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Right Action Group */}
-          <div className="flex items-center gap-3">
-            {/* Theme Switcher */}
+          {/* Desktop Nav Links */}
+          <nav className="hidden lg:flex items-center gap-1 bg-[var(--bg-subtle)] border border-[var(--border-color)] p-1.5 rounded-full shadow-inner">
+            {filteredNavLinks.map((link) => (
+              <button
+                key={link.path}
+                onClick={() => handleNav(link.path)}
+                className={`relative px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+                  isActive(link.path)
+                    ? 'text-white bg-gradient-to-r from-[#06b6d4] to-cyan-600 shadow-sm'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--bg-card-hover)]'
+                }`}
+              >
+                <span>{link.label}</span>
+                {link.badge && (
+                  <span 
+                    className="text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider"
+                    style={{ 
+                      backgroundColor: `${link.badgeColor}25`, 
+                      color: link.badgeColor,
+                      border: `1px solid ${link.badgeColor}40`
+                    }}
+                  >
+                    {link.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
+
+          {/* Right Action Controls */}
+          <div className="flex items-center gap-2.5">
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Theme`}
-              className="w-9 h-9 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-primary)] flex items-center justify-center hover:border-[#06b6d4] transition-all shadow-sm"
+              className="w-10 h-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] transition-colors shadow-sm"
+              title={theme === 'dark' ? 'Switch to Cyber Light' : 'Switch to Midnight Dark'}
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-cyan-400" />}
             </button>
 
             {/* Sound Toggle */}
             <button
               onClick={toggleSound}
-              title="Toggle UI Sounds"
-              className="w-9 h-9 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-primary)] flex items-center justify-center hover:border-[#06b6d4] transition-all shadow-sm"
+              className="w-10 h-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] transition-colors shadow-sm"
+              title={soundEnabled ? 'Mute Sound Effects' : 'Enable Sound Effects'}
             >
-              {soundEnabled ? <Volume2 className="w-4 h-4 text-[#06b6d4]" /> : <VolumeX className="w-4 h-4 opacity-50" />}
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-[#06b6d4]" /> : <VolumeX className="w-4 h-4 text-gray-500" />}
             </button>
 
-            {/* Buy VIP Key CTA */}
-            <button
-              onClick={() => navigate('/prices')}
-              className="btn-primary-cyan btn-glow px-3 sm:px-4 py-2 font-inter font-bold text-xs flex items-center gap-1.5 shadow-md whitespace-nowrap"
-            >
-              <ShieldCheck className="w-4 h-4 shrink-0" />
-              <span className="hidden xs:inline">Buy VIP Key</span>
-              <span className="xs:hidden">VIP</span>
-            </button>
+            {/* VIP Member Login / Status */}
+            {isAuthenticated ? (
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold font-outfit shadow-sm hover:scale-105 transition-all"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>VIP Active</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate('/login')}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-[#06b6d4] to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-slate-950 font-outfit font-extrabold text-xs tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:scale-105 transition-all"
+              >
+                <ShieldCheck className="w-4 h-4 text-slate-950" />
+                <span>VIP</span>
+              </button>
+            )}
 
-            {/* Dropdown / Mobile Menu Drawer Toggle Button */}
+            {/* Mobile Menu Trigger */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="px-3 py-2 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-heading)] font-outfit font-bold text-xs flex items-center gap-1.5 hover:border-[#06b6d4] transition-all shadow-sm shrink-0"
-              aria-label="Toggle Menu"
+              className="lg:hidden w-10 h-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-heading)] shadow-sm"
+              aria-label="Toggle navigation menu"
             >
-              {menuOpen ? <X className="w-4 h-4 text-rose-400" /> : <Menu className="w-4 h-4 text-[#06b6d4]" />}
-              <span className="hidden sm:inline">Menu</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
-
-        {/* Responsive Mobile / Desktop Navigation Overlay & Drawer */}
-        <AnimatePresence>
-          {menuOpen && (
-            <>
-              {/* Tap Outside Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setMenuOpen(false)}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-              />
-
-              {/* Menu Drawer */}
-              <motion.div
-                initial={{ opacity: 0, y: -10, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="absolute right-2 sm:right-6 top-16 w-[calc(100vw-1rem)] sm:w-80 p-3 rounded-2xl bg-[var(--bg-glass-card)] backdrop-blur-2xl border border-[var(--border-color)] shadow-2xl z-50 text-left space-y-1 max-h-[80vh] overflow-y-auto custom-scrollbar"
-              >
-                <div className="px-3 py-2 mb-1 border-b border-[var(--border-color)] flex items-center justify-between">
-                  <span className="text-[10px] font-outfit font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
-                  <div className="flex items-center gap-2 sm:hidden">
-                    <button
-                      onClick={toggleTheme}
-                      className="p-1.5 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
-                    >
-                      {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-600" />}
-                    </button>
-                    <button
-                      onClick={toggleSound}
-                      className="p-1.5 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
-                    >
-                      {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-[#06b6d4]" /> : <VolumeX className="w-3.5 h-3.5 opacity-50" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Web App Installation Action */}
-                {!isInstalled && (
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      promptInstall();
-                    }}
-                    className="w-full font-inter font-bold text-xs px-3.5 py-2.5 my-1.5 rounded-xl flex items-center justify-between bg-gradient-to-r from-[#06b6d4]/20 to-cyan-500/20 text-[#06b6d4] border border-[#06b6d4]/40 hover:border-[#06b6d4] transition-all min-h-[44px] shadow-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Smartphone className="w-4 h-4 text-[#06b6d4]" />
-                      <span>Install App (PC & Mobile)</span>
-                    </div>
-                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase bg-[#06b6d4] text-white">
-                      WEBAPP
-                    </span>
-                  </button>
-                )}
-
-                {filteredNavLinks.map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => handleNav(item.path)}
-                    className={`w-full font-inter font-semibold text-xs px-3.5 py-3 rounded-xl flex items-center justify-between transition-all min-h-[44px] ${
-                      isActive(item.path)
-                        ? 'bg-[#06b6d4]/15 text-[#06b6d4] font-bold border border-[#06b6d4]/30'
-                        : 'text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-heading)]'
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    {item.badge && (
-                      <span 
-                        className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase text-white"
-                        style={{ backgroundColor: item.badgeColor }}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
       </header>
+
+      {/* Mobile Drawer Menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="lg:hidden bg-[var(--bg-card)] border-b border-[var(--border-color)] shadow-2xl overflow-hidden"
+          >
+            <div className="p-4 space-y-1.5">
+              {filteredNavLinks.map((link) => (
+                <button
+                  key={link.path}
+                  onClick={() => handleNav(link.path)}
+                  className={`w-full px-4 py-3 rounded-2xl text-left font-outfit text-sm font-bold flex items-center justify-between transition-all ${
+                    isActive(link.path)
+                      ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-md'
+                      : 'text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
+                  }`}
+                >
+                  <span>{link.label}</span>
+                  {link.badge && (
+                    <span 
+                      className="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase"
+                      style={{ 
+                        backgroundColor: `${link.badgeColor}25`, 
+                        color: link.badgeColor,
+                        border: `1px solid ${link.badgeColor}40`
+                      }}
+                    >
+                      {link.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
+
+              {!isAuthenticated && (
+                <button
+                  onClick={() => handleNav('/login')}
+                  className="w-full mt-3 py-3 rounded-2xl bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-slate-950 font-outfit font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-lg"
+                >
+                  <ShieldCheck className="w-4 h-4 text-slate-950" />
+                  <span>SIGN IN TO VIP PORTAL</span>
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
