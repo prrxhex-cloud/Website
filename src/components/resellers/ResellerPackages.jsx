@@ -102,7 +102,15 @@ export default function ResellerPackages({ panel, onPanelChange }) {
     ? plans[panel]
     : (DEFAULT_PROFIT_PLANS[panel] || []);
 
-  const currentPlans = rawPlans.map(p => {
+  const filteredPlans = rawPlans.filter(p => {
+    if (packageType === 'reseller') {
+      return p.category === 'wholesale' || (!p.category && p.category !== 'jit');
+    } else {
+      return p.category === 'jit' || (!p.category && p.category !== 'wholesale');
+    }
+  });
+
+  const currentPlans = filteredPlans.map(p => {
     const norm = normalizeDurationKey(p.label || p.days);
     const count = keysStock.filter(k => 
       k.status === 'available' && 
