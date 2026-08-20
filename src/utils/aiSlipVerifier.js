@@ -1,15 +1,15 @@
-import { GoogleGenAI } from '@google/genai';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { DEFAULT_BENEFICIARIES } from '@/components/dashboard/BeneficiaryAccountsTab';
 
-const getAI = () => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("Missing VITE_GEMINI_API_KEY in environment configuration.");
-  }
-  return new GoogleGenAI({ apiKey });
-};
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+const CANDIDATE_MODELS = [
+  'gemini-3.6-flash',
+  'gemini-flash-latest',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash'
+];
 
 export const fileToBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -23,74 +23,113 @@ export const fileToBase64 = (file) => {
   });
 };
 
-export function normalizeAccount(acc) {
-  if (!acc) return '';
-  return String(acc).replace(/[^0-9]/g, '');
+export function cleanDigits(val) {
+  if (!val) return '';
+  return String(val).replace(/[^0-9]/g, '');
 }
 
 /**
- * Scans a bank slip image with Gemini Vision AI and extracts key transaction fields.
+ * Checks if the account number on the slip matches the admin's account,
+ * supporting full account numbers as well as masked accounts (e.g. XXXX4125 matches 78384125).
+ */
+export function isAccountMatch(adminAccount, extractedAccount) {
+  const cleanAdmin = cleanDigits(adminAccount);
+  const cleanExtracted = cleanDigits(extractedAccount);
+  if (!cleanAdmin || !cleanExtracted) return false;
+
+  // 1. Exact match
+  if (cleanAdmin === cleanExtracted) return true;
+
+  // 2. Substring match
+  if (cleanAdmin.includes(cleanExtracted) || cleanExtracted.includes(cleanAdmin)) return true;
+
+  // 3. Masked match (last 4 digits e.g. XXXX4125 -> 4125 matches 78384125)
+  if (cleanExtracted.length >= 4 && cleanAdmin.endsWith(cleanExtracted)) return true;
+  if (cleanAdmin.length >= 4 && cleanExtracted.endsWith(cleanAdmin.slice(-4))) return true;
+
+  return false;
+}
+
+/**
+ * Scans a bank slip image via direct Gemini REST API with multi-model fallback.
  */
 export async function parseSlipWithGemini(file) {
-  const ai = getAI();
   const base64Data = await fileToBase64(file);
+  const mimeType = file.type || 'image/png';
 
-  const prompt = `You are an expert fraud-detection and precision OCR engine for Sri Lankan bank deposit slips, online banking receipts, mobile banking screenshots (BOC, Commercial Bank, People's Bank, Sampath Bank, HNB, NTB, FriMi, Seylan, EzCash, mCash, etc.).
+  const prompt = `You are an expert OCR and fraud detection engine for Sri Lankan bank deposit slips, digital receipts, mobile banking screenshots (ComBank Q+, BOC SmartPay, People's Bank, Sampath Vishwa, HNB, FriMi, EzCash, mCash, etc.).
 
-Analyze this payment receipt image and extract the following fields with extreme accuracy:
-- amount: The exact transferred/deposited amount as a number (digits only, e.g. 650, 1250, 2499).
-- bank_name: The name of the bank or payment service shown (e.g. "Commercial Bank of Ceylon", "Bank of Ceylon", "People's Bank", "Sampath Bank", "HNB", "FriMi", "EzCash").
-- transaction_number: The unique Transaction Reference ID, Reference No, Sequence Number, or Slip Number.
-- date: The date and time of the transaction (e.g. "2026-08-20", "20/08/2026 14:32").
-- beneficiary_account_number: The destination/receiver account number that received the money (digits only).
-- beneficiary_name: The receiver's name if visible (e.g. "Sayuru Senavirathna").
-- raw_text: Summary of visible text on the receipt.
+Analyze this payment receipt image and extract these fields in valid JSON format:
+{
+  "amount": <number or null>,
+  "bank_name": <string or null>,
+  "transaction_number": <string or null>,
+  "date": <string or null>,
+  "beneficiary_account_number": <string or null>,
+  "recipient_bank": <string or null>,
+  "beneficiary_name": <string or null>,
+  "status": <string or null>
+}
 
-If a field is not visible, return null. Do not guess.`;
+Notes:
+- For amount: Extract the exact paid/transferred amount as a number (e.g. 650, 1000).
+- If the account number is partially masked (e.g. "XXXX4125" or "4125"), extract the masked string as-is.
+- For transaction_number: Extract the Reference ID, Reference No, Txn ID, or Sequence Number.
+- Respond ONLY with valid JSON.`;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: [
-      {
-        role: 'user',
-        parts: [
-          {
-            inlineData: {
-              data: base64Data,
-              mimeType: file.type || 'image/jpeg'
+  let lastError = null;
+
+  for (const modelName of CANDIDATE_MODELS) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${API_KEY}`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { inlineData: { mimeType, data: base64Data } },
+                { text: prompt }
+              ]
             }
-          },
-          { text: prompt }
-        ]
-      }
-    ],
-    config: {
-      responseMimeType: 'application/json',
-      responseSchema: {
-        type: 'object',
-        properties: {
-          amount: { type: 'number', nullable: true },
-          bank_name: { type: 'string', nullable: true },
-          transaction_number: { type: 'string', nullable: true },
-          date: { type: 'string', nullable: true },
-          beneficiary_account_number: { type: 'string', nullable: true },
-          beneficiary_name: { type: 'string', nullable: true },
-          raw_text: { type: 'string', nullable: true },
-        }
-      }
-    }
-  });
+          ],
+          generationConfig: {
+            responseMimeType: 'application/json'
+          }
+        })
+      });
 
-  const parsed = JSON.parse(response.text);
-  return parsed;
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        console.warn(`Model ${modelName} returned status ${response.status}:`, errJson);
+        lastError = new Error(errJson?.error?.message || `HTTP ${response.status}`);
+        continue; // Try next model in list
+      }
+
+      const data = await response.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) throw new Error("Empty response from AI vision");
+
+      const parsed = JSON.parse(rawText);
+      return parsed;
+
+    } catch (err) {
+      console.warn(`Error with model ${modelName}:`, err);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error("All AI vision models were unreachable. Please try again.");
 }
 
 /**
  * 100% Comprehensive Fraud Verification Pipeline:
  * 1. Checks if amount >= expected LKR price
- * 2. Checks if destination account matches an active Admin Beneficiary account
+ * 2. Checks if destination account matches an active Admin Beneficiary account (including masked accounts)
  * 3. Checks if Transaction ID is already used in Firestore (anti-duplicate slip protection)
- * 4. Checks if transaction date is recent/valid
+ * 4. Checks if transaction status is successful
  */
 export async function verifySlipTransaction({ file, expectedLkrAmount, planTitle, customerEmail }) {
   try {
@@ -130,21 +169,18 @@ export async function verifySlipTransaction({ file, expectedLkrAmount, planTitle
       console.warn("Could not fetch Firestore beneficiaries, using defaults:", e);
     }
 
-    const extractedNormAcc = normalizeAccount(ocrData.beneficiary_account_number);
+    const extractedAcc = ocrData.beneficiary_account_number || '';
     let matchedBeneficiary = null;
 
-    if (extractedNormAcc) {
-      matchedBeneficiary = validBeneficiaries.find(b => {
-        const adminNormAcc = normalizeAccount(b.account_number);
-        return adminNormAcc && (extractedNormAcc.includes(adminNormAcc) || adminNormAcc.includes(extractedNormAcc));
-      });
+    if (extractedAcc) {
+      matchedBeneficiary = validBeneficiaries.find(b => isAccountMatch(b.account_number, extractedAcc));
     }
 
     // If account number is present on slip and didn't match any registered accounts:
-    if (extractedNormAcc && !matchedBeneficiary) {
+    if (extractedAcc && !matchedBeneficiary) {
       return {
         verified: false,
-        reason: `Slip was not deposited to a verified PRRX Admin Account (Destination account: ${ocrData.beneficiary_account_number}).`,
+        reason: `Slip was not deposited to a verified PRRX Admin Account (Destination account: ${extractedAcc}).`,
         ocrData
       };
     }

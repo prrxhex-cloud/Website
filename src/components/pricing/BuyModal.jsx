@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShieldCheck, Coins, CreditCard, QrCode, MessageCircle, Tag, Check, Sparkles, AlertCircle, LogIn, Building, Copy, ChevronDown, CheckCircle2, Upload, FileImage, Loader2, AlertTriangle, Key, Download, RefreshCw } from 'lucide-react';
+import { X, ShieldCheck, Coins, CreditCard, QrCode, MessageCircle, Tag, Check, Sparkles, AlertCircle, LogIn, Building, Copy, ChevronDown, CheckCircle2, Upload, FileImage, Loader2, AlertTriangle, Key, Download, RefreshCw, Zap, Shield, Clock } from 'lucide-react';
 import { getFormattedPrices } from '@/lib/currency';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -24,7 +24,6 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
   const fileInputRef = useRef(null);
 
   // States
-  const [selectedGateway, setSelectedGateway] = useState('whatsapp');
   const [promoInput, setPromoInput] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState('');
@@ -214,7 +213,6 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
         receiptImageUrl = await getDownloadURL(storageRef);
       } catch (uploadErr) {
         console.warn("Storage upload fallback:", uploadErr);
-        // Continue with verification even if storage has rules restriction
       }
 
       // 2. Perform 100% Comprehensive AI Slip Verification via Gemini Vision
@@ -309,8 +307,8 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
       setVerifyStatus('success');
 
       confetti({
-        particleCount: 120,
-        spread: 80,
+        particleCount: 140,
+        spread: 90,
         origin: { y: 0.6 }
       });
 
@@ -395,64 +393,65 @@ Attached is my bank slip photo. Please verify and send my VIP Key!`;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto font-inter">
-        {/* Backdrop */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-y-auto font-inter">
+        {/* Full Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
+          className="fixed inset-0 bg-slate-950/85 backdrop-blur-lg"
         />
 
-        {/* Modal Window */}
+        {/* Wide Full-Featured Checkout Modal Window */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.96, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 shadow-2xl z-10 text-left overflow-hidden max-h-[94vh] flex flex-col justify-between"
+          exit={{ opacity: 0, scale: 0.96, y: 15 }}
+          className="relative w-full max-w-5xl bg-[var(--bg-card)] border border-cyan-500/30 rounded-[32px] p-5 sm:p-8 md:p-10 shadow-[0_20px_70px_rgba(0,0,0,0.8)] z-10 text-left overflow-hidden max-h-[92vh] flex flex-col justify-between"
         >
-          {/* Close Button */}
+          {/* Top Corner Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 w-9 h-9 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-heading)] flex items-center justify-center transition-colors z-20"
+            className="absolute top-5 right-5 w-10 h-10 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-white flex items-center justify-center transition-all hover:scale-105 z-20 shadow-md"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <div className="space-y-5 overflow-y-auto pr-1">
+          {/* MAIN MODAL CONTENT */}
+          <div className="overflow-y-auto pr-1">
             
             {/* SUCCESS KEY REVEAL SCREEN */}
-            {verifyStatus === 'success' && (
-              <div className="space-y-5 py-4 text-center animate-in zoom-in-95 duration-300">
-                <div className="w-16 h-16 rounded-3xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(16,185,129,0.3)]">
-                  <Key className="w-8 h-8 animate-bounce" />
+            {verifyStatus === 'success' ? (
+              <div className="space-y-6 py-6 text-center max-w-2xl mx-auto animate-in zoom-in-95 duration-300">
+                <div className="w-20 h-20 rounded-3xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(16,185,129,0.35)]">
+                  <Key className="w-10 h-10 animate-bounce" />
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                  <span className="text-xs font-black uppercase tracking-widest px-3.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                     PAYMENT 100% VERIFIED
                   </span>
-                  <h2 className="font-outfit font-black text-2xl sm:text-3xl text-white mt-2">
+                  <h2 className="font-outfit font-black text-3xl sm:text-4xl text-white mt-3">
                     YOUR VIP LICENSE KEY
                   </h2>
-                  <p className="text-xs text-slate-300 mt-1">
-                    Thank you for your purchase! Copy your key below or download your invoice.
+                  <p className="text-sm text-slate-300 mt-1.5">
+                    Thank you for your purchase! Copy your key below or download your official invoice.
                   </p>
                 </div>
 
                 {/* Key Reveal Card */}
-                <div className="p-5 rounded-2xl bg-gradient-to-r from-cyan-950/60 to-slate-900/90 border border-cyan-500/40 space-y-3 shadow-xl text-left">
-                  <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block">
+                <div className="p-6 rounded-3xl bg-gradient-to-r from-cyan-950/80 to-slate-900/90 border border-cyan-500/40 space-y-4 shadow-2xl text-left">
+                  <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider block">
                     License Key ({plan?.label} Access):
                   </span>
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-cyan-500/30">
-                    <span className="font-mono font-black text-sm text-cyan-300 tracking-wider select-all break-all">
+                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950 border border-cyan-500/30">
+                    <span className="font-mono font-black text-base sm:text-lg text-cyan-300 tracking-wider select-all break-all">
                       {dispensedKey}
                     </span>
                     <button
                       onClick={() => handleCopyText(dispensedKey, 'dispensed-key')}
-                      className="p-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 transition-all flex items-center gap-1 text-xs font-bold shrink-0 ml-2"
+                      className="p-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 transition-all flex items-center gap-1.5 text-xs font-bold shrink-0 ml-3"
                     >
                       {copiedField === 'dispensed-key' ? (
                         <>
@@ -470,10 +469,10 @@ Attached is my bank slip photo. Please verify and send my VIP Key!`;
                 </div>
 
                 {/* Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <button
                     onClick={handleDownloadPdfInvoice}
-                    className="py-3 px-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-cyan-400 text-xs font-bold text-slate-200 flex items-center justify-center gap-2 transition-all"
+                    className="py-3.5 px-6 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-cyan-400 text-xs font-bold text-slate-200 flex items-center justify-center gap-2 transition-all shadow-sm"
                   >
                     <Download className="w-4 h-4 text-cyan-400" />
                     <span>Download Invoice (PDF)</span>
@@ -481,130 +480,156 @@ Attached is my bank slip photo. Please verify and send my VIP Key!`;
 
                   <button
                     onClick={() => navigate('/dashboard')}
-                    className="py-3 px-4 rounded-xl bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-slate-950 font-outfit font-extrabold text-xs tracking-wider shadow-md hover:scale-105 transition-all flex items-center justify-center gap-1.5"
+                    className="py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-slate-950 font-outfit font-extrabold text-xs tracking-wider shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2"
                   >
                     <span>GO TO VIP DASHBOARD</span>
                   </button>
                 </div>
               </div>
-            )}
-
-            {/* CHECKOUT & VERIFICATION SCREEN */}
-            {verifyStatus !== 'success' && (
-              <>
-                {/* Header */}
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400">
-                      {panelType.toUpperCase()} VIP
-                    </span>
-                    {originalPrices && (
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center gap-1 animate-pulse">
-                        <Sparkles className="w-3 h-3" /> DISCOUNT APPLIED
+            ) : (
+              
+              /* 2-COLUMN PROFESSIONAL CHECKOUT LAYOUT */
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                
+                {/* LEFT COLUMN: ORDER SUMMARY & PROMO (5 Cols) */}
+                <div className="lg:col-span-5 space-y-4">
+                  {/* Header Title */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400">
+                        {panelType.toUpperCase()} VIP
                       </span>
-                    )}
-                  </div>
-                  <h2 className="font-outfit font-black text-2xl sm:text-3xl text-[var(--text-heading)] tracking-tight">
-                    {itemName}
-                  </h2>
-                  <p className="font-inter text-xs text-[#06b6d4] font-bold mt-0.5">
-                    ⚡ Instant AI Key Delivery & 24/7 VIP Support Guaranteed
-                  </p>
-                </div>
-
-                {/* Selected Item Summary Box */}
-                <div className="p-4 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] space-y-2.5 shadow-inner">
-                  <div className="flex items-center justify-between text-xs font-inter">
-                    <span className="text-[var(--text-muted)] font-medium">Selected Item:</span>
-                    <span className="font-outfit font-bold text-[var(--text-heading)] text-right">{itemName}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs font-inter">
-                    <span className="text-[var(--text-muted)] font-medium">Platform:</span>
-                    <span className="font-outfit font-bold px-2 py-0.5 rounded-md bg-[#06b6d4]/15 border border-[#06b6d4]/30 text-[#06b6d4]">
-                      {platform}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs font-inter">
-                    <span className="text-[var(--text-muted)] font-medium">License Duration:</span>
-                    <span className="font-outfit font-bold text-[var(--text-heading)]">{plan?.days || plan?.label}</span>
-                  </div>
-
-                  {/* Price Breakdown */}
-                  <div className="border-t border-[var(--border-color)] pt-2.5 flex items-baseline justify-between">
-                    <div>
-                      <span className="font-outfit font-extrabold text-sm text-[var(--text-heading)] block">Total Amount:</span>
-                      {savingsPrices && (
-                        <span className="text-[11px] text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
-                          <Sparkles className="w-3 h-3" /> You Saved {savingsPrices.usd} (LKR {savingsPrices.lkr})
+                      {originalPrices && (
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center gap-1 animate-pulse">
+                          <Sparkles className="w-3 h-3" /> DISCOUNT APPLIED
                         </span>
                       )}
                     </div>
-                    <div className="text-right">
-                      <span className="font-outfit font-black text-2xl text-[#06b6d4]">
-                        {prices.usd}
+                    <h2 className="font-outfit font-black text-2xl sm:text-3xl text-[var(--text-heading)] tracking-tight leading-tight">
+                      {itemName}
+                    </h2>
+                    <p className="font-inter text-xs text-cyan-400 font-bold mt-1 flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 fill-current" /> Instant Automated AI Delivery (2 Seconds)
+                    </p>
+                  </div>
+
+                  {/* Order Details Card */}
+                  <div className="p-5 rounded-3xl bg-[var(--bg-subtle)] border border-[var(--border-color)] space-y-3 shadow-inner">
+                    <div className="flex items-center justify-between text-xs font-inter">
+                      <span className="text-[var(--text-muted)] font-medium">Selected Item:</span>
+                      <span className="font-outfit font-bold text-[var(--text-heading)] text-right">{itemName}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-inter">
+                      <span className="text-[var(--text-muted)] font-medium">Platform:</span>
+                      <span className="font-outfit font-bold px-2.5 py-0.5 rounded-lg bg-[#06b6d4]/15 border border-[#06b6d4]/30 text-[#06b6d4]">
+                        {platform}
                       </span>
-                      <div className="font-inter text-xs text-[var(--text-muted)] font-bold">
-                        LKR {prices.lkr}
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-inter">
+                      <span className="text-[var(--text-muted)] font-medium">License Duration:</span>
+                      <span className="font-outfit font-bold text-[var(--text-heading)]">{plan?.days || plan?.label}</span>
+                    </div>
+
+                    {/* Price Breakdown */}
+                    <div className="border-t border-[var(--border-color)] pt-3 flex items-baseline justify-between">
+                      <div>
+                        <span className="font-outfit font-black text-sm text-[var(--text-heading)] block">Total Payable:</span>
+                        {savingsPrices && (
+                          <span className="text-[11px] text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
+                            <Sparkles className="w-3 h-3" /> Saved {savingsPrices.usd} (LKR {savingsPrices.lkr})
+                          </span>
+                        )}
                       </div>
-                      {originalPrices && (
-                        <div className="font-inter text-[10px] line-through text-rose-400 font-semibold mt-0.5">
-                          {originalPrices.usd} (LKR {originalPrices.lkr})
+                      <div className="text-right">
+                        <span className="font-outfit font-black text-2xl sm:text-3xl text-cyan-400">
+                          {prices.usd}
+                        </span>
+                        <div className="font-inter text-xs text-[var(--text-muted)] font-bold">
+                          LKR {prices.lkr}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Promo Code Input */}
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/30 via-[var(--bg-subtle)] to-purple-950/30 border border-cyan-500/20 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-outfit font-bold text-[var(--text-heading)] flex items-center gap-1.5">
-                      <Tag className="w-3.5 h-3.5 text-cyan-400" /> Have a Promo Code?
-                    </span>
-                  </div>
-
-                  {appliedPromo ? (
-                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-bold">
-                      <div className="flex items-center gap-1.5">
-                        <Check className="w-4 h-4 text-emerald-400" />
-                        <span>Code "{appliedPromo.code}" Applied: {appliedPromo.desc}</span>
+                        {originalPrices && (
+                          <div className="font-inter text-[10px] line-through text-rose-400 font-semibold mt-0.5">
+                            {originalPrices.usd} (LKR {originalPrices.lkr})
+                          </div>
+                        )}
                       </div>
-                      <button onClick={removeCoupon} className="text-[11px] text-rose-400 font-bold underline">
-                        Remove
-                      </button>
                     </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={promoInput}
-                        onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
-                        placeholder="PROMO CODE"
-                        className="flex-1 px-3 py-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-mono font-bold text-[var(--text-primary)] focus:outline-none focus:border-cyan-400 uppercase"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => applyCoupon(promoInput)}
-                        className="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-outfit font-extrabold text-xs shadow-md transition-colors shrink-0"
-                      >
-                        Apply
-                      </button>
+                  </div>
+
+                  {/* Promo Code Box */}
+                  <div className="p-4 rounded-3xl bg-gradient-to-r from-cyan-950/20 via-[var(--bg-subtle)] to-purple-950/20 border border-cyan-500/20 space-y-2.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-outfit font-bold text-[var(--text-heading)] flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-cyan-400" /> Have a Promo Code?
+                      </span>
                     </div>
-                  )}
-                  {promoError && (
-                    <p className="text-[11px] text-rose-400 font-medium">{promoError}</p>
-                  )}
+
+                    {appliedPromo ? (
+                      <div className="flex items-center justify-between p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-bold">
+                        <div className="flex items-center gap-1.5">
+                          <Check className="w-4 h-4 text-emerald-400" />
+                          <span>Code "{appliedPromo.code}" Applied: {appliedPromo.desc}</span>
+                        </div>
+                        <button onClick={removeCoupon} className="text-[11px] text-rose-400 font-bold underline">
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={promoInput}
+                          onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                          placeholder="ENTER PROMO CODE"
+                          className="flex-1 px-3.5 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-mono font-bold text-[var(--text-primary)] focus:outline-none focus:border-cyan-400 uppercase shadow-inner"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => applyCoupon(promoInput)}
+                          className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-outfit font-black text-xs shadow-md transition-colors shrink-0"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    )}
+                    {promoError && (
+                      <p className="text-[11px] text-rose-400 font-medium">{promoError}</p>
+                    )}
+                  </div>
+
+                  {/* Trust & Safety Badges */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="p-3 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] flex items-center gap-2.5">
+                      <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <div className="text-left">
+                        <span className="font-outfit font-bold text-[11px] text-white block">100% Anti-Ban</span>
+                        <span className="text-[9px] text-slate-400 block">Tested & Safe</span>
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] flex items-center gap-2.5">
+                      <Clock className="w-4 h-4 text-cyan-400 shrink-0" />
+                      <div className="text-left">
+                        <span className="font-outfit font-bold text-[11px] text-white block">24/7 Support</span>
+                        <span className="text-[9px] text-slate-400 block">Discord & WhatsApp</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* STEP 1: PAYMENT GATEWAYS & COPYABLE BANK DETAILS */}
-                <div className="space-y-3">
-                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-cyan-500/40 shadow-xl space-y-3">
+                {/* RIGHT COLUMN: PAYMENT GATEWAYS & AI SLIP VERIFIER (7 Cols) */}
+                <div className="lg:col-span-7 space-y-4">
+                  
+                  {/* STEP 1: PAYMENT GATEWAYS & COPYABLE BANK DETAILS */}
+                  <div className="p-5 rounded-3xl bg-slate-900/90 border border-cyan-500/40 shadow-xl space-y-3.5">
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-outfit font-bold text-cyan-300 flex items-center justify-between">
+                      <label className="text-xs font-outfit font-bold text-cyan-300 flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
-                          <Building className="w-3.5 h-3.5 text-cyan-400" /> 1. Select Admin Bank Account:
+                          <Building className="w-4 h-4 text-cyan-400" /> 1. Select Payment Gateway / Bank:
+                        </span>
+                        <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 font-mono">
+                          {currentBeneficiary.gateway_type || 'Bank Transfer'}
                         </span>
                       </label>
 
@@ -612,7 +637,7 @@ Attached is my bank slip photo. Please verify and send my VIP Key!`;
                         <select
                           value={selectedBeneficiaryId}
                           onChange={(e) => setSelectedBeneficiaryId(e.target.value)}
-                          className="w-full appearance-none px-3.5 py-2.5 rounded-xl bg-slate-950 border border-cyan-500/40 text-xs font-outfit font-bold text-cyan-200 outline-none focus:border-cyan-400 cursor-pointer pr-10 shadow-inner"
+                          className="w-full appearance-none px-4 py-3 rounded-2xl bg-slate-950 border border-cyan-500/40 text-xs font-outfit font-bold text-cyan-200 outline-none focus:border-cyan-400 cursor-pointer pr-10 shadow-inner"
                         >
                           {beneficiaries.map((b, idx) => (
                             <option key={b.id} value={b.id} className="bg-slate-900 text-white">
@@ -620,65 +645,46 @@ Attached is my bank slip photo. Please verify and send my VIP Key!`;
                             </option>
                           ))}
                         </select>
-                        <ChevronDown className="w-4 h-4 text-cyan-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <ChevronDown className="w-4 h-4 text-cyan-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
                     </div>
 
-                    {/* Copyable Details */}
+                    {/* Copyable Bank Details Grid */}
                     {currentBeneficiary && (
-                      <div className="p-3.5 rounded-xl bg-cyan-950/25 border border-cyan-500/30 space-y-2 text-xs">
-                        <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                          <span className="font-outfit font-extrabold text-[11px] text-cyan-300 uppercase tracking-wider flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                            ADMIN BANK DETAILS
-                          </span>
-                          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                            {currentBeneficiary.gateway_type || 'Bank Transfer'}
-                          </span>
-                        </div>
+                      <div className="p-4 rounded-2xl bg-cyan-950/30 border border-cyan-500/30 space-y-2.5 text-xs">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {/* Bank Name */}
+                          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-white/5 flex items-center justify-between">
+                            <div>
+                              <span className="text-[10px] text-slate-400 block font-medium">Bank Name</span>
+                              <span className="font-bold text-white text-xs">{currentBeneficiary.bank_name}</span>
+                            </div>
+                            <button type="button" onClick={() => handleCopyText(currentBeneficiary.bank_name, 'bank')} className="p-1 text-slate-400 hover:text-cyan-400">
+                              {copiedField === 'bank' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
 
-                        {/* Bank Name */}
-                        <div className="flex items-center justify-between py-0.5">
-                          <span className="text-slate-400 font-medium">Bank Name:</span>
-                          <div className="flex items-center gap-1.5 font-bold text-white">
-                            <span>{currentBeneficiary.bank_name}</span>
-                            <button type="button" onClick={() => handleCopyText(currentBeneficiary.bank_name, 'bank')} className="p-1 hover:text-cyan-400">
-                              {copiedField === 'bank' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-cyan-400" />}
+                          {/* Account Name */}
+                          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-white/5 flex items-center justify-between">
+                            <div>
+                              <span className="text-[10px] text-slate-400 block font-medium">Account Name</span>
+                              <span className="font-bold text-slate-200 text-xs truncate max-w-[140px] block">{currentBeneficiary.owner_name}</span>
+                            </div>
+                            <button type="button" onClick={() => handleCopyText(currentBeneficiary.owner_name, 'name')} className="p-1 text-slate-400 hover:text-cyan-400">
+                              {copiedField === 'name' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
                           </div>
                         </div>
 
-                        {/* Account Name */}
-                        <div className="flex items-center justify-between py-0.5">
-                          <span className="text-slate-400 font-medium">Name:</span>
-                          <div className="flex items-center gap-1.5 font-bold text-slate-200">
-                            <span>{currentBeneficiary.owner_name}</span>
-                            <button type="button" onClick={() => handleCopyText(currentBeneficiary.owner_name, 'name')} className="p-1 hover:text-cyan-400">
-                              {copiedField === 'name' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-cyan-400" />}
-                            </button>
+                        {/* Account Number (Highlight Row) */}
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-cyan-500/15 border border-cyan-500/40">
+                          <div>
+                            <span className="text-[10px] text-cyan-300 font-bold uppercase block">Account Number</span>
+                            <span className="font-mono font-black text-base text-cyan-300">{currentBeneficiary.account_number}</span>
                           </div>
-                        </div>
-
-                        {/* Account Number */}
-                        <div className="flex items-center justify-between p-2 rounded-lg bg-cyan-500/15 border border-cyan-500/40">
-                          <span className="text-cyan-300 font-bold">Acc No.:</span>
-                          <div className="flex items-center gap-2 font-mono font-black text-sm text-cyan-300">
-                            <span>{currentBeneficiary.account_number}</span>
-                            <button type="button" onClick={() => handleCopyText(currentBeneficiary.account_number, 'acc')} className="p-1 rounded bg-cyan-500/30 text-cyan-200 text-[11px] font-bold px-2 py-0.5">
-                              {copiedField === 'acc' ? 'Copied ✔' : 'Copy'}
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Branch */}
-                        <div className="flex items-center justify-between py-0.5">
-                          <span className="text-slate-400 font-medium">Branch:</span>
-                          <div className="flex items-center gap-1.5 font-bold text-slate-200">
-                            <span>{currentBeneficiary.branch_name || 'Main Branch'}</span>
-                            <button type="button" onClick={() => handleCopyText(currentBeneficiary.branch_name, 'branch')} className="p-1 hover:text-cyan-400">
-                              {copiedField === 'branch' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-cyan-400" />}
-                            </button>
-                          </div>
+                          <button type="button" onClick={() => handleCopyText(currentBeneficiary.account_number, 'acc')} className="px-3 py-1.5 rounded-xl bg-cyan-500/30 hover:bg-cyan-500/40 text-cyan-200 text-xs font-bold transition-colors">
+                            {copiedField === 'acc' ? 'Copied ✔' : 'Copy Acc No'}
+                          </button>
                         </div>
 
                         {/* Copy Full Details Button */}
@@ -688,130 +694,130 @@ Attached is my bank slip photo. Please verify and send my VIP Key!`;
                             const fullDetails = `Bank Name: ${currentBeneficiary.bank_name}\nAccount Name: ${currentBeneficiary.owner_name}\nAccount Number: ${currentBeneficiary.account_number}\nBranch: ${currentBeneficiary.branch_name || 'Main Branch'}\nAmount: Rs. ${prices.lkr}`;
                             handleCopyText(fullDetails, 'full');
                           }}
-                          className="w-full mt-2 py-2 px-3 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-outfit font-bold text-xs flex items-center justify-center gap-2 transition-all"
+                          className="w-full py-2.5 px-4 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-outfit font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
                         >
                           {copiedField === 'full' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-cyan-400" />}
-                          <span>{copiedField === 'full' ? 'Full Bank Details Copied!' : 'Copy Full Bank Details'}</span>
+                          <span>{copiedField === 'full' ? 'Full Bank Details Copied!' : 'Copy Full Bank Details (1-Click)'}</span>
                         </button>
                       </div>
                     )}
                   </div>
+
+                  {/* STEP 2: UPLOAD BANK SLIP FOR 100% INSTANT AI DELIVERY */}
+                  <div className="p-5 rounded-3xl bg-[var(--bg-subtle)] border border-[var(--border-color)] space-y-3.5 shadow-inner">
+                    <label className="text-xs font-outfit font-bold text-[var(--text-heading)] flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Upload className="w-4 h-4 text-cyan-400" /> 2. Upload Deposit Slip / Screenshot:
+                      </span>
+                      <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                        ⚡ AI AUTO-KEY REVEAL
+                      </span>
+                    </label>
+
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                    />
+
+                    {!slipFile ? (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-6 sm:p-8 rounded-2xl border-2 border-dashed border-cyan-500/40 hover:border-cyan-400 bg-cyan-950/15 hover:bg-cyan-950/25 text-center cursor-pointer transition-all space-y-2 group"
+                      >
+                        <div className="w-12 h-12 rounded-2xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-md">
+                          <Upload className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <div className="font-outfit font-bold text-xs text-white">
+                            Click or Drag to Upload Bank Slip Photo
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            Supports PNG, JPG, WEBP, ComBank Q+, BOC SmartPay, and Camera capture
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3.5 rounded-2xl bg-slate-900 border border-cyan-500/40 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-xs font-bold text-cyan-300 truncate">
+                            <FileImage className="w-4 h-4 text-cyan-400 shrink-0" />
+                            <span className="truncate">{slipFile.name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => { setSlipFile(null); setSlipPreview(null); }}
+                            className="text-[11px] text-rose-400 hover:text-rose-300 font-bold underline"
+                          >
+                            Change Slip
+                          </button>
+                        </div>
+
+                        {slipPreview && (
+                          <div className="relative rounded-xl overflow-hidden max-h-48 border border-white/10 bg-slate-950 flex items-center justify-center">
+                            <img src={slipPreview} alt="Slip Preview" className="max-h-48 object-contain" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Scanning Animation */}
+                    {(verifyStatus === 'scanning' || verifyStatus === 'dispensing') && (
+                      <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/90 to-purple-950/90 border border-cyan-400 shadow-2xl space-y-2.5 text-center animate-pulse">
+                        <Loader2 className="w-7 h-7 text-cyan-400 animate-spin mx-auto" />
+                        <div className="font-outfit font-black text-xs text-cyan-300 uppercase tracking-wider">
+                          {verifyStatus === 'scanning' ? 'Scanning Slip with Gemini Vision AI...' : 'Verifying & Dispensing VIP License Key...'}
+                        </div>
+                        <div className="text-[11px] text-slate-300">
+                          Matching amount (Rs. {finalLkr}), bank name, and reference ID...
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Verification Error Box */}
+                    {verifyStatus === 'failed' && (
+                      <div className="p-4 rounded-2xl bg-rose-950/30 border border-rose-500/40 text-left space-y-2">
+                        <div className="flex items-start gap-2 text-rose-300 text-xs font-bold">
+                          <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                          <span>{verifyError}</span>
+                        </div>
+                        <div className="text-[11px] text-slate-300 pt-1">
+                          Need help? Click below to send your slip to our WhatsApp support team directly for instant manual approval.
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ACTION BUTTONS */}
+                    <div className="pt-2 space-y-2.5">
+                      <button
+                        onClick={handleVerifySlipAndDeliver}
+                        disabled={!slipFile || verifyStatus === 'scanning' || verifyStatus === 'dispensing'}
+                        className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-outfit font-black text-sm tracking-wide text-center flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(6,182,212,0.4)] hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Sparkles className="w-5 h-5 text-slate-950" />
+                        <span>⚡ VERIFY SLIP & GET INSTANT VIP KEY</span>
+                      </button>
+
+                      <button
+                        onClick={handleWhatsAppFallback}
+                        type="button"
+                        className="w-full py-3 px-4 rounded-2xl bg-[var(--bg-subtle)] hover:bg-white/5 border border-[var(--border-color)] text-slate-300 font-inter font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <MessageCircle className="w-4 h-4 text-emerald-400" />
+                        <span>Or Order via WhatsApp (+94 761 386 077)</span>
+                      </button>
+
+                      <p className="text-[10px] text-center text-[var(--text-muted)]">
+                        🔒 100% Anti-Fraud Protected • Instant automated key verification & delivery in 2 seconds.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-
-                {/* STEP 2: UPLOAD BANK SLIP FOR 100% INSTANT AI DELIVERY */}
-                <div className="space-y-3">
-                  <label className="text-xs font-outfit font-bold text-[var(--text-heading)] flex items-center justify-between">
-                    <span>2. Upload Deposit Slip / Screenshot:</span>
-                    <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                      ⚡ AI AUTO-KEY REVEAL
-                    </span>
-                  </label>
-
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept="image/*,application/pdf"
-                    className="hidden"
-                  />
-
-                  {!slipFile ? (
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-6 rounded-2xl border-2 border-dashed border-cyan-500/40 hover:border-cyan-400 bg-cyan-950/10 hover:bg-cyan-950/20 text-center cursor-pointer transition-all space-y-2 group"
-                    >
-                      <div className="w-12 h-12 rounded-2xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                        <Upload className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <div className="font-outfit font-bold text-xs text-white">
-                          Click or Drag to Upload Bank Slip Photo
-                        </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
-                          Supports PNG, JPG, WEBP, and Camera capture on mobile
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-3 rounded-2xl bg-slate-900 border border-cyan-500/40 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-xs font-bold text-cyan-300 truncate">
-                          <FileImage className="w-4 h-4 text-cyan-400 shrink-0" />
-                          <span className="truncate">{slipFile.name}</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => { setSlipFile(null); setSlipPreview(null); }}
-                          className="text-[11px] text-rose-400 hover:text-rose-300 font-bold underline"
-                        >
-                          Change Slip
-                        </button>
-                      </div>
-
-                      {slipPreview && (
-                        <div className="relative rounded-xl overflow-hidden max-h-40 border border-white/10 bg-slate-950 flex items-center justify-center">
-                          <img src={slipPreview} alt="Slip Preview" className="max-h-40 object-contain" />
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Scanning Animation */}
-                  {(verifyStatus === 'scanning' || verifyStatus === 'dispensing') && (
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/80 to-purple-950/80 border border-cyan-400 shadow-xl space-y-2.5 text-center animate-pulse">
-                      <Loader2 className="w-6 h-6 text-cyan-400 animate-spin mx-auto" />
-                      <div className="font-outfit font-black text-xs text-cyan-300 uppercase tracking-wider">
-                        {verifyStatus === 'scanning' ? 'Scanning Slip with Gemini Vision AI...' : 'Verifying & Dispensing VIP License Key...'}
-                      </div>
-                      <div className="text-[10px] text-slate-300">
-                        Checking amount (Rs. {finalLkr}), bank name, beneficiary account, and reference ID...
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Verification Error Box */}
-                  {verifyStatus === 'failed' && (
-                    <div className="p-3.5 rounded-2xl bg-rose-950/30 border border-rose-500/40 text-left space-y-2">
-                      <div className="flex items-start gap-2 text-rose-300 text-xs font-bold">
-                        <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                        <span>{verifyError}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-300 pt-1">
-                        Need help? Click below to send your slip to our WhatsApp support team directly for instant manual approval.
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </>
+              </div>
             )}
           </div>
-
-          {/* Action Buttons */}
-          {verifyStatus !== 'success' && (
-            <div className="pt-4 border-t border-[var(--border-color)] mt-4 space-y-2">
-              <button
-                onClick={handleVerifySlipAndDeliver}
-                disabled={!slipFile || verifyStatus === 'scanning' || verifyStatus === 'dispensing'}
-                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-outfit font-black text-sm tracking-wide text-center flex items-center justify-center gap-2 shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Sparkles className="w-4 h-4 text-slate-950" />
-                <span>⚡ VERIFY SLIP & GET INSTANT VIP KEY</span>
-              </button>
-
-              <button
-                onClick={handleWhatsAppFallback}
-                type="button"
-                className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-subtle)] hover:bg-white/5 border border-[var(--border-color)] text-slate-300 font-inter font-bold text-xs flex items-center justify-center gap-2 transition-colors"
-              >
-                <MessageCircle className="w-4 h-4 text-emerald-400" />
-                <span>Or Order via WhatsApp (+94 761 386 077)</span>
-              </button>
-
-              <p className="text-[9px] text-center text-[var(--text-muted)]">
-                🔒 100% Anti-Fraud Protected • Instant automated key verification & delivery in 2 seconds.
-              </p>
-            </div>
-          )}
         </motion.div>
       </div>
     </AnimatePresence>

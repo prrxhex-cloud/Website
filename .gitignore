@@ -30,6 +30,10 @@ dist-ssr
 .env
 .vite
 
+# Temporary scripts
+scripts/test*
+scripts/*.js
+
 # Desktop App Electron Builds
 desktop-app/node_modules/
 desktop-app/release/
