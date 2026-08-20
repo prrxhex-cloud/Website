@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { normalizeDurationKey } from '@/components/dashboard/KeyBankTab';
 import { LayoutGrid, Settings, DollarSign, TrendingUp, ShieldCheck, Sparkles, MessageCircle, Zap, Store, Flame, Crown, Clock, CheckCircle2 } from 'lucide-react';
 
 const DEFAULT_PROFIT_PLANS = {
@@ -78,25 +79,51 @@ export default function ResellerProfitTable({ onApplyWhatsApp, panel: propPanel,
     ? syncedPlans[panel]
     : (DEFAULT_PROFIT_PLANS[panel] || []);
 
-  // Compute live Auto-Calculated profit breakdown for each package item
-  const rows = currentRawPlans.map((p, idx) => {
-    const label = p.label?.includes('Key') ? p.label : `${p.label} Key`;
+  // Deduplicate plans so each unique duration time period appears EXACTLY ONCE
+  const uniquePlansMap = new Map();
+  for (const p of currentRawPlans) {
+    const norm = normalizeDurationKey(p.label || p.days || '');
+    if (!norm) continue;
+    // Prefer plans with explicit reseller rates or keep the first unique
+    if (!uniquePlansMap.has(norm)) {
+      uniquePlansMap.set(norm, p);
+    } else {
+      const existing = uniquePlansMap.get(norm);
+      // Merge best rates if one has updated rates
+      uniquePlansMap.set(norm, {
+        ...existing,
+        ...p,
+        lkr: p.lkr || existing.lkr,
+        reseller_rate: p.reseller_rate ?? existing.reseller_rate,
+        jit_rate: p.jit_rate ?? existing.jit_rate,
+      });
+    }
+  }
+
+  const uniquePlansList = Array.from(uniquePlansMap.values());
+
+  // Compute live Auto-Calculated profit breakdown for each unique package item
+  const rows = uniquePlansList.map((p, idx) => {
+    let cleanLabel = p.label || 'VIP Plan';
+    if (!cleanLabel.toLowerCase().includes('key')) {
+      cleanLabel = `${cleanLabel} Key`;
+    }
     const price = Number(p.lkr) || 0;
     
     // Just In Time
-    const jitRate = Number(p.jit_rate) || (label.includes('1 Day') ? 20 : label.includes('1 Week') ? 25 : 30);
+    const jitRate = Number(p.jit_rate) || (cleanLabel.includes('1 Day') ? 20 : cleanLabel.includes('1 Week') ? 25 : 30);
     const jitProfit = Math.round(price * (jitRate / 100));
-    const jitPay = p.jit_pay !== undefined ? Number(p.jit_pay) : (price - jitProfit);
+    const jitPay = p.jit_pay !== undefined && p.jit_pay !== '' ? Number(p.jit_pay) : (price - jitProfit);
 
     // Reseller
-    const resellerRate = Number(p.reseller_rate ?? p.commission_rate) || (label.includes('1 Day') ? 30 : label.includes('1 Week') ? 35 : 40);
+    const resellerRate = Number(p.reseller_rate ?? p.commission_rate) || (cleanLabel.includes('1 Day') ? 30 : cleanLabel.includes('1 Week') ? 35 : 40);
     const resellerProfit = Math.round(price * (resellerRate / 100));
-    const resellerPay = p.reseller_pay !== undefined ? Number(p.reseller_pay) : (price - resellerProfit);
+    const resellerPay = p.reseller_pay !== undefined && p.reseller_pay !== '' ? Number(p.reseller_pay) : (price - resellerProfit);
 
     return {
       id: p.id || `${panel}-${idx}`,
-      item: label,
-      days: p.days || label,
+      item: cleanLabel,
+      days: p.days || cleanLabel,
       price,
       // JIT
       jitRate,
