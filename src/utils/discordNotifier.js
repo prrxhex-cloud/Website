@@ -123,6 +123,31 @@ export async function sendReceiptVerificationNotification({ resellerName, resell
   });
 }
 
+export async function sendInstantKeyDeliveredAlert({ customerName, customerEmail, planTitle, productType, duration, amount, bankName, transactionNumber, licenseKey, receiptImageUrl }) {
+  const config = await getConfig();
+  const webhookUrl = config?.receipt_webhook_url || DEFAULT_RECEIPT_WEBHOOK;
+  if (!webhookUrl) return;
+
+  await postWebhook(webhookUrl, {
+    content: '🎉 **NEW VIP KEY INSTANTLY PURCHASED & DELIVERED!** @everyone',
+    embeds: [{
+      title: '🟢 100% Verified Bank Slip & Key Dispensed',
+      color: 0x00ff88,
+      fields: [
+        { name: '🛒 Plan Item', value: `**${planTitle}** (${productType?.toUpperCase()} · ${duration})`, inline: false },
+        { name: '💵 Amount Paid', value: `**Rs. ${amount?.toLocaleString()} LKR**`, inline: true },
+        { name: '🏦 Bank Name', value: bankName || 'Direct Bank Transfer', inline: true },
+        { name: '🔢 Transaction ID', value: `\`${transactionNumber || 'N/A'}\``, inline: true },
+        { name: '👤 Customer', value: `${customerName || 'VIP Customer'}\n(${customerEmail || 'No Email'})`, inline: true },
+        { name: '🔑 Dispensed License Key', value: `\`\`\`${licenseKey}\`\`\``, inline: false },
+      ],
+      image: receiptImageUrl ? { url: receiptImageUrl } : undefined,
+      footer: { text: 'PRRX HEX Instant Automated Key Delivery • AI Vision 100% Verified' },
+      timestamp: new Date().toISOString(),
+    }],
+  });
+}
+
 export async function sendLowStockWarning({ productType, duration, remaining }) {
   const config = await getConfig();
   if (!config?.ticket_webhook_url) return;
