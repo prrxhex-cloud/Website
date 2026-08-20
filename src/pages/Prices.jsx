@@ -226,7 +226,7 @@ export default function Prices() {
   const [keysStock, setKeysStock] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
-  const [activePromoCode, setActivePromoCode] = useState('PRRX20');
+  const [activePromoCode, setActivePromoCode] = useState('');
   const [copiedCode, setCopiedCode] = useState(false);
 
   // Live real-time countdown timer state based on database expires_at
@@ -473,7 +473,7 @@ export default function Prices() {
                 key={p?.id || p?.label || i} 
                 plan={planWithDiscount} 
                 index={i} 
-                onBuy={(plan) => handleOpenBuyModal(plan, planWithDiscount.discount?.promo_code || activePromoCode)}
+                onBuy={(plan) => handleOpenBuyModal(plan, planWithDiscount.discount?.promo_code || (hasActiveDiscount ? activePromoCode : ''))}
               />
             );
           })}

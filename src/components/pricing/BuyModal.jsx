@@ -7,15 +7,6 @@ import { useNavigate } from 'react-router-dom';
 
 const WHATSAPP_NUMBER = '94761386077';
 
-// Built-in standard promo codes for instant fallback validation
-const STANDARD_PROMO_CODES = {
-  'PRRX20': { type: 'percentage', value: 20, desc: '20% OFF Special VIP Promo' },
-  'VIP10': { type: 'percentage', value: 10, desc: '10% OFF VIP Member Discount' },
-  'HEX50': { type: 'percentage', value: 50, desc: '50% OFF Mega Flash Sale' },
-  'SPECIAL30': { type: 'percentage', value: 30, desc: '30% OFF Limited Time Offer' },
-  'WELCOME': { type: 'fixed', value: 300, desc: 'LKR 300 Welcome Bonus' }
-};
-
 export default function BuyModal({ plan, panelType = 'external', isOpen, onClose, discounts = [], initialPromoCode = '' }) {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -24,7 +15,7 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState('');
 
-  // Pre-fill initial promo code if passed from banner
+  // Pre-fill initial promo code if passed from banner and valid
   useEffect(() => {
     if (initialPromoCode && isOpen) {
       setPromoInput(initialPromoCode);
@@ -68,18 +59,6 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
         type: firestoreMatch.discount_type || 'percentage',
         value: Number(firestoreMatch.discount_value) || 0,
         desc: firestoreMatch.badge_text || `${firestoreMatch.discount_value}% OFF`
-      });
-      return;
-    }
-
-    // 2. Check in standard fallback promo codes
-    if (STANDARD_PROMO_CODES[rawCode]) {
-      const match = STANDARD_PROMO_CODES[rawCode];
-      setAppliedPromo({
-        code: rawCode,
-        type: match.type,
-        value: match.value,
-        desc: match.desc
       });
       return;
     }
