@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShieldCheck, Coins, CreditCard, QrCode, MessageCircle, Tag, Check, Sparkles, AlertCircle, LogIn, UserCheck } from 'lucide-react';
+import { X, ShieldCheck, Coins, CreditCard, QrCode, MessageCircle, Tag, Check, Sparkles, AlertCircle, LogIn, Building, Copy, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { getFormattedPrices } from '@/lib/currency';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { DEFAULT_BENEFICIARIES } from '@/components/dashboard/BeneficiaryAccountsTab';
+import { toast } from 'sonner';
 
 const WHATSAPP_NUMBER = '94761386077';
 
@@ -14,6 +18,44 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
   const [promoInput, setPromoInput] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState('');
+  const [beneficiaries, setBeneficiaries] = useState([]);
+  const [selectedBeneficiaryId, setSelectedBeneficiaryId] = useState('');
+  const [copiedField, setCopiedField] = useState(null);
+
+  // Load Beneficiary Accounts / Payment Gateways from Firestore
+  useEffect(() => {
+    let isMounted = true;
+    const fetchBeneficiaries = async () => {
+      try {
+        const q = query(collection(db, 'beneficiary_accounts'), orderBy('sort_order', 'asc'));
+        const snap = await getDocs(q);
+        if (isMounted) {
+          if (!snap.empty) {
+            const list = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => a.active !== false);
+            if (list.length > 0) {
+              setBeneficiaries(list);
+              setSelectedBeneficiaryId(list[0].id);
+              return;
+            }
+          }
+          // Fallback to default beneficiaries
+          const defaults = DEFAULT_BENEFICIARIES.map((b, i) => ({ id: `default-${i}`, ...b }));
+          setBeneficiaries(defaults);
+          setSelectedBeneficiaryId(defaults[0].id);
+        }
+      } catch (err) {
+        console.warn('Beneficiary load error:', err);
+        const defaults = DEFAULT_BENEFICIARIES.map((b, i) => ({ id: `default-${i}`, ...b }));
+        setBeneficiaries(defaults);
+        setSelectedBeneficiaryId(defaults[0].id);
+      }
+    };
+
+    if (isOpen) {
+      fetchBeneficiaries();
+    }
+    return () => { isMounted = false; };
+  }, [isOpen]);
 
   // Pre-fill initial promo code if passed from banner and valid
   useEffect(() => {
@@ -36,7 +78,7 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
       return;
     }
 
-    // 1. Check in dynamic Firestore discounts
+    // Check dynamic Firestore discounts
     const discList = Array.isArray(discounts) ? discounts : [];
     const firestoreMatch = discList.find(d => {
       if (!d || !d.active) return false;
@@ -74,9 +116,8 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
 
   if (!isOpen || !plan) return null;
 
-  // Base plan price before manual coupon
   const baseLkr = Number(plan?.originalLkr || plan?.lkr || 0);
-  
+
   // Calculate final discounted price based on plan discount OR applied promo coupon
   let finalLkr = Number(plan?.lkr || baseLkr);
   let activeDiscountInfo = plan?.discount || null;
@@ -103,6 +144,16 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
   const platform = panelType === 'internal' ? 'Android APK / Windows 10/11' : 'Windows 10/11';
   const itemName = plan?.customTitle || `PRRX ${panelType === 'internal' ? 'Internal' : 'External'} Panel — ${plan?.label || 'VIP Plan'}`;
 
+  const currentBeneficiary = beneficiaries.find(b => b.id === selectedBeneficiaryId) || beneficiaries[0] || DEFAULT_BENEFICIARIES[0];
+
+  const handleCopyText = (text, fieldName) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldName);
+    toast.success(`Copied "${text}" to clipboard!`);
+    setTimeout(() => setCopiedField(null), 2500);
+  };
+
   const handleGetLicenseKey = () => {
     if (selectedGateway !== 'whatsapp') return;
 
@@ -113,15 +164,16 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
 
     const userDetailsText = user ? `\n👤 VIP Member Account: ${user.email} (${user.displayName || 'VIP Member'})\n` : '';
 
+    const bankDetailsText = currentBeneficiary ? `\n🏦 Payment Gateway: ${currentBeneficiary.gateway_label || 'Direct Bank Transfer'}\n🏢 Bank: ${currentBeneficiary.bank_name}\n👤 Account Name: ${currentBeneficiary.owner_name}\n💳 Account No: ${currentBeneficiary.account_number}\n📍 Branch: ${currentBeneficiary.branch_name || 'Main Branch'}\n` : '';
+
     const message = `Hello PRRX HEX Admin! I want to buy a VIP License Key.
 ${userDetailsText}
 🛒 Selected Item: ${itemName}
 💻 Platform Support: ${platform}
 ⏱️ License Duration: ${plan?.days || plan?.label || 'Access'}${discountDetailsText}
 💰 Final Amount: ${prices.usd} (LKR ${prices.lkr})
-💳 Payment Gateway: Direct Bank Slip Upload to WhatsApp
-
-Please provide bank transfer details & process my key order!`;
+${bankDetailsText}
+I have transferred to your bank account and attached the bank deposit slip photo below. Please verify and send my VIP Key!`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
@@ -292,7 +344,7 @@ Please provide bank transfer details & process my key order!`;
                       type="text"
                       value={promoInput}
                       onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
-                      placeholder="e.g. PRRX20, VIP10"
+                      placeholder="e.g. VIP DISCOUNT CODE"
                       className="flex-1 px-3.5 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-mono font-bold text-[var(--text-primary)] focus:outline-none focus:border-cyan-400 uppercase"
                     />
                     <button
@@ -312,8 +364,8 @@ Please provide bank transfer details & process my key order!`;
               )}
             </div>
 
-            {/* Select Payment Gateway */}
-            <div className="space-y-2">
+            {/* Select Payment Gateway Options */}
+            <div className="space-y-3">
               <label className="text-xs font-outfit font-bold text-[var(--text-heading)] block">
                 Select Payment Method
               </label>
@@ -354,6 +406,134 @@ Please provide bank transfer details & process my key order!`;
                   );
                 })}
               </div>
+
+              {/* PAYMENT GATEWAY DROPDOWN & ADMIN'S BANK DETAILS BOX */}
+              {selectedGateway === 'whatsapp' && (
+                <div className="p-4 rounded-2xl bg-gradient-to-b from-slate-900/95 to-slate-950/95 border border-cyan-500/40 shadow-xl space-y-3.5 animate-fadeIn">
+                  
+                  {/* Dropdown Selector */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-outfit font-bold text-cyan-300 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Building className="w-3.5 h-3.5 text-cyan-400" /> Choose Payment Gateway (Bank Account):
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-normal font-mono">
+                        {beneficiaries.length} Accounts Available
+                      </span>
+                    </label>
+
+                    <div className="relative">
+                      <select
+                        value={selectedBeneficiaryId}
+                        onChange={(e) => setSelectedBeneficiaryId(e.target.value)}
+                        className="w-full appearance-none px-3.5 py-2.5 rounded-xl bg-slate-950 border border-cyan-500/40 text-xs font-outfit font-bold text-cyan-200 outline-none focus:border-cyan-400 cursor-pointer pr-10 shadow-inner"
+                      >
+                        {beneficiaries.map((b, idx) => (
+                          <option key={b.id} value={b.id} className="bg-slate-900 text-white">
+                            {b.gateway_label || `Payment Gateway ${idx + 1} (${b.bank_name})`}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-cyan-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  {/* Copyable Bank Details Box */}
+                  {currentBeneficiary && (
+                    <div className="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 space-y-2 text-xs">
+                      <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                        <span className="font-outfit font-extrabold text-[11px] text-cyan-300 uppercase tracking-wider flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          ADMIN BENEFICIARY DETAILS
+                        </span>
+                        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                          {currentBeneficiary.gateway_type || 'Bank Transfer'}
+                        </span>
+                      </div>
+
+                      {/* Bank Name */}
+                      <div className="flex items-center justify-between py-0.5">
+                        <span className="text-slate-400 font-medium">Bank Name:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-white text-right">{currentBeneficiary.bank_name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(currentBeneficiary.bank_name, 'bank')}
+                            className="p-1 rounded hover:bg-cyan-500/20 text-cyan-400 transition-colors"
+                            title="Copy Bank Name"
+                          >
+                            {copiedField === 'bank' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Account Holder Name */}
+                      <div className="flex items-center justify-between py-0.5">
+                        <span className="text-slate-400 font-medium">Name:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-slate-200 text-right">{currentBeneficiary.owner_name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(currentBeneficiary.owner_name, 'name')}
+                            className="p-1 rounded hover:bg-cyan-500/20 text-cyan-400 transition-colors"
+                            title="Copy Account Holder Name"
+                          >
+                            {copiedField === 'name' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Account Number (Highlight Box) */}
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-cyan-500/15 border border-cyan-500/40">
+                        <span className="text-cyan-300 font-bold">Acc No.:</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-black text-sm text-cyan-300 tracking-wider">
+                            {currentBeneficiary.account_number}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(currentBeneficiary.account_number, 'acc')}
+                            className="p-1 rounded bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-200 transition-all flex items-center gap-1 text-[11px] font-bold px-2 py-0.5"
+                            title="Copy Account Number"
+                          >
+                            {copiedField === 'acc' ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                <span className="text-emerald-400">Copied</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5" />
+                                <span>Copy</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Branch */}
+                      <div className="flex items-center justify-between py-0.5">
+                        <span className="text-slate-400 font-medium">Branch:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-slate-200 text-right">{currentBeneficiary.branch_name || 'Main Branch'}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(currentBeneficiary.branch_name, 'branch')}
+                            className="p-1 rounded hover:bg-cyan-500/20 text-cyan-400 transition-colors"
+                            title="Copy Branch Name"
+                          >
+                            {copiedField === 'branch' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-[10px] text-slate-400 text-center font-medium">
+                    💡 Transfer <strong className="text-cyan-300">Rs. {prices.lkr}</strong> to the account above, then click below to send your slip photo on WhatsApp.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

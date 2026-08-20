@@ -31,7 +31,9 @@ export default function Navbar() {
   const { soundEnabled, toggleSound } = useSound();
   const { theme, toggleTheme } = useTheme();
   const { promptInstall, isInstalled } = usePwa();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+
+  const hasVipLicense = Boolean(user?.isKeyAuth || user?.keyAuthData?.subscriptions?.length);
 
   useEffect(() => {
     let isMounted = true;
@@ -183,13 +185,21 @@ export default function Navbar() {
             </button>
 
             {/* VIP Member Login / Status */}
-            {isAuthenticated ? (
+            {hasVipLicense ? (
               <button
                 onClick={() => navigate('/dashboard')}
                 className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold font-outfit shadow-sm hover:scale-105 transition-all"
               >
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <span>VIP Active</span>
+              </button>
+            ) : isAuthenticated ? (
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-cyan-500/15 to-blue-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-bold font-outfit shadow-sm hover:scale-105 transition-all"
+              >
+                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                <span>Dashboard</span>
               </button>
             ) : (
               <button
