@@ -492,33 +492,58 @@ I am transferring the payment to this account and attaching my slip. Please conf
                   </p>
                 </div>
 
-                {/* Key Reveal Card */}
-                <div className="p-6 rounded-3xl bg-gradient-to-r from-cyan-950/80 to-slate-900/90 border border-cyan-500/40 space-y-4 shadow-2xl text-left">
-                  <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider block">
-                    License Key ({plan?.label} Access):
-                  </span>
-                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950 border border-cyan-500/30">
-                    <span className="font-mono font-black text-base sm:text-lg text-cyan-300 tracking-wider select-all break-all">
-                      {dispensedKey}
+                {/* Key Reveal Card or Out-of-stock Notice */}
+                {dispensedKey ? (
+                  <div className="p-6 rounded-3xl bg-gradient-to-r from-cyan-950/80 to-slate-900/90 border border-cyan-500/40 space-y-4 shadow-2xl text-left">
+                    <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider block">
+                      License Key ({plan?.label} Access):
                     </span>
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950 border border-cyan-500/30">
+                      <span className="font-mono font-black text-base sm:text-lg text-cyan-300 tracking-wider select-all break-all">
+                        {dispensedKey}
+                      </span>
+                      <button
+                        onClick={() => handleCopyText(dispensedKey, 'dispensed-key')}
+                        className="p-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 transition-all flex items-center gap-1.5 text-xs font-bold shrink-0 ml-3"
+                      >
+                        {copiedField === 'dispensed-key' ? (
+                          <>
+                            <Check className="w-4 h-4 text-emerald-400" />
+                            <span className="text-emerald-400">Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-950/40 via-slate-900/90 to-amber-950/40 border border-amber-500/40 space-y-3 shadow-2xl text-left">
+                    <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                      <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+                      <span>Key Bank Stock Notice</span>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Your payment of <strong>Rs. {finalLkr} LKR</strong> (Transaction ID: <code className="text-cyan-300 font-mono font-bold">{verifiedTxnData?.transaction_number}</code>) is <strong>100% verified and recorded</strong> in our database!
+                    </p>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Key Bank is currently awaiting manual key restocking for <strong>{plan?.label}</strong>. Please click the button below to message Admin on WhatsApp with your verified Transaction ID for priority key delivery!
+                    </p>
                     <button
-                      onClick={() => handleCopyText(dispensedKey, 'dispensed-key')}
-                      className="p-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 transition-all flex items-center gap-1.5 text-xs font-bold shrink-0 ml-3"
+                      onClick={() => {
+                        const msg = `Hello Admin! My bank transfer of Rs. ${finalLkr} for ${itemName} is 100% AI-Verified (Txn ID: ${verifiedTxnData?.transaction_number}). Key Bank was out of stock. Please dispatch my VIP Key!`;
+                        window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+                      }}
+                      className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-outfit font-black text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
                     >
-                      {copiedField === 'dispensed-key' ? (
-                        <>
-                          <Check className="w-4 h-4 text-emerald-400" />
-                          <span className="text-emerald-400">Copied</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4" />
-                          <span>Copy</span>
-                        </>
-                      )}
+                      <MessageCircle className="w-4 h-4 text-slate-950" />
+                      <span>CLAIM VIP KEY VIA WHATSAPP (TXN: {verifiedTxnData?.transaction_number})</span>
                     </button>
                   </div>
-                </div>
+                )}
 
                 {/* Actions */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
