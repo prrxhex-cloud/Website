@@ -526,6 +526,28 @@ I have transferred to your bank account and attached the bank deposit slip photo
                           </button>
                         </div>
                       </div>
+
+                      {/* Copy Full Bank Details Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const fullDetails = `Bank Name: ${currentBeneficiary.bank_name}\nAccount Name: ${currentBeneficiary.owner_name}\nAccount Number: ${currentBeneficiary.account_number}\nBranch: ${currentBeneficiary.branch_name || 'Main Branch'}\nAmount: Rs. ${prices.lkr}`;
+                          handleCopyText(fullDetails, 'full');
+                        }}
+                        className="w-full mt-2 py-2 px-3 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-outfit font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                      >
+                        {copiedField === 'full' ? (
+                          <>
+                            <Check className="w-4 h-4 text-emerald-400" />
+                            <span className="text-emerald-400">Full Bank Details Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4 text-cyan-400" />
+                            <span>Copy Full Bank Details</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   )}
 

@@ -33,8 +33,6 @@ export default function Navbar() {
   const { promptInstall, isInstalled } = usePwa();
   const { user, isAuthenticated } = useAuth();
 
-  const hasVipLicense = Boolean(user?.isKeyAuth || user?.keyAuthData?.subscriptions?.length);
-
   useEffect(() => {
     let isMounted = true;
     const fetchDiscounts = async () => {
@@ -135,36 +133,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-1 bg-[var(--bg-subtle)] border border-[var(--border-color)] p-1.5 rounded-full shadow-inner">
-            {filteredNavLinks.map((link) => (
-              <button
-                key={link.path}
-                onClick={() => handleNav(link.path)}
-                className={`relative px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 ${
-                  isActive(link.path)
-                    ? 'text-white bg-gradient-to-r from-[#06b6d4] to-cyan-600 shadow-sm'
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--bg-card-hover)]'
-                }`}
-              >
-                <span>{link.label}</span>
-                {link.badge && (
-                  <span 
-                    className="text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider"
-                    style={{ 
-                      backgroundColor: `${link.badgeColor}25`, 
-                      color: link.badgeColor,
-                      border: `1px solid ${link.badgeColor}40`
-                    }}
-                  >
-                    {link.badge}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
-
-          {/* Right Action Controls */}
+          {/* Right Action Controls with Side Navbar Trigger */}
           <div className="flex items-center gap-2.5">
             {/* Theme Toggle */}
             <button
@@ -188,7 +157,7 @@ export default function Navbar() {
             {isAuthenticated ? (
               <button
                 onClick={() => navigate('/dashboard')}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold font-outfit shadow-sm hover:scale-105 transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold font-outfit shadow-sm hover:scale-105 transition-all"
               >
                 <ShieldCheck className="w-4 h-4" />
                 <span>VIP Active</span>
@@ -196,72 +165,118 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={() => navigate('/login')}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-[#06b6d4] to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-slate-950 font-outfit font-extrabold text-xs tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:scale-105 transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-[#06b6d4] to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-slate-950 font-outfit font-extrabold text-xs tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:scale-105 transition-all"
               >
                 <ShieldCheck className="w-4 h-4 text-slate-950" />
                 <span>VIP</span>
               </button>
             )}
 
-            {/* Mobile Menu Trigger */}
+            {/* Side Navbar Menu Trigger Button */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="lg:hidden w-10 h-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-heading)] shadow-sm"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-cyan-500/40 text-xs font-bold font-outfit text-[var(--text-heading)] shadow-sm hover:scale-105 transition-all"
               aria-label="Toggle navigation menu"
             >
-              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {menuOpen ? <X className="w-4 h-4 text-cyan-400" /> : <Menu className="w-4 h-4 text-cyan-400" />}
+              <span className="hidden sm:inline">Menu</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-[var(--text-muted)] transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Drawer Menu */}
+      {/* Slide-Over Side Navigation Drawer */}
       <AnimatePresence>
         {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-[var(--bg-card)] border-b border-[var(--border-color)] shadow-2xl overflow-hidden"
-          >
-            <div className="p-4 space-y-1.5">
-              {filteredNavLinks.map((link) => (
-                <button
-                  key={link.path}
-                  onClick={() => handleNav(link.path)}
-                  className={`w-full px-4 py-3 rounded-2xl text-left font-outfit text-sm font-bold flex items-center justify-between transition-all ${
-                    isActive(link.path)
-                      ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-md'
-                      : 'text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
-                  }`}
-                >
-                  <span>{link.label}</span>
-                  {link.badge && (
-                    <span 
-                      className="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase"
-                      style={{ 
-                        backgroundColor: `${link.badgeColor}25`, 
-                        color: link.badgeColor,
-                        border: `1px solid ${link.badgeColor}40`
-                      }}
-                    >
-                      {link.badge}
-                    </span>
-                  )}
-                </button>
-              ))}
+          <div className="fixed inset-0 z-50 overflow-hidden font-inter">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMenuOpen(false)}
+              className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
+            />
 
-              {!isAuthenticated && (
-                <button
-                  onClick={() => handleNav('/login')}
-                  className="w-full mt-3 py-3 rounded-2xl bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-slate-950 font-outfit font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-lg"
-                >
-                  <ShieldCheck className="w-4 h-4 text-slate-950" />
-                  <span>SIGN IN TO VIP PORTAL</span>
-                </button>
-              )}
-            </div>
-          </motion.div>
+            {/* Slide-Over Drawer Panel from Right */}
+            <motion.aside
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+              className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-[var(--bg-card)] border-l border-[var(--border-color)] shadow-2xl p-6 flex flex-col justify-between z-10 overflow-y-auto"
+            >
+              <div className="space-y-5">
+                {/* Drawer Header */}
+                <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4">
+                  <div className="flex items-center gap-3">
+                    <img src={logoImg} alt="PRRX Logo" className="w-8 h-8 rounded-xl object-contain border border-cyan-500/30 p-0.5" />
+                    <div>
+                      <span className="font-outfit font-black text-lg text-[var(--text-heading)]">PRRX <span className="text-[#06b6d4]">HEX</span></span>
+                      <span className="text-[9px] font-bold text-[var(--text-muted)] block tracking-wider uppercase">NAVIGATION MENU</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setMenuOpen(false)}
+                    className="w-9 h-9 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-heading)] flex items-center justify-center transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Nav Links */}
+                <div className="space-y-1.5">
+                  {filteredNavLinks.map((link) => (
+                    <button
+                      key={link.path}
+                      onClick={() => handleNav(link.path)}
+                      className={`w-full px-4 py-3 rounded-2xl text-left font-outfit text-sm font-bold flex items-center justify-between transition-all ${
+                        isActive(link.path)
+                          ? 'bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white shadow-md'
+                          : 'text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
+                      }`}
+                    >
+                      <span>{link.label}</span>
+                      {link.badge && (
+                        <span 
+                          className="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                          style={{ 
+                            backgroundColor: `${link.badgeColor}25`, 
+                            color: link.badgeColor,
+                            border: `1px solid ${link.badgeColor}40`
+                          }}
+                        >
+                          {link.badge}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Drawer Footer Actions */}
+              <div className="pt-6 border-t border-[var(--border-color)] space-y-3">
+                {!isAuthenticated ? (
+                  <button
+                    onClick={() => handleNav('/login')}
+                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-slate-950 font-outfit font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-lg"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-slate-950" />
+                    <span>SIGN IN TO VIP PORTAL</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleNav('/dashboard')}
+                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 text-emerald-400 font-outfit font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <span>MY VIP DASHBOARD</span>
+                  </button>
+                )}
+              </div>
+            </motion.aside>
+          </div>
         )}
       </AnimatePresence>
     </div>
