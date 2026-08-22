@@ -6,6 +6,7 @@ import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getFormattedPrices } from '@/lib/currency';
 import DownloadModal from '@/components/landing/DownloadModal';
+import { resolveImageUrl } from '@/utils/imagePathHelper';
 import logoImg from '@/assets/logo.jpeg';
 import heroBooyahImg from '@/assets/hero_booyah.png';
 
@@ -174,7 +175,7 @@ export default function HeroSection() {
 
                   <div className="rounded-lg overflow-hidden border border-cyan-500/30 shadow-md aspect-video relative group">
                     <img 
-                      src={heroHudUrl || heroBooyahImg} 
+                      src={resolveImageUrl(heroHudUrl, heroBooyahImg)} 
                       alt="Hero Gameplay Preview" 
                       className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-500" 
                     />
