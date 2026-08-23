@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, limit, getDocs, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Key, Plus, Trash2, Check, Shield, CheckCircle2, XCircle, Clock, RefreshCw, LayoutGrid, Settings } from 'lucide-react';
+import { Key, Plus, Trash2, Check, Shield, CheckCircle2, XCircle, Clock, RefreshCw, Search, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function normalizeDurationKey(str) {
@@ -25,14 +25,17 @@ export default function KeyBankTab() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [filterPanel, setFilterPanel] = useState('all');
+  const [filterDuration, setFilterDuration] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
 
   const load = async () => {
     setLoading(true);
     try {
+      // Query up to 10,000 keys so no older keys ever get hidden or cut off!
       const [keySnap, planSnap] = await Promise.allSettled([
-        getDocs(query(collection(db, 'license_keys'), orderBy('created_date', 'desc'), limit(300))),
+        getDocs(query(collection(db, 'license_keys'), orderBy('created_date', 'desc'), limit(10000))),
         getDocs(query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'), limit(100)))
       ]);
 
@@ -52,29 +55,39 @@ export default function KeyBankTab() {
 
   useEffect(() => { load(); }, []);
 
+  // Multi-batch saving to support adding hundreds/thousands of keys at once without truncation!
   const save = async () => {
     const rawKeys = (form.key || '').split('\n').map(k => k.trim()).filter(Boolean);
     if (rawKeys.length === 0) return;
-    const keysToAdd = rawKeys.slice(0, 100);
-    if (rawKeys.length > 100) toast.warning(`Only first 100 keys added (you entered ${rawKeys.length}).`);
+
     setSaving(true);
     try {
-      const batch = writeBatch(db);
-      keysToAdd.forEach(k => {
-        const newId = crypto.randomUUID();
-        const docRef = doc(db, 'license_keys', newId);
-        batch.set(docRef, {
-          key: k,
-          product_type: form.product_type || 'external',
-          duration: form.duration || '1 Month',
-          duration_normalized: normalizeDurationKey(form.duration || '1 Month'),
-          status: 'available',
-          notes: form.notes || '',
-          created_date: new Date().toISOString()
+      const chunkSize = 450; // Firestore allows up to 500 operations per batch
+      const batches = [];
+
+      for (let i = 0; i < rawKeys.length; i += chunkSize) {
+        const chunk = rawKeys.slice(i, i + chunkSize);
+        const batch = writeBatch(db);
+
+        chunk.forEach(k => {
+          const newId = crypto.randomUUID();
+          const docRef = doc(db, 'license_keys', newId);
+          batch.set(docRef, {
+            key: k,
+            product_type: form.product_type || 'external',
+            duration: form.duration || '1 Month',
+            duration_normalized: normalizeDurationKey(form.duration || '1 Month'),
+            status: 'available',
+            notes: form.notes || '',
+            created_date: new Date().toISOString()
+          });
         });
-      });
-      await batch.commit();
-      toast.success(`${keysToAdd.length} key${keysToAdd.length > 1 ? 's' : ''} added to stock!`);
+
+        batches.push(batch.commit());
+      }
+
+      await Promise.all(batches);
+      toast.success(`🎉 All ${rawKeys.length} key${rawKeys.length > 1 ? 's' : ''} permanently added to stock!`);
       setForm(null);
       load();
     } catch (e) {
@@ -117,9 +130,11 @@ export default function KeyBankTab() {
     : ['1 Week', '2 Weeks', '1 Month', '2 Months', '1 Year', '2 Years', 'Until We Developing'];
 
   const filteredKeys = keys.filter(k => {
+    const matchSearch = !searchQuery.trim() || (k.key || '').toLowerCase().includes(searchQuery.toLowerCase().trim());
     const matchPanel = filterPanel === 'all' || k.product_type === filterPanel || k.product_type === 'both';
+    const matchDuration = filterDuration === 'all' || normalizeDurationKey(k.duration) === normalizeDurationKey(filterDuration);
     const matchStatus = filterStatus === 'all' || k.status === filterStatus;
-    return matchPanel && matchStatus;
+    return matchSearch && matchPanel && matchDuration && matchStatus;
   });
 
   return (
@@ -200,23 +215,23 @@ export default function KeyBankTab() {
           <div className="flex items-center gap-2 border-b border-[var(--border-color)] pb-3">
             <Key className="w-5 h-5 text-cyan-400" />
             <span className="font-outfit font-black text-sm text-[var(--text-heading)] uppercase">
-              ADD KEYS TO STOCK INVENTORY
+              ADD KEYS TO STOCK INVENTORY (UNLIMITED BULK PASTE)
             </span>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="font-outfit font-bold text-xs text-[var(--text-heading)] block mb-1">
-                Paste License Keys (One per line, Max 100)
+                Paste License Keys (One per line — supports 1,000+ keys at once)
               </label>
               <textarea
                 value={form.key}
                 onChange={e => setForm(p => ({ ...p, key: e.target.value }))}
                 placeholder="PRRX-VIP-XXXX-YYYY&#10;PRRX-VIP-AAAA-BBBB"
-                className="w-full px-4 py-3 rounded-xl font-mono text-xs text-[var(--text-primary)] placeholder-slate-500 outline-none resize-none h-28 bg-[var(--bg-subtle)] border border-[var(--border-color)] focus:border-cyan-400"
+                className="w-full px-4 py-3 rounded-xl font-mono text-xs text-[var(--text-primary)] placeholder-slate-500 outline-none resize-none h-36 bg-[var(--bg-subtle)] border border-[var(--border-color)] focus:border-cyan-400"
               />
-              <p className="font-mono text-[10px] text-cyan-400 mt-1">
-                Keys Detected: {(form.key || '').split('\n').filter(l => l.trim()).length}
+              <p className="font-mono text-[11px] text-cyan-400 font-bold mt-1">
+                Total Keys Detected: {(form.key || '').split('\n').filter(l => l.trim()).length}
               </p>
             </div>
 
@@ -228,7 +243,7 @@ export default function KeyBankTab() {
                 <select
                   value={form.product_type}
                   onChange={e => setForm(p => ({ ...p, product_type: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl font-inter text-xs text-[var(--text-primary)] bg-[var(--bg-subtle)] border border-[var(--border-color)] outline-none focus:border-cyan-400"
+                  className="w-full px-3.5 py-2.5 rounded-xl font-inter text-xs text-[var(--text-primary)] bg-[var(--bg-subtle)] border border-[var(--border-color)] outline-none focus:border-cyan-400 font-bold"
                 >
                   <option value="external">External Panel (Free Fire)</option>
                   <option value="internal">Internal Panel (V7A)</option>
@@ -265,16 +280,28 @@ export default function KeyBankTab() {
               disabled={saving || !(form.key || '').trim()}
               className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl font-outfit font-extrabold text-xs text-slate-950 bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 shadow-md disabled:opacity-50"
             >
-              <Check className="w-3.5 h-3.5" /> Commit to Stock
+              <Check className="w-3.5 h-3.5" /> {saving ? 'SAVING ALL KEYS...' : 'Commit All Keys to Stock'}
             </button>
           </div>
         </div>
       )}
 
-      {/* Filter Bar */}
+      {/* Search & Filter Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)]">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-outfit font-bold text-[var(--text-muted)]">Filters:</span>
+        <div className="flex items-center gap-2 flex-wrap flex-1 min-w-[280px]">
+          {/* Search Box */}
+          <div className="relative flex-1 min-w-[160px]">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search key code..."
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-mono text-[var(--text-primary)] outline-none focus:border-cyan-400"
+            />
+          </div>
+
+          {/* Panel Filter */}
           <select
             value={filterPanel}
             onChange={e => setFilterPanel(e.target.value)}
@@ -283,7 +310,22 @@ export default function KeyBankTab() {
             <option value="all">All Panels</option>
             <option value="external">External Only</option>
             <option value="internal">Internal Only</option>
+            <option value="both">Universal Only</option>
           </select>
+
+          {/* Duration Filter */}
+          <select
+            value={filterDuration}
+            onChange={e => setFilterDuration(e.target.value)}
+            className="px-3 py-1.5 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-inter text-[var(--text-primary)] outline-none font-bold"
+          >
+            <option value="all">All Durations</option>
+            {availableDurations.map(d => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+
+          {/* Status Filter */}
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
@@ -295,8 +337,8 @@ export default function KeyBankTab() {
           </select>
         </div>
 
-        <span className="text-xs font-mono text-cyan-400 font-bold">
-          Showing {filteredKeys.length} of {keys.length} keys
+        <span className="text-xs font-mono text-cyan-400 font-bold shrink-0">
+          Showing {filteredKeys.length} of {keys.length} total keys
         </span>
       </div>
 
@@ -307,7 +349,7 @@ export default function KeyBankTab() {
         </div>
       ) : (
         <div className="rounded-3xl overflow-hidden bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl">
-          <div className="max-h-[520px] overflow-y-auto custom-scrollbar divide-y divide-[var(--border-color)]">
+          <div className="max-h-[580px] overflow-y-auto custom-scrollbar divide-y divide-[var(--border-color)]">
             {filteredKeys.map(k => {
               const isAvailable = k.status === 'available';
               return (
@@ -339,8 +381,9 @@ export default function KeyBankTab() {
                         {k.key}
                       </p>
                       <p className="font-inter text-[10px] text-[var(--text-muted)] font-semibold mt-0.5">
-                        <span className="uppercase text-cyan-400">{k.product_type}</span> · <span className="text-slate-300">{k.duration}</span>
+                        <span className="uppercase text-cyan-400">{k.product_type}</span> · <span className="text-slate-300 font-bold">{k.duration}</span>
                         {k.used_at && <span className="ml-2 text-amber-400 font-normal">Sold {new Date(k.used_at).toLocaleDateString()}</span>}
+                        {k.created_date && <span className="ml-2 text-slate-500 font-normal">Added {new Date(k.created_date).toLocaleDateString()}</span>}
                       </p>
                     </div>
                   </div>

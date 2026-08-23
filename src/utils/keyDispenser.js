@@ -8,7 +8,13 @@ import { normalizeDurationKey } from '@/components/dashboard/KeyBankTab';
 export async function dispenseLicenseKey({ productType, duration, customerEmail, transactionId, receiptId }) {
   try {
     const normDuration = normalizeDurationKey(duration);
-    const keysQuery = query(collection(db, 'license_keys'), where('status', '==', 'available'), limit(100));
+    
+    // Query available keys with large limit
+    const keysQuery = query(
+      collection(db, 'license_keys'),
+      where('status', '==', 'available'),
+      limit(5000)
+    );
     const snap = await getDocs(keysQuery);
 
     if (snap.empty) {
@@ -19,7 +25,7 @@ export async function dispenseLicenseKey({ productType, duration, customerEmail,
     const allAvailable = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     const match = allAvailable.find(k => {
       const matchProduct = !k.product_type || k.product_type === productType || k.product_type === 'both';
-      const matchDuration = normalizeDurationKey(k.duration) === normDuration;
+      const matchDuration = normalizeDurationKey(k.duration || k.duration_normalized) === normDuration;
       return matchProduct && matchDuration;
     });
 
