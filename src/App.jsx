@@ -13,6 +13,8 @@ import LiquidLoader from '@/components/ui/LiquidLoader';
 import React, { Suspense } from 'react';
 import TitleBar from '@/components/TitleBar';
 import FpsOverlay from '@/components/ui/FpsOverlay';
+import AiSupportWidget from '@/components/support/AiSupportWidget';
+import { telemetrySentry } from '@/utils/telemetrySentry';
 
 import DesktopLauncher from '@/pages/DesktopLauncher';
 
@@ -147,6 +149,9 @@ function App() {
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
   React.useEffect(() => {
+    // 1. Initialize Distributed Zero-Cost Telemetry Sentry
+    telemetrySentry.init();
+
     if (window.electronAPI) {
       document.body.style.backgroundColor = 'transparent';
       document.documentElement.style.backgroundColor = 'transparent';
@@ -165,7 +170,10 @@ function App() {
                     {isInitialLoad ? (
                       <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
                     ) : (
-                      <AuthenticatedApp />
+                      <>
+                        <AuthenticatedApp />
+                        <AiSupportWidget />
+                      </>
                     )}
                   </NetworkGuard>
                 </ElectronLayout>

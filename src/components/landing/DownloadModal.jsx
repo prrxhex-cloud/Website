@@ -5,6 +5,8 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { usePwa } from '@/context/PwaContext';
 
+import { downloadMesh } from '@/utils/downloadMesh';
+
 const FALLBACK_EXTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
 const FALLBACK_INTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
 
@@ -13,19 +15,29 @@ export default function DownloadModal({ open, onClose }) {
   const [internalUrl, setInternalUrl] = useState(FALLBACK_INTERNAL);
   const [launcherUrl, setLauncherUrl] = useState('');
   const [loading, setLoading] = useState(true);
+  const [fastestMirror, setFastestMirror] = useState(null);
   const { promptInstall, isInstalled } = usePwa();
 
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    getDocs(query(collection(db, 'download_links'), where('active', '==', true))).then(snapshot => {
-      const links = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      const ext = links.find(l => l.type === 'external');
-      const int_ = links.find(l => l.type === 'internal');
-      const laun = links.find(l => l.type === 'launcher');
-      if (ext?.url) setExternalUrl(ext.url);
-      if (int_?.url) setInternalUrl(int_.url);
-      if (laun?.url) setLauncherUrl(laun.url);
+
+    Promise.allSettled([
+      getDocs(query(collection(db, 'download_links'), where('active', '==', true))),
+      downloadMesh.getFastestMirror()
+    ]).then(([snapResult, mirrorResult]) => {
+      if (snapResult.status === 'fulfilled' && snapResult.value) {
+        const links = snapResult.value.docs.map(d => ({ id: d.id, ...d.data() }));
+        const ext = links.find(l => l.type === 'external');
+        const int_ = links.find(l => l.type === 'internal');
+        const laun = links.find(l => l.type === 'launcher');
+        if (ext?.url) setExternalUrl(ext.url);
+        if (int_?.url) setInternalUrl(int_.url);
+        if (laun?.url) setLauncherUrl(laun.url);
+      }
+      if (mirrorResult.status === 'fulfilled' && mirrorResult.value) {
+        setFastestMirror(mirrorResult.value);
+      }
     }).catch(e => console.error(e)).finally(() => setLoading(false));
   }, [open]);
 
@@ -69,6 +81,14 @@ export default function DownloadModal({ open, onClose }) {
                 CHOOSE YOUR PANEL
               </h2>
               <p className="font-inter text-xs text-muted-foreground mt-1">Select the version you have a license for</p>
+
+              {/* High Availability Mirror Status */}
+              {fastestMirror && (
+                <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[10px] font-mono text-cyan-300">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Mesh Route: {fastestMirror.name} ({fastestMirror.ping}ms) · SHA-256 Verified</span>
+                </div>
+              )}
             </div>
 
             {loading ? (

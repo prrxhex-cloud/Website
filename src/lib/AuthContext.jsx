@@ -2,6 +2,8 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { auth, signOut } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
+import { secureStorage } from '@/utils/secureStorage';
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -10,38 +12,35 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    // Check local storage for KeyAuth session
-    const storedKeyAuth = localStorage.getItem('prrx_keyauth_user');
-    let keyAuthUser = null;
-    if (storedKeyAuth) {
-      try {
-        keyAuthUser = JSON.parse(storedKeyAuth);
-      } catch (e) {
-        console.error('Failed to parse stored KeyAuth user', e);
-      }
-    }
+    // 256-Bit Encrypted Session Loader
+    const loadSession = async () => {
+      let keyAuthUser = await secureStorage.getItem('prrx_keyauth_user');
 
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser({
-          uid: currentUser.uid,
-          email: currentUser.email,
-          displayName: currentUser.displayName,
-          role: 'admin'
-        });
-        setIsAuthenticated(true);
-      } else if (keyAuthUser) {
-        // Fallback to KeyAuth if Firebase is null but KeyAuth session exists
-        setUser(keyAuthUser);
-        setIsAuthenticated(true);
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-      }
-      setIsLoadingAuth(false);
-    });
+      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        if (currentUser) {
+          setUser({
+            uid: currentUser.uid,
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+            role: 'admin'
+          });
+          setIsAuthenticated(true);
+        } else if (keyAuthUser) {
+          setUser(keyAuthUser);
+          setIsAuthenticated(true);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+        setIsLoadingAuth(false);
+      });
 
-    return () => unsubscribe();
+      return unsubscribe;
+    };
+
+    let unsub = null;
+    loadSession().then(u => { unsub = u; });
+    return () => { if (unsub) unsub(); };
   }, []);
 
   const loginWithKeyAuth = (userData, panelType = 'EXTERNAL') => {
@@ -54,15 +53,16 @@ export const AuthProvider = ({ children }) => {
       isKeyAuth: true,
       keyAuthData: userData
     };
-    localStorage.setItem('prrx_keyauth_user', JSON.stringify(keyAuthUser));
-    localStorage.setItem('prrx_panel_type', panelType.toUpperCase());
+    secureStorage.setItem('prrx_keyauth_user', keyAuthUser);
+    secureStorage.setItem('prrx_panel_type', panelType.toUpperCase());
     setUser(keyAuthUser);
     setIsAuthenticated(true);
   };
 
   const logout = async (shouldRedirect = true) => {
     try {
-      localStorage.removeItem('prrx_keyauth_user');
+      secureStorage.removeItem('prrx_keyauth_user');
+      secureStorage.removeItem('prrx_panel_type');
       await signOut(auth);
       if (shouldRedirect) {
         window.location.reload();

@@ -10,6 +10,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { DEFAULT_BENEFICIARIES } from '@/components/dashboard/BeneficiaryAccountsTab';
 import { verifySlipTransaction } from '@/utils/aiSlipVerifier';
 import { dispenseLicenseKey } from '@/utils/keyDispenser';
+import { hashLedger } from '@/utils/hashLedger';
 import { sendInstantKeyDeliveredAlert } from '@/utils/discordNotifier';
 import { enableAntiBypassGuard } from '@/utils/antiBypassGuard';
 import confetti from 'canvas-confetti';
@@ -333,6 +334,15 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
       };
 
       await setDoc(doc(db, 'receipts', receiptDocId), receiptPayload);
+
+      // Cryptographic Hash-Chain Ledger Stamping
+      hashLedger.sealTransactionBlock({
+        transactionId: verification.transactionId,
+        customerEmail: user?.email || 'VIP Member',
+        amountPaid: finalLkr,
+        planTitle: itemName,
+        licenseKey: issuedKey
+      });
 
       // 5. Multi-Channel Discord Webhook Notification
       sendInstantKeyDeliveredAlert({
