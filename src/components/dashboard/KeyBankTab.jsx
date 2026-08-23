@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, limit, getDocs, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Key, Plus, Trash2, Check, Shield, CheckCircle2, XCircle, Clock, RefreshCw, Search, Filter } from 'lucide-react';
+import { Key, Plus, Trash2, Check, Shield, CheckCircle2, XCircle, Clock, RefreshCw, Search, Filter, AlertTriangle, ChevronDown, CheckSquare, Square } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function normalizeDurationKey(str) {
@@ -30,10 +30,15 @@ export default function KeyBankTab() {
   const [filterDuration, setFilterDuration] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
 
+  // Checkbox multi-selection state
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [showPurgeModal, setShowPurgeModal] = useState(null); // 'used' | 'all' | 'duration' | null
+  const [purgeDurationTarget, setPurgeDurationTarget] = useState('1 Week');
+  const [isDeletingBatch, setIsDeletingBatch] = useState(false);
+
   const load = async () => {
     setLoading(true);
     try {
-      // Query up to 10,000 keys so no older keys ever get hidden or cut off!
       const [keySnap, planSnap] = await Promise.allSettled([
         getDocs(query(collection(db, 'license_keys'), orderBy('created_date', 'desc'), limit(10000))),
         getDocs(query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'), limit(100)))
@@ -55,14 +60,14 @@ export default function KeyBankTab() {
 
   useEffect(() => { load(); }, []);
 
-  // Multi-batch saving to support adding hundreds/thousands of keys at once without truncation!
+  // Multi-batch saving to support adding hundreds/thousands of keys at once
   const save = async () => {
     const rawKeys = (form.key || '').split('\n').map(k => k.trim()).filter(Boolean);
     if (rawKeys.length === 0) return;
 
     setSaving(true);
     try {
-      const chunkSize = 450; // Firestore allows up to 500 operations per batch
+      const chunkSize = 450;
       const batches = [];
 
       for (let i = 0; i < rawKeys.length; i += chunkSize) {
@@ -98,6 +103,7 @@ export default function KeyBankTab() {
     }
   };
 
+  // Toggle single key used/available
   const toggleUsed = async (k) => {
     const newStatus = k.status === 'available' ? 'used' : 'available';
     try {
@@ -113,10 +119,16 @@ export default function KeyBankTab() {
     }
   };
 
+  // Single key removal
   const remove = async (id) => {
     try {
       await deleteDoc(doc(db, 'license_keys', id));
       setKeys(prev => prev.filter(k => k.id !== id));
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
       toast.success('Key permanently removed');
     } catch (e) {
       console.error(e);
@@ -124,7 +136,72 @@ export default function KeyBankTab() {
     }
   };
 
-  // Available unique duration options from price plans or defaults
+  // Master Bulk Delete Engine (Chunked for Firestore limits)
+  const executeBatchDelete = async (targetDocIds, successMessage) => {
+    if (!targetDocIds || targetDocIds.length === 0) return;
+    setIsDeletingBatch(true);
+    try {
+      const chunkSize = 450;
+      const batches = [];
+
+      for (let i = 0; i < targetDocIds.length; i += chunkSize) {
+        const chunk = targetDocIds.slice(i, i + chunkSize);
+        const batch = writeBatch(db);
+        chunk.forEach(id => {
+          batch.delete(doc(db, 'license_keys', id));
+        });
+        batches.push(batch.commit());
+      }
+
+      await Promise.all(batches);
+      const deletedSet = new Set(targetDocIds);
+      setKeys(prev => prev.filter(k => !deletedSet.has(k.id)));
+      setSelectedIds(new Set());
+      setShowPurgeModal(null);
+      toast.success(successMessage || `Deleted ${targetDocIds.length} keys permanently.`);
+    } catch (e) {
+      console.error('Batch delete error:', e);
+      toast.error('Failed to delete keys in batch');
+    } finally {
+      setIsDeletingBatch(false);
+    }
+  };
+
+  // Batch status updater (Mark selected as used or available)
+  const executeBatchStatusUpdate = async (targetDocIds, newStatus) => {
+    if (!targetDocIds || targetDocIds.length === 0) return;
+    setIsDeletingBatch(true);
+    try {
+      const chunkSize = 450;
+      const batches = [];
+      const nowIso = new Date().toISOString();
+
+      for (let i = 0; i < targetDocIds.length; i += chunkSize) {
+        const chunk = targetDocIds.slice(i, i + chunkSize);
+        const batch = writeBatch(db);
+        chunk.forEach(id => {
+          batch.update(doc(db, 'license_keys', id), {
+            status: newStatus,
+            used_at: newStatus === 'used' ? nowIso : null
+          });
+        });
+        batches.push(batch.commit());
+      }
+
+      await Promise.all(batches);
+      const updatedSet = new Set(targetDocIds);
+      setKeys(prev => prev.map(k => updatedSet.has(k.id) ? { ...k, status: newStatus, used_at: newStatus === 'used' ? nowIso : null } : k));
+      setSelectedIds(new Set());
+      toast.success(`Marked ${targetDocIds.length} keys as ${newStatus.toUpperCase()}!`);
+    } catch (e) {
+      console.error('Batch update status error:', e);
+      toast.error('Failed to update status in batch');
+    } finally {
+      setIsDeletingBatch(false);
+    }
+  };
+
+  // Available unique duration options
   const availableDurations = plans.length > 0 
     ? Array.from(new Set(plans.map(p => p.label))).filter(Boolean)
     : ['1 Week', '2 Weeks', '1 Month', '2 Months', '1 Year', '2 Years', 'Until We Developing'];
@@ -136,6 +213,27 @@ export default function KeyBankTab() {
     const matchStatus = filterStatus === 'all' || k.status === filterStatus;
     return matchSearch && matchPanel && matchDuration && matchStatus;
   });
+
+  // Select all / Deselect all
+  const allFilteredSelected = filteredKeys.length > 0 && filteredKeys.every(k => selectedIds.has(k.id));
+  const toggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelectedIds(new Set());
+    } else {
+      const next = new Set(selectedIds);
+      filteredKeys.forEach(k => next.add(k.id));
+      setSelectedIds(next);
+    }
+  };
+
+  const toggleSelectOne = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   return (
     <div className="space-y-6 text-left font-inter">
@@ -151,7 +249,7 @@ export default function KeyBankTab() {
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={load}
             className="p-2.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-white transition-colors"
@@ -159,6 +257,47 @@ export default function KeyBankTab() {
           >
             <RefreshCw className="w-4 h-4" />
           </button>
+
+          {/* Mass Purge Menu Trigger */}
+          <div className="relative group">
+            <button
+              className="flex items-center gap-1.5 font-outfit font-bold text-xs px-4 py-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 hover:bg-rose-500/25 transition-all"
+            >
+              <Trash2 className="w-4 h-4 text-rose-400" />
+              <span>CLEAN / PURGE KEYS</span>
+              <ChevronDown className="w-3.5 h-3.5 ml-0.5" />
+            </button>
+
+            {/* Dropdown menu */}
+            <div className="absolute right-0 top-full mt-2 w-64 p-2 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl space-y-1 z-50 hidden group-hover:block animate-in fade-in duration-200">
+              <button
+                onClick={() => setShowPurgeModal('used')}
+                className="w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold text-amber-300 hover:bg-amber-500/15 flex items-center gap-2 transition-colors"
+              >
+                <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>Delete All Used / Sold Keys</span>
+              </button>
+
+              <button
+                onClick={() => setShowPurgeModal('duration')}
+                className="w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold text-cyan-300 hover:bg-cyan-500/15 flex items-center gap-2 transition-colors"
+              >
+                <Filter className="w-4 h-4 text-cyan-400 shrink-0" />
+                <span>Delete Whole Time Period Keys</span>
+              </button>
+
+              <div className="border-t border-slate-800 my-1" />
+
+              <button
+                onClick={() => setShowPurgeModal('all')}
+                className="w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold text-rose-400 hover:bg-rose-500/15 flex items-center gap-2 transition-colors"
+              >
+                <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+                <span>Delete ALL Keys in Inventory</span>
+              </button>
+            </div>
+          </div>
+
           <button
             onClick={() => setForm({ key: '', product_type: 'external', duration: availableDurations[0] || '1 Month', status: 'available', notes: '' })}
             className="flex items-center gap-2 font-outfit font-extrabold text-xs px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 shadow-md hover:scale-105 transition-all"
@@ -209,7 +348,57 @@ export default function KeyBankTab() {
         </div>
       )}
 
-      {/* Key Creation Form Modal / Card */}
+      {/* FLOATING BATCH ACTIONS BAR (Appears when 1+ keys are selected) */}
+      {selectedIds.size > 0 && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/90 via-slate-900 to-purple-950/90 border border-cyan-400 shadow-2xl flex flex-wrap items-center justify-between gap-3 animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-lg bg-cyan-500 text-slate-950 font-mono font-black text-xs flex items-center justify-center">
+              {selectedIds.size}
+            </span>
+            <span className="font-outfit font-bold text-xs text-white">
+              Keys Selected
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => executeBatchStatusUpdate(Array.from(selectedIds), 'available')}
+              disabled={isDeletingBatch}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all flex items-center gap-1.5"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Mark as In-Stock</span>
+            </button>
+
+            <button
+              onClick={() => executeBatchStatusUpdate(Array.from(selectedIds), 'used')}
+              disabled={isDeletingBatch}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all flex items-center gap-1.5"
+            >
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span>Mark as Used/Sold</span>
+            </button>
+
+            <button
+              onClick={() => executeBatchDelete(Array.from(selectedIds), `Permanently deleted ${selectedIds.size} selected keys.`)}
+              disabled={isDeletingBatch}
+              className="px-4 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-outfit font-black text-xs transition-all flex items-center gap-1.5 shadow-lg"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>{isDeletingBatch ? 'DELETING...' : `Delete Selected (${selectedIds.size})`}</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="px-2.5 py-1.5 rounded-xl text-xs text-slate-400 hover:text-white"
+            >
+              Deselect
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Key Creation Form Modal */}
       {form && (
         <div className="rounded-3xl p-6 space-y-4 bg-[var(--bg-card)] border border-cyan-500/30 shadow-2xl animate-in fade-in duration-300">
           <div className="flex items-center gap-2 border-b border-[var(--border-color)] pb-3">
@@ -286,9 +475,94 @@ export default function KeyBankTab() {
         </div>
       )}
 
+      {/* CONFIRMATION PURGE MODALS */}
+      {showPurgeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md p-6 rounded-3xl bg-slate-950 border border-rose-500/40 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center gap-3 text-rose-400">
+              <AlertTriangle className="w-6 h-6 shrink-0" />
+              <h3 className="font-outfit font-black text-lg text-white">
+                {showPurgeModal === 'all' && 'DELETE ALL KEYS IN INVENTORY?'}
+                {showPurgeModal === 'used' && 'DELETE ALL USED / SOLD KEYS?'}
+                {showPurgeModal === 'duration' && 'DELETE WHOLE TIME PERIOD KEYS?'}
+              </h3>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              {showPurgeModal === 'all' && (
+                <>This will permanently delete <strong>ALL {keys.length} keys</strong> across all plans and panels from your database. This action cannot be undone!</>
+              )}
+              {showPurgeModal === 'used' && (
+                <>This will permanently delete all <strong>{keys.filter(k => k.status === 'used').length} used/sold keys</strong> to clean up your database.</>
+              )}
+              {showPurgeModal === 'duration' && (
+                <>Select the duration period to delete all matching keys permanently:</>
+              )}
+            </p>
+
+            {showPurgeModal === 'duration' && (
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400">Select Time Period to Delete:</label>
+                <select
+                  value={purgeDurationTarget}
+                  onChange={e => setPurgeDurationTarget(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-white outline-none"
+                >
+                  {availableDurations.map(d => {
+                    const norm = normalizeDurationKey(d);
+                    const count = keys.filter(k => normalizeDurationKey(k.duration) === norm).length;
+                    return (
+                      <option key={d} value={d}>{d} ({count} Total Keys)</option>
+                    );
+                  })}
+                </select>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <button
+                onClick={() => setShowPurgeModal(null)}
+                disabled={isDeletingBatch}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={isDeletingBatch}
+                onClick={() => {
+                  if (showPurgeModal === 'all') {
+                    executeBatchDelete(keys.map(k => k.id), `Permanently deleted all ${keys.length} keys.`);
+                  } else if (showPurgeModal === 'used') {
+                    const usedIds = keys.filter(k => k.status === 'used').map(k => k.id);
+                    executeBatchDelete(usedIds, `Deleted ${usedIds.length} used keys.`);
+                  } else if (showPurgeModal === 'duration') {
+                    const norm = normalizeDurationKey(purgeDurationTarget);
+                    const durationIds = keys.filter(k => normalizeDurationKey(k.duration) === norm).map(k => k.id);
+                    executeBatchDelete(durationIds, `Deleted all ${durationIds.length} keys for ${purgeDurationTarget}.`);
+                  }
+                }}
+                className="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-outfit font-black text-xs flex items-center gap-1.5 shadow-lg"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{isDeletingBatch ? 'PURGING DATABASE...' : 'YES, PERMANENTLY DELETE'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Search & Filter Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)]">
         <div className="flex items-center gap-2 flex-wrap flex-1 min-w-[280px]">
+          {/* Select All Checkbox */}
+          <button
+            onClick={toggleSelectAll}
+            title={allFilteredSelected ? "Deselect All" : "Select All Filtered"}
+            className="p-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-cyan-400 hover:text-cyan-300"
+          >
+            {allFilteredSelected ? <CheckSquare className="w-4 h-4 text-cyan-400" /> : <Square className="w-4 h-4 text-slate-500" />}
+          </button>
+
           {/* Search Box */}
           <div className="relative flex-1 min-w-[160px]">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -342,7 +616,7 @@ export default function KeyBankTab() {
         </span>
       </div>
 
-      {/* Keys Ledger Table with Instant "Used" Toggle Checkbox */}
+      {/* Keys Ledger Table with Multi-Checkboxes & Instant Status Toggle */}
       {loading ? (
         <div className="flex justify-center py-12">
           <div className="w-6 h-6 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
@@ -352,20 +626,30 @@ export default function KeyBankTab() {
           <div className="max-h-[580px] overflow-y-auto custom-scrollbar divide-y divide-[var(--border-color)]">
             {filteredKeys.map(k => {
               const isAvailable = k.status === 'available';
+              const isSelected = selectedIds.has(k.id);
+
               return (
                 <div
                   key={k.id}
                   className={`flex items-center justify-between gap-4 px-5 py-3.5 transition-colors ${
-                    isAvailable ? 'hover:bg-cyan-500/[0.03]' : 'opacity-60 bg-slate-950/20'
+                    isSelected ? 'bg-cyan-500/10 border-l-4 border-l-cyan-400' : isAvailable ? 'hover:bg-cyan-500/[0.03]' : 'opacity-60 bg-slate-950/20'
                   }`}
                 >
-                  {/* Left: Key & Duration */}
+                  {/* Left: Checkbox + Status Toggle + Key & Duration */}
                   <div className="flex items-center gap-3 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => toggleSelectOne(k.id)}
+                      className="text-slate-400 hover:text-cyan-400 shrink-0"
+                    >
+                      {isSelected ? <CheckSquare className="w-4 h-4 text-cyan-400" /> : <Square className="w-4 h-4 text-slate-600" />}
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => toggleUsed(k)}
                       title={isAvailable ? 'Click to mark as SOLD/USED' : 'Click to restore to AVAILABLE'}
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center border transition-all ${
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center border transition-all shrink-0 ${
                         isAvailable
                           ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 hover:scale-110 hover:bg-emerald-500/25'
                           : 'bg-amber-500/15 border-amber-500/40 text-amber-400 hover:scale-110 hover:bg-amber-500/25'
@@ -381,7 +665,7 @@ export default function KeyBankTab() {
                         {k.key}
                       </p>
                       <p className="font-inter text-[10px] text-[var(--text-muted)] font-semibold mt-0.5">
-                        <span className="uppercase text-cyan-400">{k.product_type}</span> · <span className="text-slate-300 font-bold">{k.duration}</span>
+                        <span className="uppercase text-cyan-400 font-bold">{k.product_type}</span> · <span className="text-slate-300 font-bold">{k.duration}</span>
                         {k.used_at && <span className="ml-2 text-amber-400 font-normal">Sold {new Date(k.used_at).toLocaleDateString()}</span>}
                         {k.created_date && <span className="ml-2 text-slate-500 font-normal">Added {new Date(k.created_date).toLocaleDateString()}</span>}
                       </p>
