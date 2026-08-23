@@ -12,35 +12,50 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    // 256-Bit Encrypted Session Loader
-    const loadSession = async () => {
-      let keyAuthUser = await secureStorage.getItem('prrx_keyauth_user');
+    // 1. Synchronously check cached keyAuthUser for instant 0ms hydration
+    let keyAuthUser = secureStorage.getItemSync('prrx_keyauth_user');
+    if (!keyAuthUser) {
+      const legacy = localStorage.getItem('prrx_keyauth_user');
+      if (legacy) {
+        try { keyAuthUser = JSON.parse(legacy); } catch {}
+      }
+    }
 
-      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        if (currentUser) {
-          setUser({
-            uid: currentUser.uid,
-            email: currentUser.email,
-            displayName: currentUser.displayName,
-            role: 'admin'
-          });
-          setIsAuthenticated(true);
-        } else if (keyAuthUser) {
-          setUser(keyAuthUser);
-          setIsAuthenticated(true);
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-        setIsLoadingAuth(false);
-      });
+    if (keyAuthUser) {
+      setUser(keyAuthUser);
+      setIsAuthenticated(true);
+      setIsLoadingAuth(false);
+    }
 
-      return unsubscribe;
+    // 2. Attach onAuthStateChanged synchronously
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          displayName: currentUser.displayName,
+          role: 'admin'
+        });
+        setIsAuthenticated(true);
+      } else if (keyAuthUser) {
+        setUser(keyAuthUser);
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+      setIsLoadingAuth(false);
+    });
+
+    // 3. Fallback timeout to ensure app never gets stuck on black screen
+    const safetyTimeout = setTimeout(() => {
+      setIsLoadingAuth(false);
+    }, 1500);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(safetyTimeout);
     };
-
-    let unsub = null;
-    loadSession().then(u => { unsub = u; });
-    return () => { if (unsub) unsub(); };
   }, []);
 
   const loginWithKeyAuth = (userData, panelType = 'EXTERNAL') => {

@@ -35,26 +35,6 @@
             return false;
           }
         });
-
-        // 3. Aggressive Debugger Trap
-        const trap = function() {
-          while (true) {
-            debugger;
-          }
-        };
-        
-        // 4. Security monitoring (Relaxed for developer testing)
-        setInterval(() => {
-          // Additional monitoring could go here
-        }, 5000);
-
-        // 5. Console clearing loop to prevent console reading
-        setInterval(() => {
-          console.clear();
-          console.log("%cSTOP!", "color: red; font-size: 50px; font-weight: bold; text-shadow: 2px 2px 0 #000;");
-          console.log("%cThis is a restricted area. All actions are logged.", "color: white; font-size: 16px;");
-        }, 1000);
-
       })();
     </script>
   </head>
