@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { WifiOff } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { WifiOff, RefreshCw, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function NetworkGuard({ children }) {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -18,34 +19,56 @@ export default function NetworkGuard({ children }) {
     };
   }, []);
 
-  if (!isOnline) {
-    return (
-      <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center justify-center p-6 text-center font-inter">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="clean-card p-10 bg-[var(--bg-card)] border border-rose-500/30 shadow-[0_0_40px_rgba(244,63,94,0.1)] max-w-md w-full rounded-2xl"
-        >
-          <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <WifiOff className="w-10 h-10 text-rose-500" />
-          </div>
-          
-          <h1 className="font-outfit font-extrabold text-3xl text-white mb-3 tracking-tight">
-            CONNECTION LOST
-          </h1>
-          
-          <p className="text-slate-400 text-sm leading-relaxed mb-8">
-            This premium application requires a constant internet connection to securely track activity and verify your license. Please restore your connection to continue.
-          </p>
+  const handleManualRetry = () => {
+    setIsRetrying(true);
+    fetch('https://prrxhex-cloud.github.io/Website/logo.jpeg', { method: 'HEAD', mode: 'no-cors' })
+      .then(() => setIsOnline(true))
+      .catch(() => {})
+      .finally(() => setTimeout(() => setIsRetrying(false), 1000));
+  };
 
-          <div className="flex items-center justify-center gap-2 text-xs font-bold text-rose-400 animate-pulse">
-            <div className="w-2 h-2 rounded-full bg-rose-500" />
-            Waiting for network...
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
+  return (
+    <>
+      <AnimatePresence>
+        {!isOnline && (
+          <div className="fixed inset-0 z-[9999] bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center font-inter">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.92, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 15 }}
+              className="p-8 bg-slate-900 border border-rose-500/30 shadow-[0_0_50px_rgba(244,63,94,0.15)] max-w-md w-full rounded-3xl space-y-5"
+            >
+              <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center justify-center mx-auto text-rose-400">
+                <WifiOff className="w-8 h-8" />
+              </div>
+              
+              <div className="space-y-1">
+                <h1 className="font-outfit font-black text-2xl text-white tracking-tight">
+                  NETWORK CONNECTION WEAK
+                </h1>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Your device appears to be disconnected or experiencing packet loss on low mobile data.
+                </p>
+              </div>
 
-  return children;
+              <div className="p-3 rounded-xl bg-slate-950 border border-white/5 text-[11px] text-cyan-300 font-mono">
+                Cached offline shell active · Auto-reconnecting...
+              </div>
+
+              <button
+                onClick={handleManualRetry}
+                disabled={isRetrying}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-outfit font-black text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRetrying ? 'animate-spin' : ''}`} />
+                <span>{isRetrying ? 'TESTING CONNECTION...' : 'RETRY CONNECTION'}</span>
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {children}
+    </>
+  );
 }
