@@ -54,30 +54,53 @@ export default function LuckyWheel() {
   const [copiedText, setCopiedText] = useState(false);
   const [loyaltyPoints, setLoyaltyPoints] = useState(0);
 
-  // Load User Spin History & Points from Firestore
+  // Safe unique user ID helper
+  const getUserId = () => {
+    if (!user) return null;
+    const raw = user.email || user.uid || user.displayName || 'guest';
+    return String(raw).toLowerCase().trim().replace(/[^a-z0-9@._-]/g, '_');
+  };
+
+  // Load User Spin History & Points from Firestore + LocalStorage
   useEffect(() => {
-    if (!isAuthenticated || !user?.email) {
+    if (!isAuthenticated || !user) {
       setCanSpin(false);
       return;
     }
 
+    const userId = getUserId();
+    if (!userId) return;
+
+    // Check localStorage cache first for instant UI response
+    const cachedTimestamp = localStorage.getItem(`prrx_spin_${userId}`);
+    if (cachedTimestamp) {
+      const parsed = parseInt(cachedTimestamp, 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        setLastSpinTime(parsed);
+      }
+    }
+
+    // Sync with Firestore database for 100% permanent anti-bypass record
     let isMounted = true;
     const fetchUserData = async () => {
       try {
-        const userDocRef = doc(db, 'users', user.email.toLowerCase());
+        const userDocRef = doc(db, 'users', userId);
         const userSnap = await getDoc(userDocRef);
 
-        if (userSnap.exists()) {
+        if (userSnap.exists() && isMounted) {
           const data = userSnap.data();
-          if (isMounted) {
-            setLoyaltyPoints(data.loyalty_points || 0);
-            if (data.last_spin_time) {
-              setLastSpinTime(new Date(data.last_spin_time).getTime());
+          setLoyaltyPoints(data.loyalty_points || 0);
+
+          if (data.last_spin_time) {
+            const dbTime = new Date(data.last_spin_time).getTime();
+            if (!isNaN(dbTime)) {
+              setLastSpinTime(prev => Math.max(prev || 0, dbTime));
+              localStorage.setItem(`prrx_spin_${userId}`, dbTime.toString());
             }
           }
         }
       } catch (err) {
-        console.warn('Error loading spin data:', err);
+        console.warn('Error syncing spin data from Firestore:', err);
       }
     };
 
@@ -85,7 +108,7 @@ export default function LuckyWheel() {
     return () => { isMounted = false; };
   }, [isAuthenticated, user]);
 
-  // 24-Hour Countdown Timer
+  // 24-Hour Strict Countdown Timer (Calculates exact real-time hours, minutes, seconds)
   useEffect(() => {
     if (!lastSpinTime) {
       setCanSpin(true);
@@ -96,7 +119,7 @@ export default function LuckyWheel() {
     const checkCooldown = () => {
       const now = Date.now();
       const elapsed = now - lastSpinTime;
-      const cooldownMs = 24 * 60 * 60 * 1000; // 24 Hours
+      const cooldownMs = 24 * 60 * 60 * 1000; // Exactly 24 Hours
 
       if (elapsed >= cooldownMs) {
         setCanSpin(true);
@@ -116,7 +139,7 @@ export default function LuckyWheel() {
     return () => clearInterval(interval);
   }, [lastSpinTime]);
 
-  // Draw Canvas Wheel
+  // Draw High-Resolution Canvas Wheel
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -134,12 +157,12 @@ export default function LuckyWheel() {
       ctx.beginPath();
       ctx.fillStyle = seg.color;
       ctx.moveTo(radius, radius);
-      ctx.arc(radius, radius, radius - 8, angle, angle + arcSize);
+      ctx.arc(radius, radius, radius - 6, angle, angle + arcSize);
       ctx.lineTo(radius, radius);
       ctx.fill();
 
       // Outer border on slice
-      ctx.strokeStyle = '#0f172a';
+      ctx.strokeStyle = '#090d16';
       ctx.lineWidth = 3;
       ctx.stroke();
 
@@ -148,36 +171,36 @@ export default function LuckyWheel() {
       ctx.translate(radius, radius);
       ctx.rotate(angle + arcSize / 2);
 
-      // Icon & Label
+      // Label & Icon
       ctx.textAlign = 'right';
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 13px "Outfit", sans-serif';
-      ctx.shadowColor = 'rgba(0,0,0,0.8)';
+      ctx.font = '900 13px "Outfit", sans-serif';
+      ctx.shadowColor = 'rgba(0,0,0,0.85)';
       ctx.shadowBlur = 4;
-      ctx.fillText(`${seg.icon} ${seg.label}`, radius - 20, 4);
+      ctx.fillText(`${seg.icon} ${seg.label}`, radius - 18, 4);
 
       ctx.restore();
     });
 
     // Center Core Hub
     ctx.beginPath();
-    ctx.arc(radius, radius, 32, 0, 2 * Math.PI);
+    ctx.arc(radius, radius, 34, 0, 2 * Math.PI);
     ctx.fillStyle = '#090d16';
     ctx.fill();
     ctx.strokeStyle = '#06b6d4';
     ctx.lineWidth = 4;
     ctx.stroke();
 
-    // Center Sparkle Icon
+    // Center Logo
     ctx.fillStyle = '#06b6d4';
-    ctx.font = 'bold 16px sans-serif';
+    ctx.font = '900 14px "Outfit", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('PRRX', radius, radius);
 
   }, []);
 
-  // Spin Wheel Action
+  // Spin Wheel Action with Guaranteed CSS & Framer Motion Physics
   const handleSpin = async () => {
     if (!isAuthenticated) {
       toast.error('Please log in to spin the Lucky Wheel!');
@@ -191,48 +214,56 @@ export default function LuckyWheel() {
     setWonPrize(null);
     setPrizeDetails(null);
 
+    const userId = getUserId();
+    const spinStartTime = Date.now();
+
+    // Lock spin in localStorage & Firestore immediately so user cannot refresh to bypass cooldown
+    localStorage.setItem(`prrx_spin_${userId}`, spinStartTime.toString());
+    setLastSpinTime(spinStartTime);
+
+    const userDocRef = doc(db, 'users', userId);
+    setDoc(userDocRef, {
+      last_spin_time: new Date(spinStartTime).toISOString()
+    }, { merge: true }).catch(err => console.warn('Could not record spin timestamp:', err));
+
     // 1. Pick winner index
     const winIndex = pickWeightedSegment();
     const winningSeg = WHEEL_SEGMENTS[winIndex];
 
     // 2. Calculate target rotation
-    // Wheel pointer is at top (270 degrees or -90 degrees)
+    // Pointer is at TOP (270 degrees or -90 degrees)
     const segmentAngle = 360 / WHEEL_SEGMENTS.length;
-    const extraSpins = 5 + Math.floor(Math.random() * 3); // 5 to 7 full 360 rotations
+    const extraSpins = 6 + Math.floor(Math.random() * 2); // 6 to 7 full 360 rotations
     const targetOffset = 360 - (winIndex * segmentAngle + segmentAngle / 2) - 90;
     const finalRotation = rotation + (extraSpins * 360) + targetOffset;
 
     setRotation(finalRotation);
 
-    // 3. Wait for animation (5 seconds)
+    // 3. Complete spin animation after 5.5 seconds
     setTimeout(async () => {
       setIsSpinning(false);
       setWonPrize(winningSeg);
 
       try {
         const now = new Date();
-        const userDocRef = doc(db, 'users', user.email.toLowerCase());
 
-        // Process prize logic
+        // If Free Spin Bonus won, clear the cooldown so user can spin again immediately!
         if (winningSeg.type === 'respin') {
-          // Free spin again: don't set cooldown
-          toast.success('🎉 Bonus! You won a FREE RE-SPIN!');
+          toast.success('🎉 BONUS! You won a FREE RE-SPIN! Spin again now!');
+          localStorage.removeItem(`prrx_spin_${userId}`);
+          setLastSpinTime(null);
           setCanSpin(true);
-        } else {
-          // Regular prize: save 24-hour cooldown
-          setLastSpinTime(now.getTime());
-          await setDoc(userDocRef, {
-            last_spin_time: now.toISOString()
-          }, { merge: true });
+          await updateDoc(userDocRef, { last_spin_time: null }).catch(() => {});
+          return;
         }
 
         // 1-Week VIP Key Won! (1% chance)
         if (winningSeg.type === 'key') {
-          confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+          confetti({ particleCount: 160, spread: 100, origin: { y: 0.5 } });
           const keyResult = await dispenseLicenseKey({
             productType: 'both',
             duration: '1week',
-            customerEmail: user.email,
+            customerEmail: user.email || user.username || 'VIP Customer',
             transactionId: `LUCKY-SPIN-${Date.now().toString().slice(-6)}`
           });
 
@@ -248,10 +279,9 @@ export default function LuckyWheel() {
 
         // Promo Code Won! (10% chance)
         else if (winningSeg.type === 'promo') {
-          confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+          confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
           const promoCode = `SPIN${winningSeg.value}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-          // Create active discount doc in Firestore
           await setDoc(doc(db, 'discounts', promoCode), {
             promo_code: promoCode,
             discount_type: 'percentage',
@@ -276,9 +306,9 @@ export default function LuckyWheel() {
         }
 
       } catch (err) {
-        console.error('Error saving spin prize:', err);
+        console.error('Error handling spin win:', err);
       }
-    }, 5200);
+    }, 5500);
   };
 
   const handleCopyCode = (text) => {
@@ -291,11 +321,11 @@ export default function LuckyWheel() {
 
   return (
     <div className="p-6 sm:p-8 rounded-3xl bg-[var(--bg-card)] border border-cyan-500/30 shadow-2xl space-y-6 text-left relative overflow-hidden font-inter">
-      {/* Background Cyber Ambient Glow */}
+      {/* Ambient Background Glows */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Header Banner */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[var(--border-color)] pb-4 relative z-10">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -303,14 +333,14 @@ export default function LuckyWheel() {
               <Gift className="w-3 h-3 text-cyan-400" /> DAILY REWARD WHEEL
             </span>
             <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
-              1 FREE SPIN PER 24H
+              1 FREE SPIN PER 24 HOURS
             </span>
           </div>
           <h2 className="font-outfit font-black text-2xl sm:text-3xl text-[var(--text-heading)] tracking-tight">
             PRRX LUCKY REWARD WHEEL
           </h2>
           <p className="font-inter text-xs text-[var(--text-muted)] mt-1">
-            Spin the wheel every 24 hours to win 1-Week VIP Keys, instant promo codes up to 30% OFF, or VIP loyalty points!
+            Spin the wheel once every 24 hours to win 1-Week VIP Keys, instant promo codes up to 30% OFF, or VIP loyalty points!
           </p>
         </div>
 
@@ -334,14 +364,16 @@ export default function LuckyWheel() {
           
           {/* Wheel Pointer Needle (Top Center) */}
           <div className="relative z-30 mb-[-18px] flex flex-col items-center">
-            <div className="w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[28px] border-t-cyan-400 drop-shadow-[0_0_12px_rgba(6,182,212,0.8)] animate-pulse" />
+            <div className="w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[28px] border-t-cyan-400 drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] animate-pulse" />
           </div>
 
-          {/* Rotating Wheel Container */}
+          {/* Rotating Wheel Container with Dual Smooth Transform Easing */}
           <div className="relative p-2.5 rounded-full bg-gradient-to-br from-cyan-500/40 via-purple-500/30 to-slate-900 border-2 border-cyan-500/40 shadow-[0_0_50px_rgba(6,182,212,0.25)]">
-            <motion.div
-              style={{ rotate: rotation }}
-              transition={{ duration: 5, ease: [0.15, 0.9, 0.25, 1] }}
+            <div
+              style={{
+                transform: `rotate(${rotation}deg)`,
+                transition: isSpinning ? 'transform 5.5s cubic-bezier(0.15, 0.9, 0.25, 1)' : 'none'
+              }}
               className="relative rounded-full overflow-hidden flex items-center justify-center"
             >
               <canvas
@@ -350,10 +382,10 @@ export default function LuckyWheel() {
                 height={360}
                 className="rounded-full shadow-2xl max-w-[300px] max-h-[300px] sm:max-w-[360px] sm:max-h-[360px]"
               />
-            </motion.div>
+            </div>
           </div>
 
-          {/* Spin Button / Countdown */}
+          {/* Spin Button / 24-Hour Cooldown Timer */}
           <div className="mt-6 w-full max-w-sm">
             {!isAuthenticated ? (
               <button
@@ -373,15 +405,17 @@ export default function LuckyWheel() {
                 <span>{isSpinning ? 'SPINNING THE WHEEL...' : 'SPIN FREE WHEEL NOW'}</span>
               </button>
             ) : (
-              <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 text-center space-y-1.5 shadow-inner">
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-cyan-500/30 text-center space-y-1.5 shadow-inner">
                 <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-400">
                   <Clock className="w-4 h-4 text-cyan-400" />
                   <span>NEXT FREE SPIN IN:</span>
                 </div>
-                <div className="font-mono font-black text-xl text-cyan-300 tracking-wider">
+                <div className="font-mono font-black text-2xl text-cyan-300 tracking-wider">
                   {timeRemaining}
                 </div>
-                <span className="text-[10px] text-slate-500 block">Resets automatically every 24 hours</span>
+                <span className="text-[10px] text-slate-400 block font-medium">
+                  🔒 Locked for 24 hours from your last spin
+                </span>
               </div>
             )}
           </div>
@@ -415,7 +449,7 @@ export default function LuckyWheel() {
                     {wonPrize.type === 'promo' && `🎉 You unlocked an instant ${wonPrize.value}% OFF store discount!`}
                     {wonPrize.type === 'points' && `⭐ Added ${wonPrize.value} loyalty points to your balance!`}
                     {wonPrize.type === 'respin' && '🔄 Lucky you! Hit the Spin button to spin one more time!'}
-                    {wonPrize.type === 'none' && 'Better luck on your next spin tomorrow! Come back in 24h.'}
+                    {wonPrize.type === 'none' && 'Better luck on your next spin tomorrow! Come back in 24 hours.'}
                   </p>
                 </div>
 
