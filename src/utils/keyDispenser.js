@@ -1,4 +1,4 @@
-﻿import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { normalizeDurationKey } from '@/components/dashboard/KeyBankTab';
 
 /**
@@ -29,7 +29,7 @@ export async function dispenseLicenseKey({ productType, duration, customerEmail,
     });
 
     if (!match) {
-      return { success: false, outOfStock: true, message: No available keys for duration:  };
+      return { success: false, outOfStock: true, message: `No available keys for duration: ${duration}` };
     }
 
     // Mark key as used in Key Bank
