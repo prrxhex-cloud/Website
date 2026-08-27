@@ -29,25 +29,28 @@ export default function CustomCursor() {
       rafRef.current = requestAnimationFrame(animate);
     };
 
-    const onEnterInteractive = () => {
-      if (ringRef.current) ringRef.current.classList.add('cursor-expanded');
+    const onOver = (e) => {
+      if (e.target && (e.target.closest('a, button, [role="button"], input, select, textarea') || e.target.classList?.contains('clickable'))) {
+        if (ringRef.current) ringRef.current.classList.add('cursor-expanded');
+      }
     };
-    const onLeaveInteractive = () => {
-      if (ringRef.current) ringRef.current.classList.remove('cursor-expanded');
+    const onOut = (e) => {
+      if (e.target && (e.target.closest('a, button, [role="button"], input, select, textarea') || e.target.classList?.contains('clickable'))) {
+        if (ringRef.current) ringRef.current.classList.remove('cursor-expanded');
+      }
     };
 
     window.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseover', onOver);
+    document.addEventListener('mouseout', onOut);
     rafRef.current = requestAnimationFrame(animate);
-
-    document.querySelectorAll('a, button, [role="button"]').forEach((el) => {
-      el.addEventListener('mouseenter', onEnterInteractive);
-      el.addEventListener('mouseleave', onLeaveInteractive);
-    });
 
     return () => {
       document.body.style.cursor = '';
       window.removeEventListener('mousemove', onMove);
-      cancelAnimationFrame(rafRef.current);
+      document.removeEventListener('mouseover', onOver);
+      document.removeEventListener('mouseout', onOut);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, []);
 

@@ -25,7 +25,7 @@ export default function DiscordBotManagement() {
     }
   };
 
-  const fetchBotData = async () => {
+  const fetchBotData = async (signal) => {
     if (!config.url || !config.key) return;
     setLoading(true);
     try {
@@ -33,8 +33,8 @@ export default function DiscordBotManagement() {
       const baseUrl = config.url.replace(/\/$/, ''); // remove trailing slash
       
       const [statusRes, logsRes] = await Promise.all([
-        fetch(`${baseUrl}/api/status`, { headers }),
-        fetch(`${baseUrl}/api/security/logs`, { headers })
+        fetch(`${baseUrl}/api/status`, { headers, signal }),
+        fetch(`${baseUrl}/api/security/logs`, { headers, signal })
       ]);
 
       if (statusRes.ok) {
@@ -47,7 +47,9 @@ export default function DiscordBotManagement() {
         setLogs(logsData.slice(0, 10)); // Top 10 logs
       }
     } catch (e) {
-      toast.error('Failed to connect to Bot API');
+      if (e.name !== 'AbortError') {
+        toast.error('Failed to connect to Bot API');
+      }
     } finally {
       setLoading(false);
     }
@@ -58,12 +60,14 @@ export default function DiscordBotManagement() {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
     if (config.url && config.key) {
-      fetchBotData();
+      fetchBotData(controller.signal);
     } else {
       setLoading(false);
     }
-  }, [config]);
+    return () => controller.abort();
+  }, [config.url, config.key]);
 
   if (loading && !status) {
     return <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-[#00d4ff]/30 border-t-[#00d4ff] rounded-full animate-spin glow-cyan" /></div>;

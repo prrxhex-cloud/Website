@@ -26,9 +26,18 @@ export default function KeyBankTab() {
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [filterPanel, setFilterPanel] = useState('all');
   const [filterDuration, setFilterDuration] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+
+  // Debounce search query input to prevent unnecessary re-computations
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Checkbox multi-selection state
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -225,13 +234,16 @@ export default function KeyBankTab() {
     ? Array.from(new Set(plans.map(p => p.label))).filter(Boolean)
     : ['1 Week', '2 Weeks', '1 Month', '2 Months', '1 Year', '2 Years', 'Until We Developing'];
 
-  const filteredKeys = keys.filter(k => {
-    const matchSearch = !searchQuery.trim() || (k.key || '').toLowerCase().includes(searchQuery.toLowerCase().trim());
-    const matchPanel = filterPanel === 'all' || k.product_type === filterPanel || k.product_type === 'both';
-    const matchDuration = filterDuration === 'all' || normalizeDurationKey(k.duration) === normalizeDurationKey(filterDuration);
-    const matchStatus = filterStatus === 'all' || k.status === filterStatus;
-    return matchSearch && matchPanel && matchDuration && matchStatus;
-  });
+  const filteredKeys = React.useMemo(() => {
+    const trimmed = debouncedSearchQuery.toLowerCase().trim();
+    return keys.filter(k => {
+      const matchSearch = !trimmed || (k.key || '').toLowerCase().includes(trimmed);
+      const matchPanel = filterPanel === 'all' || k.product_type === filterPanel || k.product_type === 'both';
+      const matchDuration = filterDuration === 'all' || normalizeDurationKey(k.duration) === normalizeDurationKey(filterDuration);
+      const matchStatus = filterStatus === 'all' || k.status === filterStatus;
+      return matchSearch && matchPanel && matchDuration && matchStatus;
+    });
+  }, [keys, debouncedSearchQuery, filterPanel, filterDuration, filterStatus]);
 
   // Select all / Deselect all
   const allFilteredSelected = filteredKeys.length > 0 && filteredKeys.every(k => selectedIds.has(k.id));

@@ -106,7 +106,7 @@ export default function LuckyWheel() {
 
     fetchUserData();
     return () => { isMounted = false; };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.uid, user?.email]);
 
   // 24-Hour Strict Countdown Timer (Calculates exact real-time hours, minutes, seconds)
   useEffect(() => {
