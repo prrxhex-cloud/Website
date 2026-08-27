@@ -1,4 +1,4 @@
-﻿import { computeSha256 } from './cryptoShield';
+import { computeSha256 } from './cryptoShield';
 import { supabase } from '@/lib/supabase';
 
 const GENESIS_BLOCK_HASH = '0000000000000000000000000000000000000000000000000000000000000000';
@@ -26,7 +26,7 @@ class CryptographicHashLedger {
       }
 
       const timestamp = new Date().toISOString();
-      const blockPayload = ${previousHash}|||||;
+      const blockPayload = `${previousHash}|${transactionId}|${customerEmail}|${amountPaid}|${planTitle}`;
       const blockHash = await computeSha256(blockPayload);
 
       const blockDoc = {
@@ -37,7 +37,7 @@ class CryptographicHashLedger {
         customer_email: customerEmail || 'VIP Guest',
         amount_paid: amountPaid,
         plan_title: planTitle,
-        license_key_masked: licenseKey ? ${licenseKey.slice(0, 8)}... : 'N/A',
+        license_key_masked: licenseKey ? `${licenseKey.slice(0, 8)}...` : 'N/A',
         timestamp: timestamp,
         integrity_signature: 'PRRX-CRYPTO-SEAL-V5.8'
       };
