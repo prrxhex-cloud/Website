@@ -299,6 +299,7 @@ export default function LuckyWheel() {
             badge_text: `${winningSeg.value}% OFF LUCKY SPIN`,
             panel_type: 'both',
             active: true,
+            is_personal: true, // Prevents showing globally as a flash sale for everyone
             created_date: now.toISOString(),
             expires_at: expiresAtDate.toISOString()
           });
