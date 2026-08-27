@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1️⃣ ZERO-TRUST MULTI-TENANCY MIDDLEWARE (RLS Equivalent)
+    // Ensures a user is fully authenticated before any database interaction.
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Validates that the request context matches the tenant identity explicitly.
+    function isOwner(emailField) {
+      return isAuthenticated() && request.auth.token.email == emailField;
+    }
+
+    // 2️⃣ TENANT-SCOPED DATA ISOLATION (No IDOR or Cross-Tenant Leakage)
+    
+    // Subscription History & Keys
+    match /subscriptions/{subId} {
+      // Users can only read their OWN subscriptions, enforced at the database engine layer.
+      allow read: if isOwner(resource.data.resellerEmail);
+      // Only admins/cloud functions can write (No client-side mutations)
+      allow write: if false; 
+    }
+
+    match /keys/{keyId} {
+      // A reseller can only view and manage keys tied to their specific tenant email
+      allow read: if isOwner(resource.data.resellerEmail);
+      allow write: if isOwner(resource.data.resellerEmail);
+    }
+
+    // 3️⃣ PUBLIC DATA (Safe Context)
+    match /discounts/{discountId} {
+      // Discounts are public read-only (used during checkout)
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    match /plans/{planId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    match /freebies/{freebieId} {
+      // Scoped so users can only read their own freebie limits
+      allow read: if isOwner(resource.data.userEmail);
+      allow write: if isOwner(request.resource.data.userEmail);
+    }
+  }
+}
