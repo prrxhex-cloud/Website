@@ -82,7 +82,8 @@ export default function Dashboard() {
       }
     };
     
-    setTimeout(checkBackgroundUpdate, 3000);
+    const timer = setTimeout(checkBackgroundUpdate, 3000);
+    return () => clearTimeout(timer);
   }, [isAuthenticated, toast]);
 
   if (isLoadingAuth || !currentUser) return (

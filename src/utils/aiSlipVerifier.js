@@ -2,15 +2,8 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { DEFAULT_BENEFICIARIES } from '@/components/dashboard/BeneficiaryAccountsTab';
 
-// Safe split API key loader ensuring GitHub Pages always has access
 const getApiKey = () => {
-  if (import.meta.env.VITE_GEMINI_API_KEY) {
-    return import.meta.env.VITE_GEMINI_API_KEY;
-  }
-  const p1 = "AQ.Ab8RN6INeZc1M_";
-  const p2 = "sLuIuKCDP1UeJEOK-";
-  const p3 = "xGusW8IlO7MgkWuOEEA";
-  return `${p1}${p2}${p3}`;
+  return import.meta.env.VITE_GEMINI_API_KEY || '';
 };
 
 const CANDIDATE_MODELS = [
