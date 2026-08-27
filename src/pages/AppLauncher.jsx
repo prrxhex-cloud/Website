@@ -16,7 +16,8 @@ import logoImg from '@/assets/logo.jpeg';
 export default function AppLauncher() {
   const { user: currentUser, isAuthenticated, isLoadingAuth, logout } = useAuth();
   const navigate = useNavigate();
-  const { soundEnabled, toggleSound, playClickSound } = useSound();
+  const { soundEnabled, toggleSound, playSound } = useSound();
+  const playClickSound = () => playSound && playSound(700, 'triangle', 0.06);
 
   // Detect user login type: 'EXTERNAL' or 'INTERNAL'
   const userLoginType = (currentUser?.panelType || localStorage.getItem('prrx_panel_type') || 'EXTERNAL').toUpperCase();

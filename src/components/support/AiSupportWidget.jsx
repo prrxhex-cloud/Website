@@ -24,7 +24,9 @@ export default function AiSupportWidget() {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
-  const { playClick, playSuccess } = useSound();
+  const { playSound } = useSound();
+  const playClick = () => playSound && playSound(700, 'triangle', 0.06);
+  const playSuccess = () => playSound && playSound(1200, 'sine', 0.1);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

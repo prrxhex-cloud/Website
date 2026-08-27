@@ -40,7 +40,9 @@ function pickWeightedSegment() {
 
 export default function LuckyWheel() {
   const { user, isAuthenticated } = useAuth();
-  const { playSuccess, playClick } = useSound();
+  const { playSound } = useSound();
+  const playClick = () => playSound && playSound(700, 'triangle', 0.06);
+  const playSuccess = () => playSound && playSound(1200, 'sine', 0.1);
   const navigate = useNavigate();
 
   const canvasRef = useRef(null);
