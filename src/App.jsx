@@ -106,8 +106,6 @@ const AuthenticatedApp = () => {
         <Route path="/functions" element={<DesktopRestrictedRoute><Functions /></DesktopRestrictedRoute>} />
         <Route path="/resellers" element={<DesktopRestrictedRoute><Resellers /></DesktopRestrictedRoute>} />
         <Route path="/freebies" element={<Freebies />} />
-        <Route path="/spin" element={<Freebies />} />
-        <Route path="/lucky-wheel" element={<Freebies />} />
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/launcher" element={<DesktopLauncher />} />

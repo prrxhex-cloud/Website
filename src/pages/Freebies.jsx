@@ -4,7 +4,6 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
-import LuckyWheel from '@/components/freebies/LuckyWheel';
 import { Download, XCircle, Calendar, User, Lock, Smartphone, Gift } from 'lucide-react';
 
 const FALLBACK_EXTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
@@ -120,22 +119,17 @@ export default function Freebies() {
             <Gift className="w-3.5 h-3.5" /> FREEBIES & DEMO KEYS
           </div>
           <h1 className="font-outfit font-extrabold text-4xl sm:text-5xl text-[var(--text-heading)] tracking-tight">
-            LUCKY REWARDS & PUBLIC DEMO KEYS
+            PUBLIC DEMO KEYS & BUILDS
           </h1>
           <p className="font-inter text-[var(--text-muted)] text-base max-w-xl mx-auto">
-            Spin the daily reward wheel for free keys and test our panel using public credentials updated daily.
+            Test our panel using public credentials updated daily and download the latest verified builds.
           </p>
         </div>
       </section>
 
       {/* Main Content */}
       <main className="max-w-[1240px] mx-auto px-4 sm:px-6 py-12 space-y-12">
-        {/* 1. DAILY LUCKY REWARD SPIN WHEEL */}
-        <section id="spin-wheel">
-          <LuckyWheel />
-        </section>
-
-        {/* 2. PUBLIC FREE PANELS */}
+        {/* PUBLIC FREE PANELS */}
         <div className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <FreePanelCard panel={panels.external} label="Free External Panel" downloadUrl={downloadUrls.external} index={0} />

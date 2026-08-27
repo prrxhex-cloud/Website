@@ -178,7 +178,7 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
       return codeMatch && panelMatch && labelMatch;
     });
 
-    // Real-Time Database Fallback Check (For instantly generated Lucky Wheel promo codes)
+    // Real-Time Database Fallback Check (For newly added promo codes)
     if (!match) {
       try {
         const docRef = doc(db, 'discounts', rawCode);

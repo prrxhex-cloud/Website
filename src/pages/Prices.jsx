@@ -230,11 +230,11 @@ export default function Prices() {
   const [activePromoCode, setActivePromoCode] = useState(() => location.state?.promoCode || '');
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Auto-set promo code if arriving from Lucky Wheel
+  // Auto-set promo code if arriving from special links or promotional states
   useEffect(() => {
     if (location.state?.promoCode) {
       setActivePromoCode(location.state.promoCode);
-      toast.success(`🎟️ Lucky Spin promo code "${location.state.promoCode}" activated!`);
+      toast.success(`🎟️ Promo code "${location.state.promoCode}" activated!`);
     }
   }, [location.state]);
 
@@ -276,11 +276,11 @@ export default function Prices() {
           const discountData = discountSnap.value.docs.map(d => ({ id: d.id, ...d.data() }));
           if (Array.isArray(discountData) && discountData.length > 0) {
             setDiscounts(discountData);
-            // Find personal wheel codes for this user, OR a global flash sale
+            // Find personal promo codes for this user, OR a global flash sale
             const myPersonal = discountData.find(d => isDiscountActive(d) && d.promo_code && d.is_personal && d.owner_email === user?.email);
             const globalFlash = discountData.find(d => isDiscountActive(d) && d.promo_code && !d.is_personal);
             const featured = myPersonal || globalFlash || null;
-            // Only set featured if we don't already have an active code (like one from the wheel)
+            // Only set featured if we don't already have an active code
             setActivePromoCode(prev => prev || featured?.promo_code || '');
           }
         }

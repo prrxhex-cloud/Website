@@ -95,7 +95,7 @@ export default function Dashboard() {
   const quickActions = [
     ...(window.electronAPI ? [{ label: 'Launcher Panel', desc: 'Run as admin with security protocols', icon: Play, action: () => navigate('/app-launcher') }] : []),
     { label: 'Download Panel', desc: 'Get the latest PRRX build', icon: Download, action: () => navigate('/') },
-    { label: 'Live Chat', desc: 'Chat with users & support', icon: MessageCircle, action: () => navigate('/chat') },
+    { label: 'AI Tech Support', desc: 'Instant 24/7 automated troubleshooting', icon: MessageCircle, action: () => window.dispatchEvent(new CustomEvent('open-prrx-ai-support')) },
     { label: 'View Prices', desc: 'Browse subscription plans', icon: DollarSign, action: () => navigate('/prices') },
     { label: 'Service Status', desc: 'Check system availability', icon: Activity, action: () => navigate('/status') },
     ...(!window.electronAPI ? [{ label: 'Reseller Portal', desc: 'Manage reseller account', icon: Store, action: () => navigate('/resellers') }] : []),

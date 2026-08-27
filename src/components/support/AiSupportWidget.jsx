@@ -33,6 +33,12 @@ export default function AiSupportWidget() {
   };
 
   useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-prrx-ai-support', handleOpen);
+    return () => window.removeEventListener('open-prrx-ai-support', handleOpen);
+  }, []);
+
+  useEffect(() => {
     if (isOpen) scrollToBottom();
   }, [messages, isOpen]);
 

@@ -30,11 +30,13 @@ export const AuthProvider = ({ children }) => {
     // 2. Attach onAuthStateChanged synchronously
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
+        const adminEmails = ['sayurujayani123@gmail.com', 'admin@prrxhex.com', 'sayuru@prrxhex.com'];
+        const isAdminUser = adminEmails.includes((currentUser.email || '').toLowerCase());
         setUser({
           uid: currentUser.uid,
           email: currentUser.email,
           displayName: currentUser.displayName,
-          role: 'admin'
+          role: isAdminUser ? 'admin' : 'user'
         });
         setIsAuthenticated(true);
       } else if (keyAuthUser) {
