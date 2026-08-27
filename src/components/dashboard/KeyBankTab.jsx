@@ -201,16 +201,7 @@ export default function KeyBankTab() {
       setIsDeletingBatch(false);
     }
   };
-      setKeys(prev => prev.map(k => updatedSet.has(k.id) ? { ...k, status: newStatus, used_at: newStatus === 'used' ? nowIso : null } : k));
-      setSelectedIds(new Set());
-      toast.success(`Marked ${targetDocIds.length} keys as ${newStatus.toUpperCase()}!`);
-    } catch (e) {
-      console.error('Batch update status error:', e);
-      toast.error('Failed to update status in batch');
-    } finally {
-      setIsDeletingBatch(false);
-    }
-  };
+
 
   // Available unique duration options
   const availableDurations = plans.length > 0 
