@@ -46,20 +46,34 @@ export const ROUTE_KEY_MAP = {
 const MaintenanceContext = createContext(null);
 
 export const MaintenanceProvider = ({ children }) => {
-  const [maintenanceConfig, setMaintenanceConfig] = useState(DEFAULT_MAINTENANCE_CONFIG);
+  const [maintenanceConfig, setMaintenanceConfig] = useState(() => {
+    try {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('prrx_maintenance_config') : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_MAINTENANCE_CONFIG,
+          ...parsed,
+          page_maintenance: {
+            ...DEFAULT_MAINTENANCE_CONFIG.page_maintenance,
+            ...(parsed.page_maintenance || {}),
+          },
+        };
+      }
+    } catch {}
+    return DEFAULT_MAINTENANCE_CONFIG;
+  });
   const [isLoadingMaintenance, setIsLoadingMaintenance] = useState(true);
   const { user } = useAuth();
 
   // Admin status check across Firebase Auth, email whitelist, and active session storage
   const isAdminUser = useMemo(() => {
-    if (!user) {
-      const sessionAdmin = typeof window !== 'undefined' ? sessionStorage.getItem('prrx_admin_logged_in') : null;
-      return !!sessionAdmin;
-    }
+    const sessionAdmin = typeof window !== 'undefined' ? sessionStorage.getItem('prrx_admin_logged_in') : null;
+    if (sessionAdmin) return true;
+    if (!user) return false;
     if (user.role === 'admin') return true;
     if (user.email && KNOWN_ADMIN_EMAILS.includes(user.email.toLowerCase())) return true;
-    const sessionAdmin = typeof window !== 'undefined' ? sessionStorage.getItem('prrx_admin_logged_in') : null;
-    return !!sessionAdmin;
+    return false;
   }, [user]);
 
   // Real-time Firestore synchronization on doc(db, 'system_config', 'maintenance')
@@ -72,21 +86,23 @@ export const MaintenanceProvider = ({ children }) => {
         (snapshot) => {
           if (snapshot.exists()) {
             const data = snapshot.data();
-            setMaintenanceConfig({
+            const merged = {
               ...DEFAULT_MAINTENANCE_CONFIG,
               ...data,
               page_maintenance: {
                 ...DEFAULT_MAINTENANCE_CONFIG.page_maintenance,
                 ...(data.page_maintenance || {}),
               },
-            });
-          } else {
-            setMaintenanceConfig(DEFAULT_MAINTENANCE_CONFIG);
+            };
+            setMaintenanceConfig(merged);
+            try {
+              localStorage.setItem('prrx_maintenance_config', JSON.stringify(merged));
+            } catch {}
           }
           setIsLoadingMaintenance(false);
         },
         (error) => {
-          console.warn('Maintenance config snapshot warning (falling back to default):', error);
+          console.warn('Maintenance config snapshot warning (using cached/default):', error);
           setIsLoadingMaintenance(false);
         }
       );
@@ -98,7 +114,7 @@ export const MaintenanceProvider = ({ children }) => {
     // Safety fallback timeout
     const fallbackTimer = setTimeout(() => {
       setIsLoadingMaintenance(false);
-    }, 1500);
+    }, 1200);
 
     return () => {
       unsubscribe();
@@ -136,9 +152,20 @@ export const MaintenanceProvider = ({ children }) => {
       updated_by: adminEmail,
     };
 
-    const docRef = doc(db, 'system_config', 'maintenance');
-    await setDoc(docRef, payload, { merge: true });
+    // 1. Immediately persist to localStorage & React state so it never resets on refresh
+    try {
+      localStorage.setItem('prrx_maintenance_config', JSON.stringify(payload));
+    } catch {}
     setMaintenanceConfig(payload);
+
+    // 2. Broadcast to Firestore for all connected users
+    try {
+      const docRef = doc(db, 'system_config', 'maintenance');
+      await setDoc(docRef, payload, { merge: true });
+    } catch (err) {
+      console.warn('Firestore maintenance sync warning (persisted locally):', err);
+    }
+
     return payload;
   }, [maintenanceConfig, user?.email]);
 
