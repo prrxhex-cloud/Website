@@ -18,6 +18,11 @@ export default function ResellerStatus({ account }) {
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
+    if (!account?.email) {
+      setReceipts([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const q = query(collection(db, 'reseller_receipts'), where('reseller_email', '==', account.email));
@@ -31,7 +36,7 @@ export default function ResellerStatus({ account }) {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [account?.email]);
 
   if (loading) return (
     <div className="flex items-center justify-center py-16">

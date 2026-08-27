@@ -12,6 +12,11 @@ export default function SubscriptionHistory({ account }) {
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
+    if (!account?.email) {
+      setReceipts([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const q = query(
@@ -32,7 +37,7 @@ export default function SubscriptionHistory({ account }) {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [account?.email]);
 
   const copy = (email) => {
     navigator.clipboard.writeText(email);

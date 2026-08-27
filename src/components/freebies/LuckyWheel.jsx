@@ -230,12 +230,19 @@ export default function LuckyWheel() {
     const winIndex = pickWeightedSegment();
     const winningSeg = WHEEL_SEGMENTS[winIndex];
 
-    // 2. Calculate target rotation
-    // Pointer is at TOP (270 degrees or -90 degrees)
+    // 2. Calculate exact target rotation
+    // Canvas slices: Slice i spans [i * 36, (i + 1) * 36] degrees (measured from 3 o'clock / East).
+    // Midpoint of slice winIndex: midAngle = winIndex * 36 + 18.
+    // Pointer is at the TOP (12 o'clock / 270 degrees from 3 o'clock).
+    // To align slice midpoint with pointer: (midAngle + targetRotation) % 360 = 270 => targetRotation = (270 - midAngle) % 360.
     const segmentAngle = 360 / WHEEL_SEGMENTS.length;
-    const extraSpins = 6 + Math.floor(Math.random() * 2); // 6 to 7 full 360 rotations
-    const targetOffset = 360 - (winIndex * segmentAngle + segmentAngle / 2) - 90;
-    const finalRotation = rotation + (extraSpins * 360) + targetOffset;
+    const midAngle = winIndex * segmentAngle + segmentAngle / 2;
+    const targetAngleMod = (270 - midAngle + 360) % 360;
+
+    const currentMod = ((rotation % 360) + 360) % 360;
+    const delta = (targetAngleMod - currentMod + 360) % 360;
+    const fullSpins = (6 + Math.floor(Math.random() * 2)) * 360;
+    const finalRotation = rotation + fullSpins + (delta === 0 ? 360 : delta);
 
     setRotation(finalRotation);
 
@@ -277,23 +284,27 @@ export default function LuckyWheel() {
           toast.success('👑 JACKPOT! You won a 1-Week VIP License Key!');
         }
 
-        // Promo Code Won! (10% chance)
+        // Promo Code Won! (10% chance) - 48 Hours Expiry & Multi-Panel Compatible
         else if (winningSeg.type === 'promo') {
           confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
           const promoCode = `SPIN${winningSeg.value}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+          // Valid for exactly 48 Hours
+          const expiresAtDate = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
           await setDoc(doc(db, 'discounts', promoCode), {
             promo_code: promoCode,
             discount_type: 'percentage',
             discount_value: winningSeg.value,
             badge_text: `${winningSeg.value}% OFF LUCKY SPIN`,
+            panel_type: 'both',
             active: true,
             created_date: now.toISOString(),
-            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+            expires_at: expiresAtDate.toISOString()
           });
 
-          setPrizeDetails({ promoCode, discountPercent: winningSeg.value });
-          toast.success(`🎟️ You won a ${winningSeg.value}% OFF Promo Code!`);
+          setPrizeDetails({ promoCode, discountPercent: winningSeg.value, expiresAt: expiresAtDate.toISOString() });
+          toast.success(`🎟️ You won a ${winningSeg.value}% OFF Promo Code (Valid for 48 Hours)!`);
         }
 
         // VIP Points Won! (20% chance)
@@ -472,9 +483,12 @@ export default function LuckyWheel() {
                 {/* Promo Code Box */}
                 {prizeDetails?.promoCode && (
                   <div className="p-3.5 rounded-2xl bg-slate-950 border border-cyan-500/40 space-y-2">
-                    <span className="text-[10px] text-cyan-400 font-bold uppercase block">Single-Use Promo Code:</span>
-                    <div className="flex items-center justify-between font-mono font-bold text-xs text-cyan-200 bg-slate-900 p-2 rounded-xl">
-                      <span>{prizeDetails.promoCode}</span>
+                    <div className="flex items-center justify-between text-[10px] font-bold uppercase">
+                      <span className="text-cyan-400">Single-Use Promo Code:</span>
+                      <span className="text-amber-400 font-mono">⏱️ Valid 48 Hours</span>
+                    </div>
+                    <div className="flex items-center justify-between font-mono font-bold text-xs text-cyan-200 bg-slate-900 p-2 rounded-xl border border-cyan-500/20">
+                      <span className="select-all tracking-wider text-cyan-300 font-black">{prizeDetails.promoCode}</span>
                       <button
                         onClick={() => handleCopyCode(prizeDetails.promoCode)}
                         className="p-1 text-cyan-400 hover:text-white"
@@ -483,11 +497,11 @@ export default function LuckyWheel() {
                       </button>
                     </div>
                     <button
-                      onClick={() => navigate('/prices')}
-                      className="w-full py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-outfit font-black text-xs transition-colors flex items-center justify-center gap-1 mt-1"
+                      onClick={() => navigate('/prices', { state: { promoCode: prizeDetails.promoCode } })}
+                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-outfit font-black text-xs transition-all flex items-center justify-center gap-1.5 mt-1 shadow-md hover:scale-[1.02]"
                     >
-                      <span>USE AT CHECKOUT</span>
-                      <ArrowRight className="w-3 h-3" />
+                      <span>USE AT CHECKOUT NOW</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 )}

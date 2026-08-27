@@ -4,7 +4,7 @@ import { X, ShieldCheck, Coins, CreditCard, QrCode, MessageCircle, Tag, Check, S
 import { getFormattedPrices } from '@/lib/currency';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, orderBy, getDocs, setDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, getDoc, setDoc, doc } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { DEFAULT_BENEFICIARIES } from '@/components/dashboard/BeneficiaryAccountsTab';
@@ -153,7 +153,7 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
     }
   }, [initialPromoCode, isOpen]);
 
-  const applyCoupon = (codeToApply) => {
+  const applyCoupon = async (codeToApply) => {
     const rawCode = (codeToApply || promoInput || '').trim().toUpperCase();
     setPromoError('');
 
@@ -163,7 +163,7 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
     }
 
     const discList = Array.isArray(discounts) ? discounts : [];
-    const firestoreMatch = discList.find(d => {
+    let match = discList.find(d => {
       if (!d || !d.active) return false;
       if (d.expires_at) {
         let exp = new Date(d.expires_at);
@@ -173,18 +173,47 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
         if (exp.getTime() <= Date.now()) return false;
       }
       const codeMatch = d.promo_code && d.promo_code.toUpperCase() === rawCode;
-      const panelMatch = d.panel_type === 'both' || d.panel_type === panelType;
+      const panelMatch = !d.panel_type || d.panel_type === 'both' || d.panel_type === panelType;
       const labelMatch = !d.plan_label || d.plan_label.toLowerCase() === plan?.label?.toLowerCase();
       return codeMatch && panelMatch && labelMatch;
     });
 
-    if (firestoreMatch) {
+    // Real-Time Database Fallback Check (For instantly generated Lucky Wheel promo codes)
+    if (!match) {
+      try {
+        const docRef = doc(db, 'discounts', rawCode);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const d = docSnap.data();
+          if (d.active !== false) {
+            let isValid = true;
+            if (d.expires_at) {
+              let exp = new Date(d.expires_at);
+              if (typeof d.expires_at === 'string' && d.expires_at.length === 10) {
+                exp = new Date(`${d.expires_at}T23:59:59`);
+              }
+              if (exp.getTime() <= Date.now()) isValid = false;
+            }
+            const panelMatch = !d.panel_type || d.panel_type === 'both' || d.panel_type === panelType;
+            const labelMatch = !d.plan_label || d.plan_label.toLowerCase() === plan?.label?.toLowerCase();
+            if (isValid && panelMatch && labelMatch) {
+              match = { id: docSnap.id, ...d };
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Real-time discount lookup fallback error:', err);
+      }
+    }
+
+    if (match) {
       setAppliedPromo({
         code: rawCode,
-        type: firestoreMatch.discount_type || 'percentage',
-        value: Number(firestoreMatch.discount_value) || 0,
-        desc: firestoreMatch.badge_text || `${firestoreMatch.discount_value}% OFF`
+        type: match.discount_type || 'percentage',
+        value: Number(match.discount_value) || 0,
+        desc: match.badge_text || `${match.discount_value}% OFF`
       });
+      toast.success(`Promo code "${rawCode}" applied! ${match.discount_value}% OFF`);
       return;
     }
 

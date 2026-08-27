@@ -8,7 +8,7 @@ import ScrollReveal from '@/components/effects/ScrollReveal';
 import BuyModal from '@/components/pricing/BuyModal';
 import { getFormattedPrices } from '@/lib/currency';
 import { useAuth } from '@/lib/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { normalizeDurationKey } from '@/components/dashboard/KeyBankTab';
 import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings, Sparkles, Copy, Clock, Flame, LogIn, UserCheck, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
@@ -38,7 +38,7 @@ function applyDiscount(plan, discounts, panelType) {
   const discList = Array.isArray(discounts) ? discounts : [];
   const match = discList.find(d => {
     if (!isDiscountActive(d)) return false;
-    const panelMatch = d.panel_type === 'both' || d.panel_type === panelType;
+    const panelMatch = !d.panel_type || d.panel_type === 'both' || d.panel_type === panelType;
     const labelMatch = !d.plan_label || d.plan_label.toLowerCase() === plan.label?.toLowerCase();
     return panelMatch && labelMatch;
   });
@@ -207,6 +207,7 @@ function PlanCard({ plan, index, onBuy }) {
 export default function Prices() {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [panel, setPanel] = useState('external');
   const [plans, setPlans] = useState(() => {
     try {
@@ -226,8 +227,16 @@ export default function Prices() {
   const [keysStock, setKeysStock] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
-  const [activePromoCode, setActivePromoCode] = useState('');
+  const [activePromoCode, setActivePromoCode] = useState(() => location.state?.promoCode || '');
   const [copiedCode, setCopiedCode] = useState(false);
+
+  // Auto-set promo code if arriving from Lucky Wheel
+  useEffect(() => {
+    if (location.state?.promoCode) {
+      setActivePromoCode(location.state.promoCode);
+      toast.success(`🎟️ Lucky Spin promo code "${location.state.promoCode}" activated!`);
+    }
+  }, [location.state]);
 
   // Live real-time countdown timer state based on database expires_at
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, hasExpiry: false, isExpired: false });
