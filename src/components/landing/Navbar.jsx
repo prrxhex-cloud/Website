@@ -41,7 +41,9 @@ export default function Navbar() {
         const snap = await getDocs(q);
         if (isMounted && !snap.empty) {
           const discountList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          const valid = discountList.find(d => isDiscountActive(d));
+          const myPersonal = discountList.find(d => isDiscountActive(d) && d.is_personal && d.owner_email && d.owner_email === user?.email);
+          const globalFlash = discountList.find(d => isDiscountActive(d) && !d.is_personal);
+          const valid = myPersonal || globalFlash || null;
           if (valid) {
             setActiveDiscount(valid);
           } else {
@@ -54,7 +56,7 @@ export default function Navbar() {
     };
     fetchDiscounts();
     return () => { isMounted = false; };
-  }, []);
+  }, [user?.email]);
 
   const handleNav = (path) => {
     setMenuOpen(false);

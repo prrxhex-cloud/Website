@@ -300,6 +300,7 @@ export default function LuckyWheel() {
             panel_type: 'both',
             active: true,
             is_personal: true, // Prevents showing globally as a flash sale for everyone
+            owner_email: user?.email || null, // Ties discount to this specific account
             created_date: now.toISOString(),
             expires_at: expiresAtDate.toISOString()
           });

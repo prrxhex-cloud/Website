@@ -276,8 +276,10 @@ export default function Prices() {
           const discountData = discountSnap.value.docs.map(d => ({ id: d.id, ...d.data() }));
           if (Array.isArray(discountData) && discountData.length > 0) {
             setDiscounts(discountData);
-            // Find a public flash sale (ignore personal wheel codes)
-            const featured = discountData.find(d => isDiscountActive(d) && d.promo_code && !d.is_personal);
+            // Find personal wheel codes for this user, OR a global flash sale
+            const myPersonal = discountData.find(d => isDiscountActive(d) && d.promo_code && d.is_personal && d.owner_email === user?.email);
+            const globalFlash = discountData.find(d => isDiscountActive(d) && d.promo_code && !d.is_personal);
+            const featured = myPersonal || globalFlash || null;
             // Only set featured if we don't already have an active code (like one from the wheel)
             setActivePromoCode(prev => prev || featured?.promo_code || '');
           }
@@ -293,12 +295,13 @@ export default function Prices() {
 
     fetchPlansAndDiscounts();
     return () => { isMounted = false; };
-  }, []);
+  }, [user?.email]);
 
   // 2. Active unexpired discount resolution
   const activeDiscountObj = Array.isArray(discounts) 
     ? (
         discounts.find(d => isDiscountActive(d) && d.promo_code === activePromoCode) 
+        || discounts.find(d => isDiscountActive(d) && d.is_personal && d.owner_email === user?.email)
         || discounts.find(d => isDiscountActive(d) && !d.is_personal) 
         || null
       )
