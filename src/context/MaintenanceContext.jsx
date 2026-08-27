@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+﻿import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 
 export const DEFAULT_MAINTENANCE_CONFIG = {
+  id: 'maintenance',
   global_maintenance: false,
   page_maintenance: {
     prices: false,
@@ -66,7 +66,7 @@ export const MaintenanceProvider = ({ children }) => {
   const [isLoadingMaintenance, setIsLoadingMaintenance] = useState(true);
   const { user } = useAuth();
 
-  // Admin status check across Firebase Auth, email whitelist, and active session storage
+  // Admin status check
   const isAdminUser = useMemo(() => {
     const sessionAdmin = typeof window !== 'undefined' ? sessionStorage.getItem('prrx_admin_logged_in') : null;
     if (sessionAdmin) return true;
@@ -76,22 +76,54 @@ export const MaintenanceProvider = ({ children }) => {
     return false;
   }, [user]);
 
-  // Real-time Firestore synchronization on doc(db, 'system_config', 'maintenance')
+  // Real-time Supabase synchronization on table 'system_config'
   useEffect(() => {
-    let unsubscribe = () => {};
-    try {
-      const docRef = doc(db, 'system_config', 'maintenance');
-      unsubscribe = onSnapshot(
-        docRef,
-        (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.data();
+    const loadConfig = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('system_config')
+          .select('*')
+          .eq('id', 'maintenance')
+          .single();
+
+        if (data && !error) {
+          const merged = {
+            ...DEFAULT_MAINTENANCE_CONFIG,
+            ...data,
+            page_maintenance: {
+              ...DEFAULT_MAINTENANCE_CONFIG.page_maintenance,
+              ...(typeof data.page_maintenance === 'string' ? JSON.parse(data.page_maintenance) : (data.page_maintenance || {})),
+            },
+          };
+          setMaintenanceConfig(merged);
+          try {
+            localStorage.setItem('prrx_maintenance_config', JSON.stringify(merged));
+          } catch {}
+        }
+      } catch (err) {
+        console.warn('Supabase maintenance fetch warning (using cache):', err);
+      } finally {
+        setIsLoadingMaintenance(false);
+      }
+    };
+
+    loadConfig();
+
+    // Supabase Realtime channel subscription
+    const channel = supabase
+      .channel('system_config_maintenance_channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'system_config', filter: 'id=eq.maintenance' },
+        (payload) => {
+          if (payload.new) {
+            const data = payload.new;
             const merged = {
               ...DEFAULT_MAINTENANCE_CONFIG,
               ...data,
               page_maintenance: {
                 ...DEFAULT_MAINTENANCE_CONFIG.page_maintenance,
-                ...(data.page_maintenance || {}),
+                ...(typeof data.page_maintenance === 'string' ? JSON.parse(data.page_maintenance) : (data.page_maintenance || {})),
               },
             };
             setMaintenanceConfig(merged);
@@ -99,25 +131,16 @@ export const MaintenanceProvider = ({ children }) => {
               localStorage.setItem('prrx_maintenance_config', JSON.stringify(merged));
             } catch {}
           }
-          setIsLoadingMaintenance(false);
-        },
-        (error) => {
-          console.warn('Maintenance config snapshot warning (using cached/default):', error);
-          setIsLoadingMaintenance(false);
         }
-      );
-    } catch (e) {
-      console.warn('Maintenance listener init error:', e);
-      setIsLoadingMaintenance(false);
-    }
+      )
+      .subscribe();
 
-    // Safety fallback timeout
     const fallbackTimer = setTimeout(() => {
       setIsLoadingMaintenance(false);
     }, 1200);
 
     return () => {
-      unsubscribe();
+      supabase.removeChannel(channel);
       clearTimeout(fallbackTimer);
     };
   }, []);
@@ -126,24 +149,19 @@ export const MaintenanceProvider = ({ children }) => {
   const allowAdminBypass = maintenanceConfig.allow_admin_bypass !== false;
   const isAdminBypassed = Boolean(isAdminUser && allowAdminBypass);
 
-  // Helper to determine if a specific path or key is under maintenance
   const isPageInMaintenance = useCallback((pathOrKey) => {
     if (!pathOrKey) return isGlobalMaintenance;
     const normalizedKey = ROUTE_KEY_MAP[pathOrKey] || pathOrKey.replace(/^\//, '').replace(/-/g, '_').toLowerCase();
-    
-    // If global maintenance is active, every visitor route is under maintenance
     if (isGlobalMaintenance) return true;
-    
-    // Check granular page maintenance
     return Boolean(maintenanceConfig.page_maintenance?.[normalizedKey]);
   }, [isGlobalMaintenance, maintenanceConfig.page_maintenance]);
 
-  // Update full config
   const updateMaintenanceConfig = useCallback(async (newConfig, adminIdentifier) => {
     const adminEmail = adminIdentifier || user?.email || (typeof window !== 'undefined' ? sessionStorage.getItem('prrx_admin_logged_in') : null) || 'System Admin';
     const payload = {
       ...maintenanceConfig,
       ...newConfig,
+      id: 'maintenance',
       page_maintenance: {
         ...maintenanceConfig.page_maintenance,
         ...(newConfig.page_maintenance || {}),
@@ -152,24 +170,22 @@ export const MaintenanceProvider = ({ children }) => {
       updated_by: adminEmail,
     };
 
-    // 1. Immediately persist to localStorage & React state so it never resets on refresh
+    // 1. Immediately persist to localStorage & state
     try {
       localStorage.setItem('prrx_maintenance_config', JSON.stringify(payload));
     } catch {}
     setMaintenanceConfig(payload);
 
-    // 2. Broadcast to Firestore for all connected users
+    // 2. Broadcast to Supabase
     try {
-      const docRef = doc(db, 'system_config', 'maintenance');
-      await setDoc(docRef, payload, { merge: true });
+      await supabase.from('system_config').upsert(payload, { onConflict: 'id' });
     } catch (err) {
-      console.warn('Firestore maintenance sync warning (persisted locally):', err);
+      console.warn('Supabase maintenance broadcast warning (persisted locally):', err);
     }
 
     return payload;
   }, [maintenanceConfig, user?.email]);
 
-  // Helper to toggle Global Kill Switch
   const toggleGlobalMaintenance = useCallback(async (enabled, reason, timerEnd) => {
     return await updateMaintenanceConfig({
       global_maintenance: enabled,
@@ -178,7 +194,6 @@ export const MaintenanceProvider = ({ children }) => {
     });
   }, [updateMaintenanceConfig]);
 
-  // Helper to toggle granular page status
   const togglePageMaintenance = useCallback(async (pageKey, enabled) => {
     const updatedPages = {
       ...maintenanceConfig.page_maintenance,
@@ -189,35 +204,20 @@ export const MaintenanceProvider = ({ children }) => {
     });
   }, [maintenanceConfig.page_maintenance, updateMaintenanceConfig]);
 
-  const value = useMemo(() => ({
-    maintenanceConfig,
-    isLoadingMaintenance,
-    isGlobalMaintenance,
-    pageMaintenance: maintenanceConfig.page_maintenance || {},
-    reason: maintenanceConfig.reason || DEFAULT_MAINTENANCE_CONFIG.reason,
-    timerEnd: maintenanceConfig.timer_end,
-    allowAdminBypass,
-    isAdminUser,
-    isAdminBypassed,
-    isPageInMaintenance,
-    updateMaintenanceConfig,
-    toggleGlobalMaintenance,
-    togglePageMaintenance,
-  }), [
-    maintenanceConfig,
-    isLoadingMaintenance,
-    isGlobalMaintenance,
-    allowAdminBypass,
-    isAdminUser,
-    isAdminBypassed,
-    isPageInMaintenance,
-    updateMaintenanceConfig,
-    toggleGlobalMaintenance,
-    togglePageMaintenance,
-  ]);
-
   return (
-    <MaintenanceContext.Provider value={value}>
+    <MaintenanceContext.Provider
+      value={{
+        maintenanceConfig,
+        isLoadingMaintenance,
+        isGlobalMaintenance,
+        allowAdminBypass,
+        isAdminBypassed,
+        isPageInMaintenance,
+        updateMaintenanceConfig,
+        toggleGlobalMaintenance,
+        togglePageMaintenance,
+      }}
+    >
       {children}
     </MaintenanceContext.Provider>
   );
@@ -230,5 +230,3 @@ export const useMaintenance = () => {
   }
   return context;
 };
-
-export default MaintenanceContext;

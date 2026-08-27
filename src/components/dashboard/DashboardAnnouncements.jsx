@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Megaphone, Pin, RefreshCw } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 
 const TYPE_COLOR = {
   news: '#00d4ff',
@@ -17,11 +16,16 @@ export default function DashboardAnnouncements() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'announcements'), orderBy('created_date', 'desc'), limit(5));
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      const sorted = [...data].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
-      setAnnouncements(sorted);
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (!error && data) {
+        const sorted = [...data].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+        setAnnouncements(sorted);
+      }
     } catch (e) {
       console.error(e);
     }

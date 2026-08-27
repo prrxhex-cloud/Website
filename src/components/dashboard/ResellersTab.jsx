@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { Plus, Trash2, Check, X, User } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -13,10 +12,14 @@ export default function ResellersTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'users'), orderBy('created_date', 'desc'), limit(50));
-      const snap = await getDocs(q);
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.role === 'reseller');
-      setResellers(data);
+      const { data, error } = await supabase
+        .from('resellers')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setResellers(data || []);
     } catch (e) {
       console.error(e);
       toast.error('Failed to load resellers');
@@ -31,33 +34,34 @@ export default function ResellersTab() {
     setSaving(true);
     try {
       if (form.id) {
-        await updateDoc(doc(db, 'users', form.id), {
-          username: form.username,
-          password: form.password, // Security issue to store plain password, but matching original UI
-          display_name: form.display_name,
-          email: form.email,
-          notes: form.notes || ''
-        });
-        toast.success('Reseller updated');
-      } else {
-        const newId = crypto.randomUUID();
-        await setDoc(doc(db, 'users', newId), {
+        const { error } = await supabase.from('resellers').update({
           username: form.username,
           password: form.password,
           display_name: form.display_name,
-          email: form.email,
-          status: form.status || 'active',
-          role: 'reseller',
+          email: form.email?.toLowerCase(),
           notes: form.notes || '',
-          created_date: new Date().toISOString()
+          updated_at: new Date().toISOString()
+        }).eq('id', form.id);
+        if (error) throw error;
+        toast.success('Reseller updated');
+      } else {
+        const { error } = await supabase.from('resellers').insert({
+          username: form.username,
+          password: form.password,
+          display_name: form.display_name,
+          email: form.email?.toLowerCase(),
+          status: form.status || 'active',
+          notes: form.notes || '',
+          created_at: new Date().toISOString()
         });
+        if (error) throw error;
         toast.success('Reseller added');
       }
       setForm(null);
       load();
     } catch (e) {
       console.error(e);
-      toast.error('Failed to save reseller');
+      toast.error('Failed to save reseller: ' + e.message);
     } finally {
       setSaving(false);
     }
@@ -66,7 +70,8 @@ export default function ResellersTab() {
   const toggleStatus = async (r) => {
     const newStatus = r.status === 'active' ? 'suspended' : 'active';
     try {
-      await updateDoc(doc(db, 'users', r.id), { status: newStatus });
+      const { error } = await supabase.from('resellers').update({ status: newStatus }).eq('id', r.id);
+      if (error) throw error;
       toast.success(`Reseller ${newStatus}`);
       load();
     } catch (e) {
@@ -77,7 +82,8 @@ export default function ResellersTab() {
 
   const remove = async (id) => {
     try {
-      await deleteDoc(doc(db, 'users', id));
+      const { error } = await supabase.from('resellers').delete().eq('id', id);
+      if (error) throw error;
       setResellers(prev => prev.filter(r => r.id !== id));
       toast.success('Reseller removed');
     } catch (e) {

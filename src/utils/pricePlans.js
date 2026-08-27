@@ -1,5 +1,4 @@
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 
 const DURATION_TO_LABEL = {
   '1_day': '1 Day',
@@ -13,11 +12,14 @@ let cachedPlans = null;
 export async function getPricePlans() {
   if (cachedPlans) return cachedPlans;
   try {
-    const q = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'));
-    const snapshot = await getDocs(q);
-    const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    cachedPlans = data;
-    return data;
+    const { data, error } = await supabase
+      .from('price_plans')
+      .select('*')
+      .order('sort_order', { ascending: true });
+
+    if (error) throw error;
+    cachedPlans = data || [];
+    return cachedPlans;
   } catch (e) {
     return [];
   }

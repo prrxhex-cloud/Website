@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, limit, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { Plus, Trash2, Check, X, Tag, Copy, Sparkles, Flame, Eye, Percent } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -24,10 +23,14 @@ export default function DiscountsTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'discounts'), orderBy('created_date', 'desc'), limit(50));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      setDiscounts(data);
+      const { data, error } = await supabase
+        .from('discounts')
+        .select('*')
+        .order('created_date', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setDiscounts(data || []);
     } catch (error) {
       console.error(error);
       toast.error('Failed to load discounts');
@@ -42,21 +45,22 @@ export default function DiscountsTab() {
     setSaving(true);
     const payload = {
       ...form,
+      id: form.id || form.promo_code?.toUpperCase().trim() || `DISC-${Date.now()}`,
       discount_value: Number(form.discount_value),
       promo_code: form.promo_code ? form.promo_code.toUpperCase().trim() : null,
       plan_label: form.plan_label || null,
       badge_text: form.badge_text || null,
       expires_at: form.expires_at || null,
-      created_date: form.created_date || Date.now(),
+      created_date: form.created_date || new Date().toISOString(),
     };
     try {
       if (form.id) {
-        const docRef = doc(db, 'discounts', form.id);
-        const { id, ...dataToUpdate } = payload;
-        await updateDoc(docRef, dataToUpdate);
+        const { error } = await supabase.from('discounts').update(payload).eq('id', form.id);
+        if (error) throw error;
         toast.success('Discount updated successfully');
       } else {
-        await addDoc(collection(db, 'discounts'), payload);
+        const { error } = await supabase.from('discounts').insert(payload);
+        if (error) throw error;
         toast.success('Discount created and live on website');
       }
       setForm(null);
@@ -69,10 +73,12 @@ export default function DiscountsTab() {
   };
 
   const remove = async (id) => {
+    if (!window.confirm('Are you sure you want to permanently delete this discount code?')) return;
     try {
-      await deleteDoc(doc(db, 'discounts', id));
+      const { error } = await supabase.from('discounts').delete().eq('id', id);
+      if (error) throw error;
       setDiscounts(prev => prev.filter(d => d.id !== id));
-      toast.success('Discount removed');
+      toast.success('Discount removed successfully');
     } catch (error) {
       console.error(error);
       toast.error('Failed to remove discount');
@@ -81,7 +87,8 @@ export default function DiscountsTab() {
 
   const toggle = async (d) => {
     try {
-      await updateDoc(doc(db, 'discounts', d.id), { active: !d.active });
+      const { error } = await supabase.from('discounts').update({ active: !d.active }).eq('id', d.id);
+      if (error) throw error;
       toast.success(d.active ? 'Discount paused' : 'Discount activated');
       load();
     } catch (error) {

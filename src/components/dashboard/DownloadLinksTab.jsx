@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { Link2, Plus, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -13,9 +12,14 @@ export default function DownloadLinksTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'download_links'), orderBy('created_date', 'desc'), limit(20));
-      const snap = await getDocs(q);
-      setLinks(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const { data, error } = await supabase
+        .from('download_links')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      setLinks(data || []);
     } catch (e) {
       console.error(e);
       toast.error('Failed to load links');
@@ -33,31 +37,33 @@ export default function DownloadLinksTab() {
     setSaving(true);
     try {
       if (editing.id) {
-        await updateDoc(doc(db, 'download_links', editing.id), {
+        const { error } = await supabase.from('download_links').update({
           type: editing.type,
           label: editing.label,
           url: editing.url,
           version: editing.version,
-          active: editing.active
-        });
+          active: editing.active,
+          updated_at: new Date().toISOString()
+        }).eq('id', editing.id);
+        if (error) throw error;
         toast.success('Link updated');
       } else {
-        const newId = crypto.randomUUID();
-        await setDoc(doc(db, 'download_links', newId), {
+        const { error } = await supabase.from('download_links').insert({
           type: editing.type,
           label: editing.label,
           url: editing.url,
           version: editing.version,
           active: true,
-          created_date: new Date().toISOString()
+          created_at: new Date().toISOString()
         });
+        if (error) throw error;
         toast.success('Link added');
       }
       setEditing(null);
       load();
     } catch (e) {
       console.error(e);
-      toast.error('Failed to save link');
+      toast.error('Failed to save link: ' + e.message);
     } finally {
       setSaving(false);
     }
@@ -65,7 +71,8 @@ export default function DownloadLinksTab() {
 
   const remove = async (id) => {
     try {
-      await deleteDoc(doc(db, 'download_links', id));
+      const { error } = await supabase.from('download_links').delete().eq('id', id);
+      if (error) throw error;
       setLinks(prev => prev.filter(l => l.id !== id));
       toast.success('Link removed');
     } catch (e) {

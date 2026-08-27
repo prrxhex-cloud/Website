@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { DollarSign, Plus, Trash2, Check, Percent, TrendingUp, ShieldCheck, Zap, Store, Layers, Package } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -31,27 +30,23 @@ export default function PricePlansTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'), limit(100));
-      let snap = await getDocs(q);
-      let data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      let { data, error } = await supabase
+        .from('price_plans')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .limit(100);
       
       if (!data || data.length === 0) {
-        const batch = writeBatch(db);
-        DEFAULT_DB_PLANS.forEach(plan => {
-          const newId = crypto.randomUUID();
-          const docRef = doc(db, 'price_plans', newId);
-          batch.set(docRef, {
-            ...plan,
-            created_date: new Date().toISOString()
-          });
-        });
-        await batch.commit();
-        
-        snap = await getDocs(q);
-        data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const toInsert = DEFAULT_DB_PLANS.map(plan => ({
+          ...plan,
+          created_at: new Date().toISOString()
+        }));
+        await supabase.from('price_plans').insert(toInsert);
+        const { data: seeded } = await supabase.from('price_plans').select('*').order('sort_order', { ascending: true });
+        data = seeded || [];
         toast.success('Default plans with Just In Time & Reseller rates seeded!');
       }
-      setPlans(data);
+      setPlans(data || []);
     } catch (e) {
       console.error(e);
       toast.error('Failed to load price plans');
@@ -92,18 +87,19 @@ export default function PricePlansTab() {
         popular: !!form.popular,
         crown: !!form.crown,
         sort_order: Number(form.sort_order || 0),
-        updated_date: new Date().toISOString()
+        updated_at: new Date().toISOString()
       };
 
       if (form.id) {
-        await updateDoc(doc(db, 'price_plans', form.id), payload);
+        const { error } = await supabase.from('price_plans').update(payload).eq('id', form.id);
+        if (error) throw error;
         toast.success('Plan, Key Bundle Quantity & Rates updated!');
       } else {
-        const newId = crypto.randomUUID();
-        await setDoc(doc(db, 'price_plans', newId), {
+        const { error } = await supabase.from('price_plans').insert({
           ...payload,
-          created_date: new Date().toISOString()
+          created_at: new Date().toISOString()
         });
+        if (error) throw error;
         toast.success('New plan added!');
       }
       setForm(null);
@@ -118,7 +114,8 @@ export default function PricePlansTab() {
 
   const remove = async (id) => {
     try {
-      await deleteDoc(doc(db, 'price_plans', id));
+      const { error } = await supabase.from('price_plans').delete().eq('id', id);
+      if (error) throw error;
       setPlans(prev => prev.filter(p => p.id !== id));
       toast.success('Plan removed');
     } catch (e) {

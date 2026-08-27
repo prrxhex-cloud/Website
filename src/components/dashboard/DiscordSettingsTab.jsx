@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { Bell, Check, Link2, MessageCircle, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { clearDiscordConfigCache } from '@/utils/discordNotifier';
@@ -19,9 +18,8 @@ export default function DiscordSettingsTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const snapshot = await getDocs(collection(db, 'discord_webhooks'));
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (data.length > 0) {
+      const { data, error } = await supabase.from('discord_webhooks').select('*').limit(1);
+      if (data && data.length > 0) {
         setRecord(data[0]);
         setTicketUrl(data[0].ticket_webhook_url || '');
         setFreebieUrl(data[0].freebie_webhook_url || '');
@@ -48,18 +46,24 @@ export default function DiscordSettingsTab() {
         receipt_webhook_url: receiptUrl,
         discord_invite_url: discordInviteUrl,
         bot_dashboard_url: botDashboardUrl,
-        bot_api_key: botApiKey
+        bot_api_key: botApiKey,
+        updated_at: new Date().toISOString()
       };
       if (record) {
-        await updateDoc(doc(db, 'discord_webhooks', record.id), payload);
+        const { error } = await supabase.from('discord_webhooks').update(payload).eq('id', record.id);
+        if (error) throw error;
       } else {
-        await addDoc(collection(db, 'discord_webhooks'), payload);
+        const { error } = await supabase.from('discord_webhooks').insert({
+          ...payload,
+          created_at: new Date().toISOString()
+        });
+        if (error) throw error;
       }
       toast.success('Discord settings & invite URL saved successfully');
       clearDiscordConfigCache();
       load();
     } catch (e) {
-      toast.error('Failed to save settings');
+      toast.error('Failed to save settings: ' + e.message);
     } finally {
       setSaving(false);
     }

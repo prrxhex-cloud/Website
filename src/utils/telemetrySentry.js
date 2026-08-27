@@ -94,7 +94,7 @@ class TelemetrySentryEngine {
    */
   async probeInfrastructureHealth() {
     const results = {
-      firebase: 'checking',
+      supabase: 'checking',
       githubCdn: 'checking',
       timestamp: Date.now()
     };

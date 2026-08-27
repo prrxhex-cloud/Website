@@ -1,10 +1,14 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { auth, signOut } from './firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-
+﻿import React, { createContext, useState, useContext, useEffect } from 'react';
+import { supabase } from './supabase';
 import { secureStorage } from '@/utils/secureStorage';
 
 const AuthContext = createContext();
+
+const ADMIN_EMAILS = [
+  'sayurujayani123@gmail.com',
+  'admin@prrxhex.com',
+  'sayuru@prrxhex.com'
+];
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -12,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    // 1. Synchronously check cached keyAuthUser for instant 0ms hydration
+    // 1. Synchronously check cached keyAuthUser for instant hydration
     let keyAuthUser = secureStorage.getItemSync('prrx_keyauth_user');
     if (!keyAuthUser) {
       const legacy = localStorage.getItem('prrx_keyauth_user');
@@ -27,16 +31,41 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
     }
 
-    // 2. Attach onAuthStateChanged synchronously
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        const adminEmails = ['sayurujayani123@gmail.com', 'admin@prrxhex.com', 'sayuru@prrxhex.com'];
-        const isAdminUser = adminEmails.includes((currentUser.email || '').toLowerCase());
+    // 2. Hydrate initial Supabase session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const email = session.user.email || '';
+        const isAdminUser = ADMIN_EMAILS.includes(email.toLowerCase());
         setUser({
-          uid: currentUser.uid,
-          email: currentUser.email,
-          displayName: currentUser.displayName,
-          role: isAdminUser ? 'admin' : 'user'
+          uid: session.user.id,
+          id: session.user.id,
+          email: email,
+          displayName: session.user.user_metadata?.full_name || session.user.user_metadata?.name || email.split('@')[0],
+          avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
+          role: isAdminUser ? 'admin' : 'user',
+        });
+        setIsAuthenticated(true);
+      } else if (keyAuthUser) {
+        setUser(keyAuthUser);
+        setIsAuthenticated(true);
+      }
+      setIsLoadingAuth(false);
+    }).catch(() => {
+      setIsLoadingAuth(false);
+    });
+
+    // 3. Listen to Supabase Auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const email = session.user.email || '';
+        const isAdminUser = ADMIN_EMAILS.includes(email.toLowerCase());
+        setUser({
+          uid: session.user.id,
+          id: session.user.id,
+          email: email,
+          displayName: session.user.user_metadata?.full_name || session.user.user_metadata?.name || email.split('@')[0],
+          avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
+          role: isAdminUser ? 'admin' : 'user',
         });
         setIsAuthenticated(true);
       } else if (keyAuthUser) {
@@ -49,20 +78,31 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
     });
 
-    // 3. Fallback timeout to ensure app never gets stuck on black screen
+    // 4. Safety fallback timeout
     const safetyTimeout = setTimeout(() => {
       setIsLoadingAuth(false);
     }, 1500);
 
     return () => {
-      unsubscribe();
+      subscription?.unsubscribe();
       clearTimeout(safetyTimeout);
     };
   }, []);
 
+  const loginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + window.location.pathname,
+      },
+    });
+    if (error) throw error;
+  };
+
   const loginWithKeyAuth = (userData, panelType = 'EXTERNAL') => {
     const keyAuthUser = {
       uid: 'keyauth-' + (userData.username || 'user'),
+      id: 'keyauth-' + (userData.username || 'user'),
       email: userData.username || 'KeyAuth User',
       displayName: userData.username || 'KeyAuth User',
       role: panelType.toLowerCase() === 'internal' ? 'internal' : 'external',
@@ -80,7 +120,9 @@ export const AuthProvider = ({ children }) => {
     try {
       secureStorage.removeItem('prrx_keyauth_user');
       secureStorage.removeItem('prrx_panel_type');
-      await signOut(auth);
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsAuthenticated(false);
       if (shouldRedirect) {
         window.location.reload();
       }
@@ -100,7 +142,8 @@ export const AuthProvider = ({ children }) => {
       isLoadingAuth,
       logout,
       navigateToLogin,
-      loginWithKeyAuth
+      loginWithKeyAuth,
+      loginWithGoogle
     }}>
       {children}
     </AuthContext.Provider>
@@ -114,4 +157,4 @@ export const useAuth = () => {
   }
   return context;
 };
-
+export default AuthContext;

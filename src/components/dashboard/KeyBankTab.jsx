@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { Key, Plus, Trash2, Check, Shield, CheckCircle2, XCircle, Clock, RefreshCw, Search, Filter, AlertTriangle, ChevronDown, CheckSquare, Square, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -59,7 +58,7 @@ export default function KeyBankTab() {
   const copySelectedKeys = () => {
     const selectedKeyDocs = keys.filter(k => selectedIds.has(k.id));
     if (selectedKeyDocs.length === 0) return;
-    const textToCopy = selectedKeyDocs.map(k => k.key).join('\n');
+    const textToCopy = selectedKeyDocs.map(k => k.license_key || k.key).join('\n');
     navigator.clipboard.writeText(textToCopy);
     toast.success(`Copied ${selectedKeyDocs.length} keys to clipboard!`);
   };
@@ -67,16 +66,16 @@ export default function KeyBankTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const [keySnap, planSnap] = await Promise.allSettled([
-        getDocs(query(collection(db, 'license_keys'), orderBy('created_date', 'desc'), limit(10000))),
-        getDocs(query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'), limit(100)))
+      const [keyRes, planRes] = await Promise.allSettled([
+        supabase.from('license_keys').select('*').order('created_at', { ascending: false }).limit(10000),
+        supabase.from('price_plans').select('*').order('sort_order', { ascending: true }).limit(100)
       ]);
 
-      if (keySnap.status === 'fulfilled' && keySnap.value) {
-        setKeys(keySnap.value.docs.map(d => ({ id: d.id, ...d.data() })));
+      if (keyRes.status === 'fulfilled' && keyRes.value?.data) {
+        setKeys(keyRes.value.data.map(k => ({ ...k, key: k.license_key || k.key })));
       }
-      if (planSnap.status === 'fulfilled' && planSnap.value) {
-        setPlans(planSnap.value.docs.map(d => ({ id: d.id, ...d.data() })));
+      if (planRes.status === 'fulfilled' && planRes.value?.data) {
+        setPlans(planRes.value.data);
       }
     } catch (e) {
       console.error(e);
@@ -95,37 +94,23 @@ export default function KeyBankTab() {
 
     setSaving(true);
     try {
-      const chunkSize = 450;
-      const batches = [];
+      const payloadRows = rawKeys.map(k => ({
+        license_key: k,
+        panel_type: form.product_type || 'external',
+        duration: form.duration || '1 Month',
+        status: 'available',
+        created_at: new Date().toISOString()
+      }));
 
-      for (let i = 0; i < rawKeys.length; i += chunkSize) {
-        const chunk = rawKeys.slice(i, i + chunkSize);
-        const batch = writeBatch(db);
+      const { error } = await supabase.from('license_keys').insert(payloadRows);
+      if (error) throw error;
 
-        chunk.forEach(k => {
-          const newId = crypto.randomUUID();
-          const docRef = doc(db, 'license_keys', newId);
-          batch.set(docRef, {
-            key: k,
-            product_type: form.product_type || 'external',
-            duration: form.duration || '1 Month',
-            duration_normalized: normalizeDurationKey(form.duration || '1 Month'),
-            status: 'available',
-            notes: form.notes || '',
-            created_date: new Date().toISOString()
-          });
-        });
-
-        batches.push(batch.commit());
-      }
-
-      await Promise.all(batches);
       toast.success(`🎉 All ${rawKeys.length} key${rawKeys.length > 1 ? 's' : ''} permanently added to stock!`);
       setForm(null);
       load();
     } catch (e) {
       console.error(e);
-      toast.error('Failed to save keys');
+      toast.error('Failed to save keys: ' + e.message);
     } finally {
       setSaving(false);
     }
@@ -135,10 +120,15 @@ export default function KeyBankTab() {
   const toggleUsed = async (k) => {
     const newStatus = k.status === 'available' ? 'used' : 'available';
     try {
-      await updateDoc(doc(db, 'license_keys', k.id), {
-        status: newStatus,
-        used_at: newStatus === 'used' ? new Date().toISOString() : null,
-      });
+      const { error } = await supabase
+        .from('license_keys')
+        .update({
+          status: newStatus,
+          sold_date: newStatus === 'used' ? new Date().toISOString() : null,
+        })
+        .eq('id', k.id);
+
+      if (error) throw error;
       setKeys(prev => prev.map(item => item.id === k.id ? { ...item, status: newStatus } : item));
       toast.success(`Key marked as ${newStatus.toUpperCase()}`);
     } catch (e) {
@@ -150,7 +140,8 @@ export default function KeyBankTab() {
   // Single key removal
   const remove = async (id) => {
     try {
-      await deleteDoc(doc(db, 'license_keys', id));
+      const { error } = await supabase.from('license_keys').delete().eq('id', id);
+      if (error) throw error;
       setKeys(prev => prev.filter(k => k.id !== id));
       setSelectedIds(prev => {
         const next = new Set(prev);
@@ -164,24 +155,13 @@ export default function KeyBankTab() {
     }
   };
 
-  // Master Bulk Delete Engine (Chunked for Firestore limits)
+  // Master Bulk Delete Engine
   const executeBatchDelete = async (targetDocIds, successMessage) => {
     if (!targetDocIds || targetDocIds.length === 0) return;
     setIsDeletingBatch(true);
     try {
-      const chunkSize = 450;
-      const batches = [];
-
-      for (let i = 0; i < targetDocIds.length; i += chunkSize) {
-        const chunk = targetDocIds.slice(i, i + chunkSize);
-        const batch = writeBatch(db);
-        chunk.forEach(id => {
-          batch.delete(doc(db, 'license_keys', id));
-        });
-        batches.push(batch.commit());
-      }
-
-      await Promise.all(batches);
+      const { error } = await supabase.from('license_keys').delete().in('id', targetDocIds);
+      if (error) throw error;
       const deletedSet = new Set(targetDocIds);
       setKeys(prev => prev.filter(k => !deletedSet.has(k.id)));
       setSelectedIds(new Set());
@@ -200,24 +180,27 @@ export default function KeyBankTab() {
     if (!targetDocIds || targetDocIds.length === 0) return;
     setIsDeletingBatch(true);
     try {
-      const chunkSize = 450;
-      const batches = [];
       const nowIso = new Date().toISOString();
+      const { error } = await supabase
+        .from('license_keys')
+        .update({
+          status: newStatus,
+          sold_date: newStatus === 'used' ? nowIso : null
+        })
+        .in('id', targetDocIds);
 
-      for (let i = 0; i < targetDocIds.length; i += chunkSize) {
-        const chunk = targetDocIds.slice(i, i + chunkSize);
-        const batch = writeBatch(db);
-        chunk.forEach(id => {
-          batch.update(doc(db, 'license_keys', id), {
-            status: newStatus,
-            used_at: newStatus === 'used' ? nowIso : null
-          });
-        });
-        batches.push(batch.commit());
-      }
-
-      await Promise.all(batches);
+      if (error) throw error;
       const updatedSet = new Set(targetDocIds);
+      setKeys(prev => prev.map(k => updatedSet.has(k.id) ? { ...k, status: newStatus } : k));
+      setSelectedIds(new Set());
+      toast.success(`Marked ${targetDocIds.length} keys as ${newStatus.toUpperCase()}`);
+    } catch (e) {
+      console.error('Batch status update error:', e);
+      toast.error('Failed to update status in batch');
+    } finally {
+      setIsDeletingBatch(false);
+    }
+  };
       setKeys(prev => prev.map(k => updatedSet.has(k.id) ? { ...k, status: newStatus, used_at: newStatus === 'used' ? nowIso : null } : k));
       setSelectedIds(new Set());
       toast.success(`Marked ${targetDocIds.length} keys as ${newStatus.toUpperCase()}!`);

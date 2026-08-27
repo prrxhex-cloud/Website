@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -11,9 +10,14 @@ export default function AdminAnnouncementsTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'announcements'), orderBy('created_date', 'desc'), limit(50));
-      const snap = await getDocs(q);
-      setAnnouncements(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setAnnouncements(data || []);
     } catch (e) {
       console.error(e);
       toast.error('Failed to load announcements');
@@ -26,7 +30,8 @@ export default function AdminAnnouncementsTab() {
 
   const deleteAnnouncement = async (id) => {
     try {
-      await deleteDoc(doc(db, 'announcements', id));
+      const { error } = await supabase.from('announcements').delete().eq('id', id);
+      if (error) throw error;
       setAnnouncements(prev => prev.filter(a => a.id !== id));
       toast.success('Announcement deleted');
     } catch (e) {

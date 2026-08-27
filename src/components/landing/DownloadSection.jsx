@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 import { Download, Shield, Zap, CheckCircle, Lock, AlertTriangle } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { useMaintenance } from '@/context/MaintenanceContext';
 
 const FALLBACK_EXTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
@@ -26,12 +25,13 @@ export default function DownloadSection() {
   const isDownloadsLocked = isPageInMaintenance('downloads') && !isAdminBypassed;
 
   useEffect(() => {
-    getDocs(query(collection(db, 'download_links'), where('active', '==', true))).then(snapshot => {
-      const links = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      const ext = links.find(l => l.type === 'external');
-      const int_ = links.find(l => l.type === 'internal');
-      if (ext) { setExternalUrl(ext.url); if (ext.label) setExternalLabel(ext.label); }
-      if (int_) { setInternalUrl(int_.url); if (int_.label) setInternalLabel(int_.label); }
+    supabase.from('download_links').select('*').eq('active', true).then(({ data: links }) => {
+      if (links && links.length > 0) {
+        const ext = links.find(l => l.type === 'external' || l.panel_type === 'external');
+        const int_ = links.find(l => l.type === 'internal' || l.panel_type === 'internal');
+        if (ext) { setExternalUrl(ext.url); if (ext.label || ext.title) setExternalLabel(ext.label || ext.title); }
+        if (int_) { setInternalUrl(int_.url); if (int_.label || int_.title) setInternalLabel(int_.label || int_.title); }
+      }
     }).catch(() => {});
   }, []);
 

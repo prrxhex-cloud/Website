@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Zap, Radio, Star, MessageCircle } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { collection, query, getDocs, limit, orderBy } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 
 const TESTIMONIALS_STATIC = [
@@ -44,20 +43,21 @@ export default function CommunitySection() {
   const [discordInviteUrl, setDiscordInviteUrl] = useState('https://discord.com/users/prrx2021');
 
   useEffect(() => {
-    const q = query(collection(db, 'world_messages'), orderBy('created_date', 'desc'), limit(50));
-    getDocs(q)
-      .then((snapshot) => {
-        setActiveUsers(1200 + (snapshot.docs.length || 0) * 3);
+    supabase.from('world_messages').select('id').limit(50)
+      .then(({ data }) => {
+        setActiveUsers(1200 + (data?.length || 0) * 3);
       })
       .catch(() => setActiveUsers(1247));
 
     // Fetch dynamic discord invite url set by admin in admin portal
-    getDocs(collection(db, 'discord_webhooks'))
-      .then(snap => {
-        if (!snap.empty && snap.docs[0].data().discord_invite_url) {
-          setDiscordInviteUrl(snap.docs[0].data().discord_invite_url);
+    supabase.from('discord_webhooks').select('*').limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0 && data[0].discord_invite_url) {
+          setDiscordInviteUrl(data[0].discord_invite_url);
         }
       })
+      .catch(() => {});
+  }, []);
       .catch(() => {});
   }, []);
 

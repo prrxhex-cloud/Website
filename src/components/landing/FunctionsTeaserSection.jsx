@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 import { ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 
@@ -18,11 +17,15 @@ export default function FunctionsTeaserSection() {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const snap = await getDoc(doc(db, 'public_settings', 'panel_images'));
-        if (snap.exists()) {
+        const { data, error } = await supabase
+          .from('panel_images')
+          .select('*')
+          .limit(1);
+
+        if (data && !error && data.length > 0) {
           const newImages = {
-            external_image_url: snap.data().external_image_url || '',
-            internal_image_url: snap.data().internal_image_url || ''
+            external_image_url: data[0].external_image_url || '',
+            internal_image_url: data[0].internal_image_url || ''
           };
           setImages(newImages);
           localStorage.setItem('prrx_panel_images_cache', JSON.stringify(newImages));

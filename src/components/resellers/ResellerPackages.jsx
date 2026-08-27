@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { getFormattedPrices } from '@/lib/currency';
 import BuyModal from '@/components/pricing/BuyModal';
 import { normalizeDurationKey } from '@/components/dashboard/KeyBankTab';
@@ -54,18 +53,15 @@ export default function ResellerPackages({ panel, onPanelChange }) {
     let isMounted = true;
     const fetchLivePlansAndStock = async () => {
       try {
-        const planQuery = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'));
-        const keyQuery = query(collection(db, 'license_keys'));
-
-        const [planSnap, keySnap] = await Promise.allSettled([
-          getDocs(planQuery),
-          getDocs(keyQuery)
+        const [planRes, keyRes] = await Promise.allSettled([
+          supabase.from('price_plans').select('*').order('sort_order', { ascending: true }),
+          supabase.from('license_keys').select('*')
         ]);
 
         if (!isMounted) return;
 
-        if (planSnap.status === 'fulfilled' && planSnap.value && !planSnap.value.empty) {
-          const planData = planSnap.value.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (planRes.status === 'fulfilled' && planRes.value?.data && planRes.value.data.length > 0) {
+          const planData = planRes.value.data;
           const externalPlans = planData.filter(p => p.panel_type === 'external');
           const internalPlans = planData.filter(p => p.panel_type === 'internal');
 
@@ -79,8 +75,8 @@ export default function ResellerPackages({ panel, onPanelChange }) {
           }
         }
 
-        if (keySnap.status === 'fulfilled' && keySnap.value) {
-          setKeysStock(keySnap.value.docs.map(d => ({ id: d.id, ...d.data() })));
+        if (keyRes.status === 'fulfilled' && keyRes.value?.data) {
+          setKeysStock(keyRes.value.data);
         }
       } catch (err) {
         console.warn('Fallback to defaults:', err);

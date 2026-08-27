@@ -4,9 +4,7 @@ import { X, ShieldCheck, Coins, CreditCard, QrCode, MessageCircle, Tag, Check, S
 import { getFormattedPrices } from '@/lib/currency';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, orderBy, getDocs, getDoc, setDoc, doc } from 'firebase/firestore';
-import { db, storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { supabase } from '@/lib/supabase';
 import { DEFAULT_BENEFICIARIES } from '@/components/dashboard/BeneficiaryAccountsTab';
 import { verifySlipTransaction } from '@/utils/aiSlipVerifier';
 import { dispenseLicenseKey } from '@/utils/keyDispenser';
@@ -106,11 +104,14 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
     let isMounted = true;
     const fetchBeneficiaries = async () => {
       try {
-        const q = query(collection(db, 'beneficiary_accounts'), orderBy('sort_order', 'asc'));
-        const snap = await getDocs(q);
+        const { data: bList, error } = await supabase
+          .from('beneficiary_accounts')
+          .select('*')
+          .order('created_at', { ascending: true });
+
         if (isMounted) {
-          if (!snap.empty) {
-            const list = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => a.active !== false);
+          if (bList && !error && bList.length > 0) {
+            const list = bList.filter(b => b.active !== false);
             if (list.length > 0) {
               setBeneficiaries(list);
               setSelectedBeneficiaryId(list[0].id);
@@ -181,24 +182,25 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
     // Real-Time Database Fallback Check (For newly added promo codes)
     if (!match) {
       try {
-        const docRef = doc(db, 'discounts', rawCode);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const d = docSnap.data();
-          if (d.active !== false) {
-            let isValid = true;
-            if (d.expires_at) {
-              let exp = new Date(d.expires_at);
-              if (typeof d.expires_at === 'string' && d.expires_at.length === 10) {
-                exp = new Date(`${d.expires_at}T23:59:59`);
-              }
-              if (exp.getTime() <= Date.now()) isValid = false;
+        const { data: d, error } = await supabase
+          .from('discounts')
+          .select('*')
+          .eq('promo_code', rawCode)
+          .single();
+
+        if (d && !error && d.active !== false) {
+          let isValid = true;
+          if (d.expires_at) {
+            let exp = new Date(d.expires_at);
+            if (typeof d.expires_at === 'string' && d.expires_at.length === 10) {
+              exp = new Date(`${d.expires_at}T23:59:59`);
             }
-            const panelMatch = !d.panel_type || d.panel_type === 'both' || d.panel_type === panelType;
-            const labelMatch = !d.plan_label || d.plan_label.toLowerCase() === plan?.label?.toLowerCase();
-            if (isValid && panelMatch && labelMatch) {
-              match = { id: docSnap.id, ...d };
-            }
+            if (exp.getTime() <= Date.now()) isValid = false;
+          }
+          const panelMatch = !d.panel_type || d.panel_type === 'both' || d.panel_type === panelType;
+          const labelMatch = !d.plan_label || d.plan_label.toLowerCase() === plan?.label?.toLowerCase();
+          if (isValid && panelMatch && labelMatch) {
+            match = d;
           }
         }
       } catch (err) {
@@ -295,9 +297,14 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
 
       // Storage upload runs asynchronously in background so user doesn't wait
       let receiptImageUrl = '';
-      uploadBytes(ref(storage, `receipts/${Date.now()}_${crypto.randomUUID()}.${slipFile.name.split('.').pop() || 'jpg'}`), slipFile)
-        .then(snap => getDownloadURL(snap.ref))
-        .then(url => { receiptImageUrl = url; })
+      const slipPath = `receipts/${Date.now()}_${crypto.randomUUID()}.${slipFile.name.split('.').pop() || 'jpg'}`;
+      supabase.storage
+        .from('receipt_slips')
+        .upload(slipPath, slipFile, { upsert: true })
+        .then(() => {
+          const { data } = supabase.storage.from('receipt_slips').getPublicUrl(slipPath);
+          if (data?.publicUrl) receiptImageUrl = data.publicUrl;
+        })
         .catch(err => console.warn("Background storage upload notice:", err));
 
       if (!verification.verified) {
@@ -305,10 +312,9 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
         setVerifyError(verification.reason);
         toast.error(`Verification Failed: ${verification.reason}`);
 
-        // Log failed attempt in Firestore receipts for admin review
+        // Log failed attempt in Supabase receipts for admin review
         try {
-          const receiptId = crypto.randomUUID();
-          await setDoc(doc(db, 'receipts', receiptId), {
+          await supabase.from('receipts').insert({
             customer_name: user?.displayName || 'VIP Guest',
             customer_email: user?.email || 'N/A',
             plan_title: itemName,
@@ -319,10 +325,11 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
             bank_name: verification.ocrData?.bank_name || currentBeneficiary.bank_name,
             transaction_number: verification.ocrData?.transaction_number || '',
             beneficiary_account: verification.ocrData?.beneficiary_account_number || '',
-            receipt_image_url: receiptImageUrl,
+            slip_url: receiptImageUrl,
+            status: 'rejected',
             verified: false,
             verification_reason: verification.reason,
-            created_date: new Date().toISOString()
+            created_at: new Date().toISOString()
           });
         } catch (e) {}
 
@@ -342,8 +349,7 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
 
       const issuedKey = dispenseResult.licenseKey || 'PRRX-VIP-AUTOKEY-PENDING-DISPATCH';
 
-      // 4. Save 100% Verified Receipt Log to Firestore
-      const receiptDocId = crypto.randomUUID();
+      // 4. Save 100% Verified Receipt Log to Supabase
       const receiptPayload = {
         customer_name: user?.displayName || 'VIP Member',
         customer_email: user?.email || 'vip-customer@prrxhex.com',
@@ -354,15 +360,17 @@ export default function BuyModal({ plan, panelType = 'external', isOpen, onClose
         amount_paid: verification.paidAmount || finalLkr,
         bank_name: verification.ocrData?.bank_name || currentBeneficiary.bank_name,
         transaction_number: verification.transactionId,
+        transaction_id: verification.transactionId,
         beneficiary_account: verification.ocrData?.beneficiary_account_number || currentBeneficiary.account_number,
-        receipt_image_url: receiptImageUrl,
+        slip_url: receiptImageUrl,
+        status: 'approved',
         verified: true,
         license_key: issuedKey,
         verification_reason: '100% Verified by Gemini Vision AI',
-        created_date: new Date().toISOString()
+        created_at: new Date().toISOString()
       };
 
-      await setDoc(doc(db, 'receipts', receiptDocId), receiptPayload);
+      await supabase.from('receipts').insert(receiptPayload);
 
       // Cryptographic Hash-Chain Ledger Stamping
       hashLedger.sealTransactionBlock({

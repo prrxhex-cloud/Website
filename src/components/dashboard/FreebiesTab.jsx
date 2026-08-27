@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { Check, Calendar, User, Lock, Link2, Trash2 } from 'lucide-react';
 import { sendFreePanelNotification } from '@/utils/discordNotifier';
 import { toast } from 'sonner';
@@ -14,10 +13,13 @@ function PanelEditor({ panelType, label, color }) {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'free_panels'), where('panel_type', '==', panelType));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (data.length > 0) {
+      const { data, error } = await supabase
+        .from('free_panels')
+        .select('*')
+        .eq('panel_type', panelType)
+        .limit(1);
+
+      if (data && data.length > 0) {
         setRecord(data[0]);
         setForm({
           start_day: data[0].start_day || '',
@@ -41,9 +43,11 @@ function PanelEditor({ panelType, label, color }) {
     setSaving(true);
     try {
       if (record) {
-        await updateDoc(doc(db, 'free_panels', record.id), form);
+        const { error } = await supabase.from('free_panels').update({ ...form, updated_at: new Date().toISOString() }).eq('id', record.id);
+        if (error) throw error;
       } else {
-        await addDoc(collection(db, 'free_panels'), { panel_type: panelType, ...form, created_date: Date.now() });
+        const { error } = await supabase.from('free_panels').insert({ panel_type: panelType, ...form, created_at: new Date().toISOString() });
+        if (error) throw error;
       }
       toast.success(`${label} saved — card is now ONLINE`);
       const allFilled = form.start_day && form.end_day && form.username && form.password;
@@ -70,7 +74,8 @@ function PanelEditor({ panelType, label, color }) {
     setSaving(true);
     try {
       if (record) {
-        await updateDoc(doc(db, 'free_panels', record.id), { start_day: '', end_day: '', username: '', password: '' });
+        const { error } = await supabase.from('free_panels').update({ start_day: '', end_day: '', username: '', password: '', updated_at: new Date().toISOString() }).eq('id', record.id);
+        if (error) throw error;
       }
       setForm(prev => ({ ...prev, start_day: '', end_day: '', username: '', password: '' }));
       toast.success(`${label} cleared — card is now OFFLINE`);

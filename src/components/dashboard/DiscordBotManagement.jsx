@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { RefreshCw, Server, Users, Activity, ShieldAlert, Clock, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -12,9 +11,8 @@ export default function DiscordBotManagement() {
 
   const loadSettings = async () => {
     try {
-      const snapshot = await getDocs(collection(db, 'discord_webhooks'));
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (data.length > 0) {
+      const { data, error } = await supabase.from('discord_webhooks').select('*').limit(1);
+      if (data && data.length > 0) {
         setConfig({
           url: data[0].bot_dashboard_url || '',
           key: data[0].bot_api_key || ''

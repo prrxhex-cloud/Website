@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, MessageCircle, Users, Zap } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 
 const DEFAULT_WHATSAPP = 'https://chat.whatsapp.com/CsElU5rhsXVDMjjuFHFvgI';
 const DEFAULT_DISCORD = 'https://discord.gg/EuwhvXXfJC';
@@ -12,9 +11,8 @@ export default function CommunityPopup() {
   const [links, setLinks] = useState({ whatsapp_url: DEFAULT_WHATSAPP, discord_url: DEFAULT_DISCORD, popup_enabled: true });
 
   useEffect(() => {
-    getDocs(collection(db, 'community_links')).then(snapshot => {
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (data?.length > 0) setLinks(data[0]);
+    supabase.from('community_links').select('*').limit(1).then(({ data }) => {
+      if (data && data.length > 0) setLinks(data[0]);
     }).catch(() => {});
 
     if (dismissed) return;

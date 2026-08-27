@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { Image as ImageIcon, RefreshCw, Sparkles, Check, ExternalLink, Folder } from 'lucide-react';
 import { resolveImageUrl, REPO_PANEL_PRESETS } from '@/utils/imagePathHelper';
 import { toast } from 'sonner';
 
 export default function PanelImagesTab() {
+  const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [images, setImages] = useState({
@@ -17,13 +17,14 @@ export default function PanelImagesTab() {
   const loadSettings = async () => {
     setLoading(true);
     try {
-      const snap = await getDoc(doc(db, 'public_settings', 'panel_images'));
-      if (snap.exists()) {
-        const data = snap.data();
+      const { data, error } = await supabase.from('panel_images').select('*').limit(1);
+      if (data && data.length > 0) {
+        const item = data[0];
+        setRecordId(item.id);
         setImages({
-          external_image_url: data.external_image_url || 'panels/external_panel.png',
-          internal_image_url: data.internal_image_url || 'panels/internal_panel.png',
-          hero_hud_url: data.hero_hud_url || 'panels/hero_hud.png'
+          external_image_url: item.external_image_url || 'panels/external_panel.png',
+          internal_image_url: item.internal_image_url || 'panels/internal_panel.png',
+          hero_hud_url: item.hero_hud_url || 'panels/hero_hud.png'
         });
       }
     } catch (e) {
@@ -38,17 +39,29 @@ export default function PanelImagesTab() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await setDoc(doc(db, 'public_settings', 'panel_images'), {
+      const payload = {
         external_image_url: images.external_image_url.trim(),
         internal_image_url: images.internal_image_url.trim(),
         hero_hud_url: images.hero_hud_url.trim(),
         updated_at: new Date().toISOString()
-      }, { merge: true });
+      };
+
+      if (recordId) {
+        const { error } = await supabase.from('panel_images').update(payload).eq('id', recordId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('panel_images').insert({
+          ...payload,
+          created_at: new Date().toISOString()
+        });
+        if (error) throw error;
+      }
 
       toast.success('🎉 Panel Images updated successfully!');
+      loadSettings();
     } catch (e) {
       console.error(e);
-      toast.error('Failed to save panel images');
+      toast.error('Failed to save panel images: ' + e.message);
     }
     setSaving(false);
   };

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { MessageCircle, Users, Save, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -12,9 +11,8 @@ export default function CommunityLinksTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const snapshot = await getDocs(collection(db, 'community_links'));
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (data?.length > 0) {
+      const { data, error } = await supabase.from('community_links').select('*').limit(1);
+      if (data && data.length > 0) {
         setLink(data[0]);
       } else {
         setLink({ whatsapp_url: 'https://chat.whatsapp.com/CsElU5rhsXVDMjjuFHFvgI', discord_url: 'https://discord.gg/EuwhvXXfJC', popup_enabled: true });
@@ -35,16 +33,22 @@ export default function CommunityLinksTab() {
         whatsapp_url: link.whatsapp_url,
         discord_url: link.discord_url,
         popup_enabled: link.popup_enabled !== false,
+        updated_at: new Date().toISOString()
       };
       if (link.id) {
-        await updateDoc(doc(db, 'community_links', link.id), payload);
+        const { error } = await supabase.from('community_links').update(payload).eq('id', link.id);
+        if (error) throw error;
       } else {
-        await addDoc(collection(db, 'community_links'), payload);
+        const { error } = await supabase.from('community_links').insert({
+          ...payload,
+          created_at: new Date().toISOString()
+        });
+        if (error) throw error;
       }
       toast.success('Community links saved!');
       load();
-    } catch {
-      toast.error('Failed to save links');
+    } catch (err) {
+      toast.error('Failed to save links: ' + err.message);
     }
     setSaving(false);
   };

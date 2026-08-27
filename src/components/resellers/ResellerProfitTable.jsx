@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { normalizeDurationKey } from '@/components/dashboard/KeyBankTab';
 import { LayoutGrid, Settings, DollarSign, TrendingUp, ShieldCheck, Sparkles, MessageCircle, Zap, Store, Flame, Crown, Clock, CheckCircle2 } from 'lucide-react';
 
@@ -45,15 +44,17 @@ export default function ResellerProfitTable({ onApplyWhatsApp, panel: propPanel,
     return DEFAULT_PROFIT_PLANS;
   });
 
-  // Auto-sync real price plans from Firestore database in real-time
+  // Auto-sync real price plans from Supabase database in real-time
   useEffect(() => {
     let isMounted = true;
     const fetchLivePlans = async () => {
       try {
-        const q = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'));
-        const snap = await getDocs(q);
-        if (isMounted && !snap.empty) {
-          const planData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const { data: planData, error } = await supabase
+          .from('price_plans')
+          .select('*')
+          .order('sort_order', { ascending: true });
+
+        if (isMounted && planData && !error && planData.length > 0) {
           const externalPlans = planData.filter(p => p.panel_type === 'external');
           const internalPlans = planData.filter(p => p.panel_type === 'internal');
 

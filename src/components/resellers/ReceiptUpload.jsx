@@ -5,9 +5,7 @@ import { toast } from 'sonner';
 import { getPricePlans, buildDurationOptions, getExpectedPrice } from '@/utils/pricePlans';
 import { sendReceiptVerificationNotification } from '@/utils/discordNotifier';
 import { verifyBeneficiaryAccount } from '@/utils/beneficiaryVerifier';
-import { db, storage } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { supabase } from '@/lib/supabase';
 import { scanReceipt } from '@/utils/ocrService';
 
 const PRODUCT_OPTIONS = [
@@ -48,10 +46,11 @@ export default function ReceiptUpload({ account }) {
     setStatus('uploading');
 
     try {
-      // 1. Upload image to Firebase Storage
-      const storageRef = ref(storage, `receipts/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const file_url = await getDownloadURL(storageRef);
+      // 1. Upload image to Supabase Storage
+      const slipPath = `receipts/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+      const { error: uploadErr } = await supabase.storage.from('receipt_slips').upload(slipPath, file, { upsert: true });
+      if (uploadErr) console.warn('Supabase storage upload notice:', uploadErr);
+      const file_url = supabase.storage.from('receipt_slips').getPublicUrl(slipPath).data?.publicUrl || '';
       setStatus('processing');
 
       // 2. Enhanced OCR via Gemini API
@@ -104,19 +103,26 @@ export default function ReceiptUpload({ account }) {
       let isDuplicate = false;
       let dupReceipt = null;
 
-      const receiptsRef = collection(db, 'reseller_receipts');
       if (ocr.transaction_number) {
-        const dupsByRef = await getDocs(query(receiptsRef, where('extracted_reference', '==', ocr.transaction_number)));
-        if (!dupsByRef.empty) {
+        const { data: dupsByRef } = await supabase
+          .from('reseller_receipts')
+          .select('*')
+          .eq('extracted_reference', ocr.transaction_number);
+
+        if (dupsByRef && dupsByRef.length > 0) {
           isDuplicate = true;
-          dupReceipt = dupsByRef.docs[0].data();
+          dupReceipt = dupsByRef[0];
         }
       }
 
       // Secondary duplicate check
       if (!isDuplicate && ocr.amount && ocr.date) {
-        const allReceipts = await getDocs(query(receiptsRef, where('reseller_email', '==', account.email)));
-        const sameDayAmount = allReceipts.docs.map(d => d.data()).filter(r =>
+        const { data: allReceipts } = await supabase
+          .from('reseller_receipts')
+          .select('*')
+          .eq('reseller_email', account.email);
+
+        const sameDayAmount = (allReceipts || []).filter(r =>
           r.extracted_amount === ocr.amount &&
           r.extracted_date === ocr.date &&
           r.status !== 'rejected'
@@ -132,7 +138,7 @@ export default function ReceiptUpload({ account }) {
 
       // 4. Save receipt
       const receiptData = {
-        reseller_uid: account.uid,
+        reseller_uid: account.uid || account.id,
         reseller_email: account.email,
         reseller_display_name: account.display_name || account.email,
         customer_email: customerEmail.toLowerCase(),
@@ -148,7 +154,7 @@ export default function ReceiptUpload({ account }) {
         created_at: new Date().toISOString()
       };
       
-      await addDoc(receiptsRef, receiptData);
+      await supabase.from('reseller_receipts').insert(receiptData);
 
       setResult({ autoApproved, isDuplicate, dupReceipt, ocr, expectedAmount: expected });
       setStatus('done');

@@ -1,5 +1,4 @@
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { DEFAULT_BENEFICIARIES } from '@/components/dashboard/BeneficiaryAccountsTab';
 
 const getApiKey = () => {
@@ -295,13 +294,13 @@ export async function verifySlipTransaction({ file, expectedLkrAmount, planTitle
     // -------------------------------------------------------------
     let validBeneficiaries = DEFAULT_BENEFICIARIES;
     try {
-      const bSnap = await getDocs(collection(db, 'beneficiary_accounts'));
-      if (!bSnap.empty) {
-        const activeList = bSnap.docs.map(d => d.data()).filter(a => a.active !== false);
+      const { data: bData, error } = await supabase.from('beneficiary_accounts').select('*');
+      if (bData && !error && bData.length > 0) {
+        const activeList = bData.filter(a => a.active !== false);
         if (activeList.length > 0) validBeneficiaries = activeList;
       }
     } catch (e) {
-      console.warn("Could not fetch Firestore beneficiaries, using defaults:", e);
+      console.warn("Could not fetch Supabase beneficiaries, using defaults:", e);
     }
 
     const extractedAcc = ocrData.beneficiary_account_number || '';
@@ -326,9 +325,13 @@ export async function verifySlipTransaction({ file, expectedLkrAmount, planTitle
     const rawTxnId = (ocrData.transaction_number || '').trim();
     if (rawTxnId) {
       try {
-        const dupQuery = query(collection(db, 'receipts'), where('transaction_number', '==', rawTxnId));
-        const dupSnap = await getDocs(dupQuery);
-        if (!dupSnap.empty) {
+        const { data: dupData } = await supabase
+          .from('receipts')
+          .select('id')
+          .eq('transaction_number', rawTxnId)
+          .limit(1);
+
+        if (dupData && dupData.length > 0) {
           return {
             verified: false,
             reason: `⚠️ Duplicate Slip Detected: Transaction ID "${rawTxnId}" has already been used and claimed on this website.`,

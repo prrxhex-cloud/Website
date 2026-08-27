@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, where, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, Check, X, User, Trash2, RefreshCw, LogOut, Shield, ShieldAlert, AlertTriangle, Activity, UserPlus, Clock, Store, Key, CreditCard, DollarSign, Tag, Link2, Users, Gift, Bell, MessageCircle, Megaphone, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -33,8 +32,9 @@ function UsersTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const snap = await getDocs(query(collection(db, 'users'), limit(100)));
-      setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const { data, error } = await supabase.from('resellers').select('*').limit(100);
+      if (error) throw error;
+      setUsers(data || []);
     } catch(err) {
       toast.error('Failed to load users');
     } finally {
@@ -67,13 +67,13 @@ function UsersTab() {
                 {u.avatar_url ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" /> : <User className="w-5 h-5 text-[#00d4ff]" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-orbitron font-bold text-sm text-white truncate">{u.display_name || u.full_name || 'UNNAMED_USER'}</p>
-                <p className="font-inter text-xs text-gray-400 truncate">{u.email}</p>
+                <p className="font-orbitron font-bold text-sm text-white truncate">{u.display_name || u.username || 'UNNAMED_USER'}</p>
+                <p className="font-inter text-xs text-gray-400 truncate">{u.email || u.username}</p>
               </div>
               <div className="flex-shrink-0">
                 <span className="font-orbitron font-bold text-[10px] tracking-widest px-3 py-1 rounded-full uppercase"
-                  style={{ background: u.role === 'admin' ? 'rgba(255,170,0,0.1)' : (u.role === 'reseller' ? 'rgba(170,68,255,0.1)' : 'rgba(0,212,255,0.1)'), color: u.role === 'admin' ? '#ffaa00' : (u.role === 'reseller' ? '#aa44ff' : '#00d4ff'), border: u.role === 'admin' ? '1px solid rgba(255,170,0,0.3)' : (u.role === 'reseller' ? '1px solid rgba(170,68,255,0.3)' : '1px solid rgba(0,212,255,0.3)') }}>
-                  {u.role || 'user'}
+                  style={{ background: u.role === 'admin' ? 'rgba(255,170,0,0.1)' : 'rgba(170,68,255,0.1)', color: u.role === 'admin' ? '#ffaa00' : '#aa44ff', border: u.role === 'admin' ? '1px solid rgba(255,170,0,0.3)' : '1px solid rgba(170,68,255,0.3)' }}>
+                  {u.role || 'reseller'}
                 </span>
               </div>
             </div>
@@ -94,8 +94,8 @@ function AdminsTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const snap = await getDocs(query(collection(db, 'system_admins')));
-      setAdmins(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const { data, error } = await supabase.from('system_admins').select('*');
+      if (!error && data) setAdmins(data);
     } catch(e) { console.error(e); }
     setLoading(false);
   };
@@ -105,24 +105,26 @@ function AdminsTab() {
   const addAdmin = async () => {
     if (!newUsername || !newPassword) return toast.error('Fill both fields');
     try {
-      await setDoc(doc(db, 'system_admins', newUsername.toLowerCase()), {
-        username: newUsername,
+      const { error } = await supabase.from('system_admins').insert({
+        username: newUsername.trim(),
         password: newPassword,
         created_at: new Date().toISOString()
       });
+      if (error) throw error;
       toast.success('Admin added!');
       setNewUsername('');
       setNewPassword('');
       load();
     } catch(e) {
-      toast.error('Failed to add admin');
+      toast.error('Failed to add admin: ' + e.message);
     }
   };
 
   const delAdmin = async (id) => {
     if(!window.confirm('WARNING: Deleting this admin will revoke their access. Proceed?')) return;
     try {
-      await deleteDoc(doc(db, 'system_admins', id));
+      const { error } = await supabase.from('system_admins').delete().eq('id', id);
+      if (error) throw error;
       toast.success('Admin deleted');
       load();
     } catch(e) {
@@ -222,9 +224,13 @@ function LoginForm({ onSuccess }) {
 
     setLoading(true);
     try {
-      const q = query(collection(db, 'system_admins'), where('username', '==', username), where('password', '==', password));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
+      const { data, error } = await supabase
+        .from('system_admins')
+        .select('*')
+        .eq('username', username.trim())
+        .eq('password', password);
+
+      if (!error && data && data.length > 0) {
         onSuccess(username);
       } else {
         toast.error('Invalid credentials or unauthorized access attempt.');

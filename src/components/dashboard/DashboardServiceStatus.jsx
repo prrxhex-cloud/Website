@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, CheckCircle, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 
 const STATUS_CFG = {
@@ -18,10 +17,15 @@ export default function DashboardServiceStatus() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'service_status'), orderBy('sort_order', 'asc'), limit(20));
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      setServices(data);
+      const { data, error } = await supabase
+        .from('service_status')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .limit(20);
+
+      if (!error && data) {
+        setServices(data);
+      }
     } catch (e) {
       console.error(e);
     }

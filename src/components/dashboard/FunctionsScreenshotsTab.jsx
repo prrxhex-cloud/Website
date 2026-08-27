@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { LayoutGrid, Upload, RefreshCw, Link, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,6 +13,7 @@ const CATEGORIES = [
 ];
 
 export default function FunctionsScreenshotsTab() {
+  const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activePanel, setActivePanel] = useState('external'); // external | internal
@@ -42,15 +41,16 @@ export default function FunctionsScreenshotsTab() {
   const loadSettings = async () => {
     setLoading(true);
     try {
-      const snap = await getDoc(doc(db, 'public_settings', 'functions_screenshots'));
-      if (snap.exists()) {
-        const data = snap.data();
+      const { data, error } = await supabase.from('functions_screenshots').select('*').limit(1);
+      if (data && data.length > 0) {
+        const item = data[0];
+        setRecordId(item.id);
         setImages({
-          internal_screenshots: data.internal_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
-          external_screenshots: data.external_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
+          internal_screenshots: item.internal_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
+          external_screenshots: item.external_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
         });
-        if (data.meta) {
-          setMeta(prev => ({ ...prev, ...data.meta }));
+        if (item.meta) {
+          setMeta(prev => ({ ...prev, ...item.meta }));
         }
       }
     } catch (e) {
@@ -92,10 +92,12 @@ export default function FunctionsScreenshotsTab() {
         for (const cat of CATEGORIES) {
           const file = panelFiles[cat.key];
           if (file) {
-            const fileRef = ref(storage, `functions_screenshots/${panel}_${cat.key}_${Date.now()}_${file.name}`);
-            await uploadBytes(fileRef, file);
-            const url = await getDownloadURL(fileRef);
-            updatedImages[`${panel}_screenshots`][cat.key] = url;
+            const filePath = `functions_screenshots/${panel}_${cat.key}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+            await supabase.storage.from('panel_images').upload(filePath, file, { upsert: true });
+            const url = supabase.storage.from('panel_images').getPublicUrl(filePath).data?.publicUrl || '';
+            if (url) {
+              updatedImages[`${panel}_screenshots`][cat.key] = url;
+            }
           }
         }
       };
@@ -103,20 +105,31 @@ export default function FunctionsScreenshotsTab() {
       await uploadCategoryFiles('internal');
       await uploadCategoryFiles('external');
 
-      // Save to Firestore
-      await setDoc(doc(db, 'public_settings', 'functions_screenshots'), {
+      const payload = {
         internal_screenshots: updatedImages.internal_screenshots,
         external_screenshots: updatedImages.external_screenshots,
         meta: meta,
         updated_at: new Date().toISOString()
-      }, { merge: true });
+      };
+
+      if (recordId) {
+        const { error } = await supabase.from('functions_screenshots').update(payload).eq('id', recordId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('functions_screenshots').insert({
+          ...payload,
+          created_at: new Date().toISOString()
+        });
+        if (error) throw error;
+      }
 
       setImages(updatedImages);
       setFiles({ internal: {}, external: {} });
       toast.success('Functions screenshots & statistics updated successfully!');
+      loadSettings();
     } catch (e) {
       console.error(e);
-      toast.error('Failed to update settings');
+      toast.error('Failed to update settings: ' + e.message);
     }
     setSaving(false);
   };

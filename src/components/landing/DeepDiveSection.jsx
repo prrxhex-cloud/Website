@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 import { Lock, Maximize2, X } from 'lucide-react';
 
@@ -14,11 +13,15 @@ export default function DeepDiveSection() {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const snap = await getDoc(doc(db, 'public_settings', 'panel_images'));
-        if (snap.exists()) {
+        const { data, error } = await supabase
+          .from('panel_images')
+          .select('*')
+          .limit(1);
+
+        if (data && !error && data.length > 0) {
           const newImages = {
-            external_image_url: snap.data().external_image_url || '',
-            internal_image_url: snap.data().internal_image_url || ''
+            external_image_url: data[0].external_image_url || '',
+            internal_image_url: data[0].internal_image_url || ''
           };
           setPanelImages(newImages);
           localStorage.setItem('prrx_panel_images', JSON.stringify(newImages));

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { Check, Settings, LayoutGrid, SlidersHorizontal, Image as ImageIcon, Lock, Keyboard, X, Maximize2 } from 'lucide-react';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 
@@ -42,9 +41,13 @@ export default function FunctionsSection() {
     
     const fetchImages = async () => {
       try {
-        const snap = await getDoc(doc(db, 'public_settings', 'functions_screenshots'));
-        if (snap.exists()) {
-          const data = snap.data();
+        const { data: funcData } = await supabase
+          .from('functions_screenshots')
+          .select('*')
+          .limit(1);
+
+        if (funcData && funcData.length > 0) {
+          const data = funcData[0];
           const newImages = {
             internal: data.internal_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' },
             external: data.external_screenshots || { aimbot: '', visuals: '', colors: '', misc: '', keybinds: '', settings: '' }
@@ -57,11 +60,15 @@ export default function FunctionsSection() {
           }
         }
         
-        const panelSnap = await getDoc(doc(db, 'public_settings', 'panel_images'));
-        if (panelSnap.exists()) {
+        const { data: panelData } = await supabase
+          .from('panel_images')
+          .select('*')
+          .limit(1);
+
+        if (panelData && panelData.length > 0) {
           const newPanelImages = {
-            external_image_url: panelSnap.data().external_image_url || '',
-            internal_image_url: panelSnap.data().internal_image_url || ''
+            external_image_url: panelData[0].external_image_url || '',
+            internal_image_url: panelData[0].internal_image_url || ''
           };
           setPanelImages(newPanelImages);
           localStorage.setItem('prrx_panel_images', JSON.stringify(newPanelImages));

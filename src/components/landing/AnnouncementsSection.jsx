@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, limit, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 import { Plus, Edit2, Trash2, Megaphone, Newspaper, Zap, AlertTriangle, Pin } from 'lucide-react';
@@ -38,7 +37,7 @@ function AnnouncementCard({ item, isAdmin, onEdit, onDelete }) {
               {cfg.label}
             </span>
             <span className="font-inter text-xs text-[var(--text-muted)] font-medium">
-              {new Date(item.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              {new Date(item.created_at || item.created_date || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </span>
           </div>
           <h3 className="font-outfit font-extrabold text-xl text-[var(--text-heading)] mb-2">{item.title}</h3>
@@ -66,18 +65,41 @@ function AnnouncementCard({ item, isAdmin, onEdit, onDelete }) {
 export default function AnnouncementsSection({ isAdmin }) {
   const [items, setItems] = useState([]);
 
+  const loadAnnouncements = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (data && !error) {
+        setItems(data.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0)));
+      }
+    } catch (e) {
+      console.warn('Announcements fetch error:', e);
+    }
+  };
+
   useEffect(() => {
-    const q = query(collection(db, 'announcements'), orderBy('created_date', 'desc'), limit(20));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      setItems(data.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0)));
-    });
-    return () => unsubscribe();
+    loadAnnouncements();
+
+    const channel = supabase
+      .channel('announcements_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => {
+        loadAnnouncements();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleDelete = async (id) => {
     try {
-      await deleteDoc(doc(db, 'announcements', id));
+      await supabase.from('announcements').delete().eq('id', id);
+      setItems(prev => prev.filter(i => i.id !== id));
     } catch (e) {
       console.error(e);
     }

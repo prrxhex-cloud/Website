@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { CreditCard, Plus, Trash2, Check, X, RefreshCw, User, Users, Building, Copy, ShieldCheck, Sparkles, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -47,10 +46,14 @@ export default function BeneficiaryAccountsTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'beneficiary_accounts'), orderBy('sort_order', 'asc'), limit(100));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        setAccounts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const { data, error } = await supabase
+        .from('beneficiary_accounts')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .limit(100);
+
+      if (data && data.length > 0) {
+        setAccounts(data);
       } else {
         // Seed initial defaults if empty
         const initial = DEFAULT_BENEFICIARIES.map((b, i) => ({ id: `default-${i}`, ...b }));
@@ -80,18 +83,19 @@ export default function BeneficiaryAccountsTab() {
         notes: form.notes || '',
         active: form.active !== undefined ? form.active : true,
         sort_order: Number(form.sort_order || 0),
-        updated_date: new Date().toISOString()
+        updated_at: new Date().toISOString()
       };
 
-      if (form.id && !form.id.startsWith('default-')) {
-        await updateDoc(doc(db, 'beneficiary_accounts', form.id), payload);
+      if (form.id && !String(form.id).startsWith('default-')) {
+        const { error } = await supabase.from('beneficiary_accounts').update(payload).eq('id', form.id);
+        if (error) throw error;
         toast.success('Payment Gateway bank details updated!');
       } else {
-        const newId = crypto.randomUUID();
-        await setDoc(doc(db, 'beneficiary_accounts', newId), {
+        const { error } = await supabase.from('beneficiary_accounts').insert({
           ...payload,
-          created_date: new Date().toISOString()
+          created_at: new Date().toISOString()
         });
+        if (error) throw error;
         toast.success('New Payment Gateway added!');
       }
       setForm(null);
@@ -106,8 +110,9 @@ export default function BeneficiaryAccountsTab() {
 
   const remove = async (id) => {
     try {
-      if (!id.startsWith('default-')) {
-        await deleteDoc(doc(db, 'beneficiary_accounts', id));
+      if (!String(id).startsWith('default-')) {
+        const { error } = await supabase.from('beneficiary_accounts').delete().eq('id', id);
+        if (error) throw error;
       }
       setAccounts(prev => prev.filter(a => a.id !== id));
       toast.success('Payment Gateway removed');
@@ -120,8 +125,9 @@ export default function BeneficiaryAccountsTab() {
   const toggleActive = async (acc) => {
     const newStatus = !acc.active;
     try {
-      if (!acc.id.startsWith('default-')) {
-        await updateDoc(doc(db, 'beneficiary_accounts', acc.id), { active: newStatus });
+      if (!String(acc.id).startsWith('default-')) {
+        const { error } = await supabase.from('beneficiary_accounts').update({ active: newStatus }).eq('id', acc.id);
+        if (error) throw error;
       }
       setAccounts(prev => prev.map(a => a.id === acc.id ? { ...a, active: newStatus } : a));
       toast.success(`Gateway ${newStatus ? 'Activated' : 'Deactivated'}`);

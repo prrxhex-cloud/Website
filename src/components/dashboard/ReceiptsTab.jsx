@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { Clock, CheckCircle2, XCircle, AlertTriangle, Search, Eye, Download, Trash2, RefreshCw, Copy, Check, Sparkles, Building, Key } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -14,9 +13,14 @@ export default function ReceiptsTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'receipts'), orderBy('created_date', 'desc'), limit(100));
-      const snap = await getDocs(q);
-      setReceipts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const { data, error } = await supabase
+        .from('receipts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      setReceipts(data || []);
     } catch (e) {
       console.error(e);
       toast.error('Failed to load receipts');
@@ -29,7 +33,8 @@ export default function ReceiptsTab() {
 
   const removeReceipt = async (id) => {
     try {
-      await deleteDoc(doc(db, 'receipts', id));
+      const { error } = await supabase.from('receipts').delete().eq('id', id);
+      if (error) throw error;
       setReceipts(prev => prev.filter(r => r.id !== id));
       if (selectedReceipt?.id === id) setSelectedReceipt(null);
       toast.success('Receipt log removed');

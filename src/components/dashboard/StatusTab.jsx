@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, limit, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { RefreshCw, Plus, Trash2, Globe, Cpu } from 'lucide-react';
 
@@ -20,10 +19,14 @@ export default function StatusTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'service_status'), orderBy('sort_order', 'asc'), limit(50));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      setServices(data);
+      const { data, error } = await supabase
+        .from('service_status')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .limit(50);
+
+      if (error) throw error;
+      setServices(data || []);
     } catch (e) {
       console.error(e);
       toast.error('Failed to load services');
@@ -35,7 +38,8 @@ export default function StatusTab() {
 
   const update = async (id, field, value) => {
     try {
-      await updateDoc(doc(db, 'service_status', id), { [field]: value });
+      const { error } = await supabase.from('service_status').update({ [field]: value }).eq('id', id);
+      if (error) throw error;
       setServices(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
     } catch (e) {
       toast.error('Failed to update');
@@ -46,19 +50,21 @@ export default function StatusTab() {
     e.preventDefault();
     if (!form.name.trim()) return;
     try {
-      await addDoc(collection(db, 'service_status'), { ...form, created_date: Date.now() });
+      const { error } = await supabase.from('service_status').insert({ ...form, created_at: new Date().toISOString() });
+      if (error) throw error;
       toast.success('Service added');
       setForm({ name: '', description: '', status: 'online', category: 'panel', uptime_elapsed: '', sort_order: 0 });
       setAdding(false);
       load();
     } catch (e) {
-      toast.error('Failed to add');
+      toast.error('Failed to add: ' + e.message);
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      await deleteDoc(doc(db, 'service_status', id));
+      const { error } = await supabase.from('service_status').delete().eq('id', id);
+      if (error) throw error;
       toast.success('Service removed');
       setServices(prev => prev.filter(s => s.id !== id));
     } catch (e) {

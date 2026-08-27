@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { Clock, CheckCircle, XCircle, RefreshCw, User } from 'lucide-react';
 
@@ -25,11 +24,16 @@ export default function ResellerStatus({ account }) {
     }
     setLoading(true);
     try {
-      const q = query(collection(db, 'reseller_receipts'), where('reseller_email', '==', account.email));
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      setReceipts(data.slice(0, 30));
+      const { data, error } = await supabase
+        .from('reseller_receipts')
+        .select('*')
+        .eq('reseller_email', account.email)
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      if (data && !error) {
+        setReceipts(data);
+      }
     } catch (error) {
       console.error(error);
     }

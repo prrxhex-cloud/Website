@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { getFormattedPrices } from '@/lib/currency';
 import { DollarSign, Plus, Trash2, Check, LayoutGrid, Settings, Star, Crown, Flame } from 'lucide-react';
 import { toast } from 'sonner';
@@ -15,10 +14,14 @@ export default function StorePricesTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'), limit(100));
-      const snap = await getDocs(q);
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setPlans(data);
+      const { data, error } = await supabase
+        .from('price_plans')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .limit(100);
+
+      if (error) throw error;
+      setPlans(data || []);
     } catch (e) {
       console.error(e);
       toast.error('Failed to load prices');
@@ -41,21 +44,22 @@ export default function StorePricesTab() {
         popular: !!form.popular,
         crown: !!form.crown,
         sort_order: Number(form.sort_order || 0),
-        updated_date: new Date().toISOString()
+        updated_at: new Date().toISOString()
       };
 
       if (form.id) {
-        await updateDoc(doc(db, 'price_plans', form.id), payload);
+        const { error } = await supabase.from('price_plans').update(payload).eq('id', form.id);
+        if (error) throw error;
         toast.success('Prices page plan updated!');
       } else {
-        const newId = crypto.randomUUID();
-        await setDoc(doc(db, 'price_plans', newId), {
+        const { error } = await supabase.from('price_plans').insert({
           ...payload,
           jit_rate: 25,
           reseller_rate: 40,
           reseller_keys_count: 10,
-          created_date: new Date().toISOString()
+          created_at: new Date().toISOString()
         });
+        if (error) throw error;
         toast.success('New store plan added!');
       }
       setForm(null);
@@ -70,7 +74,8 @@ export default function StorePricesTab() {
 
   const remove = async (id) => {
     try {
-      await deleteDoc(doc(db, 'price_plans', id));
+      const { error } = await supabase.from('price_plans').delete().eq('id', id);
+      if (error) throw error;
       setPlans(prev => prev.filter(p => p.id !== id));
       toast.success('Plan deleted from store');
     } catch (e) {

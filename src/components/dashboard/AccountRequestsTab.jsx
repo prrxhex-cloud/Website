@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, query, orderBy, limit, getDocs, updateDoc, doc, setDoc, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { RefreshCw, X, User, Clock, CheckCircle, Zap, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -34,9 +33,14 @@ export default function AccountRequestsTab({ adminUser }) {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'reseller_account_requests'), orderBy('created_date', 'desc'), limit(100));
-      const snap = await getDocs(q);
-      setRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const { data, error } = await supabase
+        .from('reseller_account_requests')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      setRequests(data || []);
     } catch (e) {
       console.error(e);
       toast.error('Failed to load requests');
@@ -50,14 +54,20 @@ export default function AccountRequestsTab({ adminUser }) {
   const claim = async (req) => {
     setProcessing(req.id);
     try {
-      await updateDoc(doc(db, 'reseller_account_requests', req.id), {
-        status: 'claimed',
-        claimed_by: adminUser,
-      });
+      const { error } = await supabase
+        .from('reseller_account_requests')
+        .update({
+          status: 'claimed',
+          claimed_by: adminUser,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', req.id);
+
+      if (error) throw error;
       toast.success(`Request secured by ${adminUser}`);
       load();
     } catch (e) {
-      toast.error('Failed to claim request');
+      toast.error('Failed to claim request: ' + e.message);
     } finally {
       setProcessing(null);
     }
@@ -66,38 +76,40 @@ export default function AccountRequestsTab({ adminUser }) {
   const createAccount = async (req) => {
     setProcessing(req.id);
     try {
-      // Check if user already exists
-      const usersRef = collection(db, 'users');
-      // For email uniqueness: if user already has an account, they can be made reseller.
-      // Assuming they requested via an email or username
-      const q = query(usersRef, where('username', '==', req.requested_username));
-      const snap = await getDocs(q);
+      // Check if user already exists in resellers
+      const { data: existing } = await supabase
+        .from('resellers')
+        .select('*')
+        .eq('username', req.requested_username);
       
-      if (!snap.empty) {
+      if (existing && existing.length > 0) {
         toast.error('Username already exists! Choose a different one.');
         setProcessing(null);
         return;
       }
 
-      // Create a user in Firestore with role reseller
-      // (Normally would use Firebase Auth, but for this mock we just create the doc)
-      const userDocId = req.requested_username.toLowerCase();
-      await setDoc(doc(db, 'users', userDocId), {
+      // Create a reseller in Supabase
+      const { error: insErr } = await supabase.from('resellers').insert({
         username: req.requested_username,
-        password: req.requested_password, // NOTE: Not secure in production, but matching base44 mock logic
+        password: req.requested_password,
         display_name: req.requested_username,
-        role: 'reseller',
         status: 'active',
         notes: `Created by admin ${adminUser} from custom request. Product: ${req.product_type} · ${req.duration}`,
         created_at: new Date().toISOString()
       });
 
-      await updateDoc(doc(db, 'reseller_account_requests', req.id), { status: 'created' });
+      if (insErr) throw insErr;
+
+      await supabase.from('reseller_account_requests').update({
+        status: 'created',
+        updated_at: new Date().toISOString()
+      }).eq('id', req.id);
+
       toast.success(`ACCOUNT ESTABLISHED: "${req.requested_username}"`);
       load();
     } catch (e) {
       console.error(e);
-      toast.error('Failed to provision account');
+      toast.error('Failed to provision account: ' + e.message);
     } finally {
       setProcessing(null);
     }
@@ -106,11 +118,16 @@ export default function AccountRequestsTab({ adminUser }) {
   const reject = async (req) => {
     setProcessing(req.id);
     try {
-      await updateDoc(doc(db, 'reseller_account_requests', req.id), { status: 'rejected' });
-      toast.success('Request successfully purged');
+      const { error } = await supabase.from('reseller_account_requests').update({
+        status: 'rejected',
+        updated_at: new Date().toISOString()
+      }).eq('id', req.id);
+
+      if (error) throw error;
+      toast.success('Request successfully marked rejected');
       load();
     } catch (e) {
-      toast.error('Failed to reject request');
+      toast.error('Failed to reject request: ' + e.message);
     } finally {
       setProcessing(null);
     }

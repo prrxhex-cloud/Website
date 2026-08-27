@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import { Globe, Cpu, Activity, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
@@ -27,7 +26,7 @@ function ServiceCard({ service, index }) {
             {service.category === 'website' ? <Globe className="w-5 h-5" /> : <Cpu className="w-5 h-5 text-[#06b6d4]" />}
           </div>
           <div>
-            <h3 className="font-outfit font-bold text-[var(--text-heading)] text-base">{service.name}</h3>
+            <h3 className="font-outfit font-bold text-[var(--text-heading)] text-base">{service.name || service.service_name}</h3>
             <p className="font-inter text-xs text-[var(--text-muted)]">{service.description}</p>
           </div>
         </div>
@@ -56,10 +55,15 @@ export default function Status() {
 
   const load = async () => {
     try {
-      const q = query(collection(db, 'service_status'), orderBy('sort_order', 'asc'), limit(50));
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      setServices(data);
+      const { data, error } = await supabase
+        .from('service_status')
+        .select('*')
+        .order('created_at', { ascending: true })
+        .limit(50);
+
+      if (data && !error) {
+        setServices(data);
+      }
     } catch (e) {
       console.error('Failed to load status:', e);
     }

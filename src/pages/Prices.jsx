@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import ScrollReveal from '@/components/effects/ScrollReveal';
@@ -98,24 +97,24 @@ function PlanCard({ plan, index, onBuy }) {
         {/* Badges */}
         {plan?.crown && (
           <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-outfit font-extrabold text-[11px] tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1">
-            <Crown className="w-3.5 h-3.5" /> BEST VALUE
+            <Crown className="w-3.5 h-3.5" /> ULTIMATE VIP
           </div>
         )}
         {plan?.popular && !plan?.crown && (
-          <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-[#06b6d4] to-cyan-600 text-white font-outfit font-extrabold text-[11px] tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1">
-            <Star className="w-3.5 h-3.5" /> MOST POPULAR
+          <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-outfit font-extrabold text-[11px] tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+            <Star className="w-3.5 h-3.5 fill-current" /> MOST POPULAR
           </div>
         )}
 
         {/* Plan Header */}
         <div className="mb-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-outfit font-extrabold text-xl text-[var(--text-heading)] tracking-tight">
+            <h3 className="font-outfit font-bold text-xl text-[var(--text-heading)]">
               {plan?.label}
             </h3>
-            {hasDiscount && (
-              <span className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-outfit font-extrabold text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
-                <Flame className="w-3 h-3 text-emerald-400" /> SALE
+            {plan?.discount && (
+              <span className="font-orbitron font-extrabold text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                SAVE {plan.discount.discount_type === 'percentage' ? `${plan.discount.discount_value}%` : `LKR ${plan.discount.discount_value}`}
               </span>
             )}
           </div>
@@ -123,16 +122,6 @@ function PlanCard({ plan, index, onBuy }) {
             {plan?.days}
           </p>
         </div>
-
-        {/* Discount Pill */}
-        {plan?.discount && (
-          <div className="mb-3 inline-flex items-center gap-1.5 bg-gradient-to-r from-cyan-500/15 to-purple-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">
-            <Tag className="w-3.5 h-3.5 text-cyan-400" />
-            <span>
-              {plan.discount.badge_text || (plan.discount.discount_type === 'percentage' ? `${plan.discount.discount_value}% OFF` : `LKR ${plan.discount.discount_value} OFF`)}
-            </span>
-          </div>
-        )}
 
         {/* Price Box */}
         <div className="my-4">
@@ -181,7 +170,7 @@ function PlanCard({ plan, index, onBuy }) {
           ].map((feat, i) => (
             <div key={i} className="flex items-center gap-2.5 text-xs font-inter text-[var(--text-primary)]">
               <div className="w-4 h-4 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-                <Check className="w-3 h-3" />
+                <Check className="w-3.5 h-3.5" />
               </div>
               <span>{feat}</span>
             </div>
@@ -241,52 +230,42 @@ export default function Prices() {
   // Live real-time countdown timer state based on database expires_at
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, hasExpiry: false, isExpired: false });
 
-  // 1. Fetch live plans, discounts, and available key stock from Firestore
+  // 1. Fetch live plans, discounts, and available key stock from Supabase
   useEffect(() => {
     let isMounted = true;
     const fetchPlansAndDiscounts = async () => {
       try {
-        const planQuery = query(collection(db, 'price_plans'), orderBy('sort_order', 'asc'));
-        const discountQuery = query(collection(db, 'discounts'), orderBy('created_date', 'desc'));
-        const keyQuery = query(collection(db, 'license_keys'));
-        
-        const [planSnap, discountSnap, keySnap] = await Promise.allSettled([
-          getDocs(planQuery),
-          getDocs(discountQuery),
-          getDocs(keyQuery)
+        const [planRes, discountRes, keyRes] = await Promise.allSettled([
+          supabase.from('price_plans').select('*').order('sort_order', { ascending: true }),
+          supabase.from('discounts').select('*').order('created_date', { ascending: false }),
+          supabase.from('license_keys').select('*')
         ]);
 
         if (!isMounted) return;
 
-        if (planSnap.status === 'fulfilled' && planSnap.value && !planSnap.value.empty) {
-          const planData = planSnap.value.docs.map(d => ({ id: d.id, ...d.data() }));
-          if (planData.length > 0) {
-            const newPlans = {
-              external: planData.filter(p => p.panel_type === 'external').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
-              internal: planData.filter(p => p.panel_type === 'internal').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
-            };
-            if (newPlans.external.length > 0 || newPlans.internal.length > 0) {
-              setPlans(newPlans);
-              localStorage.setItem('prrx_cached_plans', JSON.stringify(newPlans));
-            }
+        if (planRes.status === 'fulfilled' && planRes.value?.data && planRes.value.data.length > 0) {
+          const planData = planRes.value.data;
+          const newPlans = {
+            external: planData.filter(p => p.panel_type === 'external').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
+            internal: planData.filter(p => p.panel_type === 'internal').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
+          };
+          if (newPlans.external.length > 0 || newPlans.internal.length > 0) {
+            setPlans(newPlans);
+            localStorage.setItem('prrx_cached_plans', JSON.stringify(newPlans));
           }
         }
 
-        if (discountSnap.status === 'fulfilled' && discountSnap.value && !discountSnap.value.empty) {
-          const discountData = discountSnap.value.docs.map(d => ({ id: d.id, ...d.data() }));
-          if (Array.isArray(discountData) && discountData.length > 0) {
-            setDiscounts(discountData);
-            // Find personal promo codes for this user, OR a global flash sale
-            const myPersonal = discountData.find(d => isDiscountActive(d) && d.promo_code && d.is_personal && d.owner_email === user?.email);
-            const globalFlash = discountData.find(d => isDiscountActive(d) && d.promo_code && !d.is_personal);
-            const featured = myPersonal || globalFlash || null;
-            // Only set featured if we don't already have an active code
-            setActivePromoCode(prev => prev || featured?.promo_code || '');
-          }
+        if (discountRes.status === 'fulfilled' && discountRes.value?.data && discountRes.value.data.length > 0) {
+          const discountData = discountRes.value.data;
+          setDiscounts(discountData);
+          const myPersonal = discountData.find(d => isDiscountActive(d) && d.promo_code && d.is_personal && d.owner_email === user?.email);
+          const globalFlash = discountData.find(d => isDiscountActive(d) && d.promo_code && !d.is_personal);
+          const featured = myPersonal || globalFlash || null;
+          setActivePromoCode(prev => prev || featured?.promo_code || '');
         }
 
-        if (keySnap.status === 'fulfilled' && keySnap.value) {
-          setKeysStock(keySnap.value.docs.map(d => ({ id: d.id, ...d.data() })));
+        if (keyRes.status === 'fulfilled' && keyRes.value?.data) {
+          setKeysStock(keyRes.value.data);
         }
       } catch (err) {
         console.warn('Pricing fallback to defaults:', err);

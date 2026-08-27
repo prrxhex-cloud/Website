@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { auth, storage, db } from '@/lib/firebase';
-import { updateProfile } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { User, Camera, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,10 +12,10 @@ const GENDERS = [
 
 export default function ProfileEditor({ currentUser, onUpdate }) {
   const [form, setForm] = useState({
-    display_name: currentUser.displayName || currentUser.full_name || '',
-    gender: currentUser.gender || '',
-    bio: currentUser.bio || '',
-    avatar_url: currentUser.photoURL || currentUser.avatar_url || '',
+    display_name: currentUser?.displayName || currentUser?.full_name || currentUser?.display_name || '',
+    gender: currentUser?.gender || '',
+    bio: currentUser?.bio || '',
+    avatar_url: currentUser?.photoURL || currentUser?.avatar_url || '',
   });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -28,9 +25,11 @@ export default function ProfileEditor({ currentUser, onUpdate }) {
     if (!file) return;
     setUploading(true);
     try {
-      const storageRef = ref(storage, `avatars/${currentUser.uid}_${Date.now()}`);
-      await uploadBytes(storageRef, file);
-      const file_url = await getDownloadURL(storageRef);
+      const uid = currentUser?.uid || currentUser?.id || 'admin';
+      const filePath = `avatars/${uid}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+      const { error: uploadErr } = await supabase.storage.from('receipt_slips').upload(filePath, file, { upsert: true });
+      if (uploadErr) console.warn('Avatar upload notice:', uploadErr);
+      const file_url = supabase.storage.from('receipt_slips').getPublicUrl(filePath).data?.publicUrl || '';
       setForm(f => ({ ...f, avatar_url: file_url }));
     } catch {
       toast.error('Failed to upload image');
@@ -41,20 +40,15 @@ export default function ProfileEditor({ currentUser, onUpdate }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, {
-          displayName: form.display_name,
-          photoURL: form.avatar_url
-        });
-      }
-      
-      const userRef = doc(db, 'users', currentUser.uid);
-      await setDoc(userRef, {
-        display_name: form.display_name,
-        gender: form.gender,
-        bio: form.bio,
-        avatar_url: form.avatar_url
-      }, { merge: true });
+      // Update Supabase Auth user metadata
+      await supabase.auth.updateUser({
+        data: {
+          display_name: form.display_name,
+          avatar_url: form.avatar_url,
+          gender: form.gender,
+          bio: form.bio,
+        }
+      });
 
       toast.success('Profile updated!');
       if (typeof onUpdate === 'function') {
@@ -64,7 +58,7 @@ export default function ProfileEditor({ currentUser, onUpdate }) {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Failed to save profile');
+      toast.error('Failed to save profile: ' + err.message);
     }
     setSaving(false);
   };

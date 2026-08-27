@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { User, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -11,9 +10,14 @@ export default function AdminMessagesTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'world_messages'), orderBy('created_date', 'desc'), limit(50));
-      const snap = await getDocs(q);
-      setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const { data, error } = await supabase
+        .from('world_messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setMessages(data || []);
     } catch (e) {
       console.error(e);
       toast.error('Failed to load messages');
@@ -26,7 +30,8 @@ export default function AdminMessagesTab() {
 
   const deleteMessage = async (id) => {
     try {
-      await deleteDoc(doc(db, 'world_messages', id));
+      const { error } = await supabase.from('world_messages').delete().eq('id', id);
+      if (error) throw error;
       setMessages(prev => prev.filter(m => m.id !== id));
       toast.success('Message deleted');
     } catch (e) {

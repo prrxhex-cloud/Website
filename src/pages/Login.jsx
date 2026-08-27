@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { signInWithPopup, auth, googleProvider } from '@/lib/firebase';
+import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
@@ -11,6 +11,7 @@ import logoImg from '@/assets/logo.jpeg';
 export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,12 +23,11 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
-      navigate(redirectPath);
+      await loginWithGoogle();
     } catch (err) {
-      setError(err.message.includes('popup') ? 'Google login was cancelled.' : err.message);
+      setError(err.message || 'Google sign in failed.');
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

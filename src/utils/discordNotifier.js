@@ -1,5 +1,4 @@
-import { db } from '@/lib/firebase';
-import { collection, query, getDocs, where } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 
 const DEFAULT_RECEIPT_WEBHOOK = 'https://ptb.discord.com/api/webhooks/1522773386483466331/XQuU4n2bP7NbJdhFe2tG-K74q-EkcbMaudmabGePF-r6Z_TWqT5FENC8HYt7gTprxpZz';
 
@@ -8,10 +7,12 @@ let cachedConfig = null;
 async function getConfig() {
   if (cachedConfig) return cachedConfig;
   try {
-    const snapshot = await getDocs(collection(db, 'discord_webhooks'));
-    const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    cachedConfig = data[0] || null;
-    return cachedConfig;
+    const { data, error } = await supabase.from('discord_webhooks').select('*').limit(1);
+    if (data && !error && data.length > 0) {
+      cachedConfig = data[0];
+      return cachedConfig;
+    }
+    return null;
   } catch (e) {
     return null;
   }
@@ -170,10 +171,15 @@ export async function sendLowStockWarning({ productType, duration, remaining }) 
 
 export async function checkAndWarnLowStock(productType, duration) {
   try {
-    const q = query(collection(db, 'license_keys'), where('product_type', '==', productType), where('status', '==', 'available'), where('duration', '==', duration));
-    const snapshot = await getDocs(q);
-    const available = snapshot.docs.map(d => d.data());
-    const remaining = available.length;
+    const { data: available, error } = await supabase
+      .from('license_keys')
+      .select('*')
+      .eq('product_type', productType)
+      .eq('status', 'available')
+      .eq('duration', duration);
+
+    if (error) throw error;
+    const remaining = (available || []).length;
     const key = `prrx_lowstock_${productType}_${duration}`;
     if (remaining <= 10) {
       if (!localStorage.getItem(key)) {

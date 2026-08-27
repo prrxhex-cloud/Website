@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShieldCheck, Volume2, VolumeX, ChevronRight, Zap, Sun, Moon, ChevronDown, Smartphone } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { useSound } from '../../context/SoundContext';
 import { useTheme } from '@/lib/ThemeContext';
 import { usePwa } from '@/context/PwaContext';
@@ -37,10 +36,12 @@ export default function Navbar() {
     let isMounted = true;
     const fetchDiscounts = async () => {
       try {
-        const q = query(collection(db, 'discounts'), orderBy('created_date', 'desc'));
-        const snap = await getDocs(q);
-        if (isMounted && !snap.empty) {
-          const discountList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const { data: discountList, error } = await supabase
+          .from('discounts')
+          .select('*')
+          .order('created_date', { ascending: false });
+
+        if (isMounted && discountList && !error && discountList.length > 0) {
           const myPersonal = discountList.find(d => isDiscountActive(d) && d.is_personal && d.owner_email && d.owner_email === user?.email);
           const globalFlash = discountList.find(d => isDiscountActive(d) && !d.is_personal);
           const valid = myPersonal || globalFlash || null;

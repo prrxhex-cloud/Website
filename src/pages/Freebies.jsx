@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import { Download, XCircle, Calendar, User, Lock, Smartphone, Gift } from 'lucide-react';
@@ -89,18 +88,22 @@ export default function Freebies() {
   useEffect(() => {
     // Instant background sync without blocking rendering
     Promise.all([
-      getDocs(query(collection(db, 'free_panels'))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
-      getDocs(query(collection(db, 'v7a_apk_links'), where('active', '==', true))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
-      getDocs(query(collection(db, 'download_links'), where('active', '==', true))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
-    ]).then(([panelData, linkData, dlLinks]) => {
+      supabase.from('free_panels').select('*'),
+      supabase.from('v7a_apk_links').select('*').eq('active', true),
+      supabase.from('download_links').select('*').eq('active', true),
+    ]).then(([panelRes, linkRes, dlRes]) => {
+      const panelData = panelRes.data;
+      const linkData = linkRes.data;
+      const dlLinks = dlRes.data || [];
+
       if (panelData?.length) {
         const panelMap = {};
         panelData.forEach(p => { panelMap[p.panel_type] = p; });
         setPanels(panelMap);
       }
       if (linkData?.[0]?.url) setV7aLink(linkData[0].url);
-      const ext = dlLinks.find(l => l.type === 'external');
-      const int_ = dlLinks.find(l => l.type === 'internal');
+      const ext = dlLinks.find(l => l.type === 'external' || l.panel_type === 'external');
+      const int_ = dlLinks.find(l => l.type === 'internal' || l.panel_type === 'internal');
       setDownloadUrls({
         external: ext?.url || FALLBACK_EXTERNAL,
         internal: int_?.url || FALLBACK_INTERNAL,

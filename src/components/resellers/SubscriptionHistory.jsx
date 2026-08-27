@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { RefreshCw, Copy, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -19,17 +18,16 @@ export default function SubscriptionHistory({ account }) {
     }
     setLoading(true);
     try {
-      const q = query(
-        collection(db, 'reseller_receipts'),
-        where('reseller_email', '==', account.email),
-        where('status', '==', 'approved')
-      );
-      // Removed orderBy for now because we'd need a composite index for where+orderBy in Firestore
-      // We'll sort them on the client side.
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      setReceipts(data);
+      const { data, error } = await supabase
+        .from('reseller_receipts')
+        .select('*')
+        .eq('reseller_email', account.email)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (data && !error) {
+        setReceipts(data);
+      }
     } catch (error) {
       console.error(error);
       toast.error('Failed to load history.');

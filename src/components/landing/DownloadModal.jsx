@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X, Zap, Shield, Smartphone, Rocket } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { usePwa } from '@/context/PwaContext';
 
 import { downloadMesh } from '@/utils/downloadMesh';
@@ -23,14 +22,14 @@ export default function DownloadModal({ open, onClose }) {
     setLoading(true);
 
     Promise.allSettled([
-      getDocs(query(collection(db, 'download_links'), where('active', '==', true))),
+      supabase.from('download_links').select('*').eq('active', true),
       downloadMesh.getFastestMirror()
-    ]).then(([snapResult, mirrorResult]) => {
-      if (snapResult.status === 'fulfilled' && snapResult.value) {
-        const links = snapResult.value.docs.map(d => ({ id: d.id, ...d.data() }));
-        const ext = links.find(l => l.type === 'external');
-        const int_ = links.find(l => l.type === 'internal');
-        const laun = links.find(l => l.type === 'launcher');
+    ]).then(([resResult, mirrorResult]) => {
+      if (resResult.status === 'fulfilled' && resResult.value?.data) {
+        const links = resResult.value.data;
+        const ext = links.find(l => l.type === 'external' || l.panel_type === 'external');
+        const int_ = links.find(l => l.type === 'internal' || l.panel_type === 'internal');
+        const laun = links.find(l => l.type === 'launcher' || l.panel_type === 'launcher');
         if (ext?.url) setExternalUrl(ext.url);
         if (int_?.url) setInternalUrl(int_.url);
         if (laun?.url) setLauncherUrl(laun.url);

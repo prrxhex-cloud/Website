@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Download, Eye, ShieldCheck, Crosshair, Star, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { getFormattedPrices } from '@/lib/currency';
 import DownloadModal from '@/components/landing/DownloadModal';
 import { resolveImageUrl } from '@/utils/imagePathHelper';
@@ -32,9 +31,13 @@ export default function HeroSection() {
   useEffect(() => {
     const fetchHeroHud = async () => {
       try {
-        const snap = await getDoc(doc(db, 'public_settings', 'panel_images'));
-        if (snap.exists() && snap.data().hero_hud_url) {
-          const url = snap.data().hero_hud_url;
+        const { data } = await supabase
+          .from('panel_images')
+          .select('*')
+          .limit(1);
+
+        if (data && data.length > 0 && data[0].hero_hud_url) {
+          const url = data[0].hero_hud_url;
           setHeroHudUrl(url);
           localStorage.setItem('prrx_hero_hud_url', url);
         }
@@ -45,9 +48,11 @@ export default function HeroSection() {
 
     const fetchDayPrice = async () => {
       try {
-        const snap = await getDocs(collection(db, 'price_plans'));
-        if (!snap.empty) {
-          const plans = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const { data: plans } = await supabase
+          .from('price_plans')
+          .select('*');
+
+        if (plans && plans.length > 0) {
           const oneDayPlan = plans.find(p => p.label?.toLowerCase() === '1 day' || p.days?.toLowerCase()?.includes('1 day')) || plans[0];
           if (oneDayPlan?.lkr) {
             setDayPriceUsd(getFormattedPrices(oneDayPlan.lkr).usd);

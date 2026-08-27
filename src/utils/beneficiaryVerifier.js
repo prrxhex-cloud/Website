@@ -1,15 +1,17 @@
-import { db } from '@/lib/firebase';
-import { collection, query, getDocs, where } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 
 let cachedAccounts = null;
 
 export async function getBeneficiaryAccounts() {
   if (cachedAccounts) return cachedAccounts;
   try {
-    const q = query(collection(db, 'beneficiary_accounts'), where('active', '==', true));
-    const snapshot = await getDocs(q);
-    const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    cachedAccounts = data;
+    const { data, error } = await supabase
+      .from('beneficiary_accounts')
+      .select('*')
+      .eq('active', true);
+
+    if (error) throw error;
+    cachedAccounts = data || [];
     return cachedAccounts;
   } catch (e) {
     return [];

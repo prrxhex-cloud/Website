@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { auth, db } from '@/lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { User, Lock, Eye, EyeOff, AlertTriangle, Clock, ShieldCheck, LogIn, MessageCircle, X } from 'lucide-react';
 import { isLocked, getRemainingLockout, recordFailedAttempt, recordSuccess, formatMs } from '@/components/security/SecurityGuard';
 import logoImg from '@/assets/logo.jpeg';
@@ -40,35 +38,42 @@ export default function ResellerLogin({ onLogin, onApplyWhatsApp, onClose }) {
     setLoading(true);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password,
+      });
 
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('email', '==', user.email.toLowerCase()), where('role', '==', 'reseller'));
-      const snapshot = await getDocs(q);
+      if (authErr) throw authErr;
 
-      if (!snapshot.empty) {
+      const user = authData?.user;
+
+      const { data: resellerData, error: resellerErr } = await supabase
+        .from('resellers')
+        .select('*')
+        .eq('email', (user?.email || email).toLowerCase())
+        .single();
+
+      if (resellerData && !resellerErr) {
         recordSuccess(STORE_KEY, email);
-        const userData = snapshot.docs[0].data();
-        onLogin({ ...userData, uid: user.uid });
+        onLogin({ ...resellerData, uid: user?.id });
         if (onClose) onClose();
       } else {
-        await auth.signOut();
+        await supabase.auth.signOut();
         const { lockedUntil } = recordFailedAttempt(STORE_KEY, email);
         if (lockedUntil) {
           setError(`Too many failed attempts. Locked for 15 minutes.`);
           setLocked(true);
         } else {
-          setError(`Access denied. Account is not authorized as reseller.`);
+          setError('No reseller account found for this email.');
         }
       }
-    } catch {
+    } catch (err) {
       const { lockedUntil } = recordFailedAttempt(STORE_KEY, email);
       if (lockedUntil) {
         setError(`Too many failed attempts. Locked for 15 minutes.`);
         setLocked(true);
       } else {
-        setError('Invalid reseller credentials.');
+        setError(err.message || 'Invalid credentials.');
       }
     } finally {
       setLoading(false);

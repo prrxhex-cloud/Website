@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { Users, MessageCircle, Megaphone, Activity, Ticket, ArrowRight, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -28,23 +27,22 @@ export default function AdminOverviewTab() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const usersSnap = await getDocs(query(collection(db, 'users'), orderBy('created_date', 'desc'), limit(5)));
-      const usersData = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const [resellersRes, msgsRes, annRes, receiptsRes] = await Promise.allSettled([
+        supabase.from('resellers').select('*').limit(5),
+        supabase.from('world_messages').select('id', { count: 'exact', head: true }),
+        supabase.from('announcements').select('id', { count: 'exact', head: true }),
+        supabase.from('receipts').select('id', { count: 'exact', head: true }),
+      ]);
+
+      const usersData = resellersRes.status === 'fulfilled' ? resellersRes.value.data || [] : [];
       setRecentUsers(usersData);
 
-      const msgsSnap = await getDocs(query(collection(db, 'world_messages'), limit(100)));
-      const annSnap = await getDocs(query(collection(db, 'announcements'), limit(100)));
-      const convsSnap = await getDocs(query(collection(db, 'chat_conversations'), limit(100)));
-      
-      const convs = convsSnap.docs.map(d => d.data());
-      const openTickets = convs.filter(c => c.is_support && c.ticket_status === 'open').length;
-
       setStats({
-        users: usersSnap.size, // Approximate for demo
-        messages: msgsSnap.size,
-        announcements: annSnap.size,
-        conversations: convsSnap.size,
-        openTickets
+        users: usersData.length,
+        messages: msgsRes.status === 'fulfilled' ? msgsRes.value.count || 0 : 0,
+        announcements: annRes.status === 'fulfilled' ? annRes.value.count || 0 : 0,
+        conversations: receiptsRes.status === 'fulfilled' ? receiptsRes.value.count || 0 : 0,
+        openTickets: 0
       });
     } catch (e) {
       console.error(e);
