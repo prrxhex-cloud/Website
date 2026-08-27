@@ -81,7 +81,7 @@ export default function AiSupportWidget() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => { playClick(); setIsOpen(!isOpen); }}
-        className="fixed bottom-6 right-6 z-50 p-3.5 rounded-full bg-gradient-to-r from-cyan-500 via-teal-400 to-indigo-500 text-slate-950 shadow-[0_0_25px_rgba(6,182,212,0.6)] border-2 border-cyan-300 flex items-center justify-center group"
+        className="fixed bottom-6 right-6 z-[60] p-3.5 rounded-full bg-gradient-to-r from-cyan-500 via-teal-400 to-indigo-500 text-slate-950 shadow-[0_0_25px_rgba(6,182,212,0.6)] border-2 border-cyan-300 flex items-center justify-center group"
         title="24/7 PRRX AI Tech Support"
       >
         <Bot className="w-6 h-6 text-slate-950 group-hover:rotate-12 transition-transform duration-300" />
@@ -96,7 +96,7 @@ export default function AiSupportWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[92vw] sm:w-[400px] h-[540px] rounded-3xl bg-slate-950/95 backdrop-blur-2xl border border-cyan-500/40 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden font-inter text-left"
+            className="fixed bottom-24 right-4 sm:right-6 z-[70] w-[92vw] sm:w-[400px] h-[540px] rounded-3xl bg-slate-950/95 backdrop-blur-2xl border border-cyan-500/40 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden font-inter text-left"
           >
             {/* Header */}
             <div className="p-4 bg-gradient-to-r from-cyan-950/90 via-slate-900 to-indigo-950/90 border-b border-cyan-500/30 flex items-center justify-between">

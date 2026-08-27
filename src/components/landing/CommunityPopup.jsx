@@ -31,7 +31,7 @@ export default function CommunityPopup() {
   if (!show || !links.popup_enabled) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-xs w-[calc(100vw-2rem)] sm:w-auto">
+    <div className="fixed bottom-24 right-4 z-40 max-w-xs w-[calc(100vw-2rem)] sm:w-auto">
       <div className="rounded-2xl overflow-hidden shadow-2xl"
         style={{
           background: 'rgba(2,10,28,0.95)',
