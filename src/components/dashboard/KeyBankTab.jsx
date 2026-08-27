@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, limit, getDocs, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Key, Plus, Trash2, Check, Shield, CheckCircle2, XCircle, Clock, RefreshCw, Search, Filter, AlertTriangle, ChevronDown, CheckSquare, Square } from 'lucide-react';
+import { Key, Plus, Trash2, Check, Shield, CheckCircle2, XCircle, Clock, RefreshCw, Search, Filter, AlertTriangle, ChevronDown, CheckSquare, Square, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function normalizeDurationKey(str) {
@@ -35,6 +35,25 @@ export default function KeyBankTab() {
   const [showPurgeModal, setShowPurgeModal] = useState(null); // 'used' | 'all' | 'duration' | null
   const [purgeDurationTarget, setPurgeDurationTarget] = useState('1 Week');
   const [isDeletingBatch, setIsDeletingBatch] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
+
+  const copyKey = (keyValue, keyId) => {
+    if (!keyValue) return;
+    navigator.clipboard.writeText(keyValue);
+    setCopiedId(keyId);
+    toast.success('Key copied to clipboard!');
+    setTimeout(() => {
+      setCopiedId(null);
+    }, 2000);
+  };
+
+  const copySelectedKeys = () => {
+    const selectedKeyDocs = keys.filter(k => selectedIds.has(k.id));
+    if (selectedKeyDocs.length === 0) return;
+    const textToCopy = selectedKeyDocs.map(k => k.key).join('\n');
+    navigator.clipboard.writeText(textToCopy);
+    toast.success(`Copied ${selectedKeyDocs.length} keys to clipboard!`);
+  };
 
   const load = async () => {
     setLoading(true);
@@ -362,6 +381,16 @@ export default function KeyBankTab() {
 
           <div className="flex items-center gap-2 flex-wrap">
             <button
+              onClick={() => copySelectedKeys()}
+              disabled={isDeletingBatch}
+              className="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold transition-all flex items-center gap-1.5"
+              title="Copy all selected keys to clipboard"
+            >
+              <Copy className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Copy Selected ({selectedIds.size})</span>
+            </button>
+
+            <button
               onClick={() => executeBatchStatusUpdate(Array.from(selectedIds), 'available')}
               disabled={isDeletingBatch}
               className="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all flex items-center gap-1.5"
@@ -659,11 +688,29 @@ export default function KeyBankTab() {
                     </button>
 
                     <div className="min-w-0">
-                      <p className={`font-mono font-bold text-xs truncate ${
-                        isAvailable ? 'text-white' : 'text-slate-400 line-through'
-                      }`}>
-                        {k.key}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p 
+                          onClick={() => copyKey(k.key, k.id)}
+                          title="Click to copy key"
+                          className={`font-mono font-bold text-xs truncate cursor-pointer transition-colors ${
+                            isAvailable ? 'text-white hover:text-cyan-300' : 'text-slate-400 line-through hover:text-slate-200'
+                          }`}
+                        >
+                          {k.key}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => copyKey(k.key, k.id)}
+                          className={`p-1 rounded-md transition-all shrink-0 ${
+                            copiedId === k.id
+                              ? 'bg-emerald-500/20 text-emerald-400'
+                              : 'text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10'
+                          }`}
+                          title="Copy Key to Clipboard"
+                        >
+                          {copiedId === k.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
                       <p className="font-inter text-[10px] text-[var(--text-muted)] font-semibold mt-0.5">
                         <span className="uppercase text-cyan-400 font-bold">{k.product_type}</span> · <span className="text-slate-300 font-bold">{k.duration}</span>
                         {k.used_at && <span className="ml-2 text-amber-400 font-normal">Sold {new Date(k.used_at).toLocaleDateString()}</span>}
@@ -673,7 +720,30 @@ export default function KeyBankTab() {
                   </div>
 
                   {/* Right: Status Pill & Actions */}
-                  <div className="flex items-center gap-2.5 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => copyKey(k.key, k.id)}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-outfit font-bold border transition-all ${
+                        copiedId === k.id
+                          ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-sm'
+                          : 'bg-[var(--bg-subtle)] border-[var(--border-color)] text-slate-300 hover:text-cyan-300 hover:border-cyan-500/40 hover:bg-cyan-500/10'
+                      }`}
+                      title="Copy Key to Clipboard"
+                    >
+                      {copiedId === k.id ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => toggleUsed(k)}
