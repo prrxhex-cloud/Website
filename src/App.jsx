@@ -17,6 +17,13 @@ import AiSupportWidget from '@/components/support/AiSupportWidget';
 import { telemetrySentry } from '@/utils/telemetrySentry';
 
 import DesktopLauncher from '@/pages/DesktopLauncher';
+import { MaintenanceProvider, useMaintenance } from '@/context/MaintenanceContext';
+import MaintenanceScreen from '@/components/maintenance/MaintenanceScreen';
+import AdminMaintenanceBanner from '@/components/maintenance/AdminMaintenanceBanner';
+import PageMaintenanceGuard from '@/components/maintenance/PageMaintenanceGuard';
+import Navbar from '@/components/landing/Navbar';
+import Footer from '@/components/landing/Footer';
+import { useLocation } from 'react-router-dom';
 
 // Lazy load other heavy components
 const Home = React.lazy(() => import('@/pages/Home.jsx'));
@@ -66,9 +73,11 @@ const DesktopRestrictedRoute = ({ children }) => {
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isGlobalMaintenance, isAdminBypassed, isLoadingMaintenance } = useMaintenance();
+  const location = useLocation();
 
   // Show loading spinner while checking app public settings or auth (ONLY for website, bypassed on desktop)
-  if ((isLoadingPublicSettings || isLoadingAuth) && !window.electronAPI) {
+  if ((isLoadingPublicSettings || isLoadingAuth || isLoadingMaintenance) && !window.electronAPI) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-[var(--bg-main)]">
         <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin"></div>
@@ -90,38 +99,55 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render routes with explicit Public vs Protected access
-  return (
-    <Suspense fallback={
-      <div className="fixed inset-0 flex items-center justify-center bg-[var(--bg-main)]">
-        <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin"></div>
+  // Global Kill Switch Interceptor
+  // Staff routes (/admin, /login) are kept accessible so admins can authenticate and manage the switch
+  const isStaffRoute = location.pathname === '/admin' || location.pathname === '/login';
+
+  if (isGlobalMaintenance && !isAdminBypassed && !isStaffRoute) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] flex flex-col justify-between font-inter">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center py-6">
+          <MaintenanceScreen isGlobal={true} />
+        </main>
+        <Footer />
       </div>
-    }>
-      <Routes>
-        {/* PUBLIC STOREFRONT ROUTES (Accessible to all visitors) */}
-        <Route path="/" element={<Home />} />
-        <Route path="/prices" element={<Prices />} />
-        <Route path="/status" element={<Status />} />
-        <Route path="/live-demo" element={<DesktopRestrictedRoute><LiveDemo /></DesktopRestrictedRoute>} />
-        <Route path="/functions" element={<DesktopRestrictedRoute><Functions /></DesktopRestrictedRoute>} />
-        <Route path="/resellers" element={<DesktopRestrictedRoute><Resellers /></DesktopRestrictedRoute>} />
-        <Route path="/freebies" element={<Freebies />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/launcher" element={<DesktopLauncher />} />
+    );
+  }
 
-        {/* AUTHENTICATED & PROTECTED ROUTES (Requires Login) */}
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-        <Route path="/app-launcher" element={<ProtectedRoute><AppLauncher /></ProtectedRoute>} />
+  // Render routes with explicit Public vs Protected access & Granular Page Guards
+  return (
+    <>
+      <Suspense fallback={
+        <div className="fixed inset-0 flex items-center justify-center bg-[var(--bg-main)]">
+          <div className="w-10 h-10 border-4 border-[#06b6d4]/20 border-t-[#06b6d4] rounded-full animate-spin"></div>
+        </div>
+      }>
+        <Routes>
+          {/* PUBLIC STOREFRONT ROUTES (Accessible to all visitors) */}
+          <Route path="/" element={<PageMaintenanceGuard pageKey="home" pageTitle="PRRX Platform"><Home /></PageMaintenanceGuard>} />
+          <Route path="/prices" element={<PageMaintenanceGuard pageKey="prices" pageTitle="Prices & VIP Keys"><Prices /></PageMaintenanceGuard>} />
+          <Route path="/status" element={<PageMaintenanceGuard pageKey="status" pageTitle="Service Status"><Status /></PageMaintenanceGuard>} />
+          <Route path="/live-demo" element={<DesktopRestrictedRoute><PageMaintenanceGuard pageKey="live_demo" pageTitle="Live Demo Playground"><LiveDemo /></PageMaintenanceGuard></DesktopRestrictedRoute>} />
+          <Route path="/functions" element={<DesktopRestrictedRoute><PageMaintenanceGuard pageKey="functions" pageTitle="Functions & Features"><Functions /></PageMaintenanceGuard></DesktopRestrictedRoute>} />
+          <Route path="/resellers" element={<DesktopRestrictedRoute><PageMaintenanceGuard pageKey="resellers" pageTitle="Reseller Portal"><Resellers /></PageMaintenanceGuard></DesktopRestrictedRoute>} />
+          <Route path="/freebies" element={<PageMaintenanceGuard pageKey="freebies" pageTitle="Free Panels & Freebies"><Freebies /></PageMaintenanceGuard>} />
+          <Route path="/about" element={<PageMaintenanceGuard pageKey="about" pageTitle="About PRRX"><About /></PageMaintenanceGuard>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/launcher" element={<DesktopLauncher />} />
 
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    </Suspense>
+          {/* AUTHENTICATED & PROTECTED ROUTES (Requires Login) */}
+          <Route path="/dashboard" element={<ProtectedRoute><PageMaintenanceGuard pageKey="dashboard" pageTitle="VIP Customer Dashboard"><Dashboard /></PageMaintenanceGuard></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="/app-launcher" element={<ProtectedRoute><AppLauncher /></ProtectedRoute>} />
+
+          <Route path="*" element={<PageNotFound />} />
+        </Routes>
+      </Suspense>
+      <AdminMaintenanceBanner />
+    </>
   );
 };
-
-import { useLocation } from 'react-router-dom';
 
 const ElectronLayout = ({ children }) => {
   const location = useLocation();
@@ -159,28 +185,30 @@ function App() {
   const content = (
     <ThemeProvider>
       <AuthProvider>
-        <SoundProvider>
-          <PwaProvider>
-            <QueryClientProvider client={queryClientInstance}>
-              <Router>
-                <ElectronLayout>
-                  <NetworkGuard>
-                    {isInitialLoad ? (
-                      <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
-                    ) : (
-                      <>
-                        <AuthenticatedApp />
-                        <AiSupportWidget />
-                      </>
-                    )}
-                  </NetworkGuard>
-                </ElectronLayout>
-                <FpsOverlay />
-              </Router>
-              <Toaster />
-            </QueryClientProvider>
-          </PwaProvider>
-        </SoundProvider>
+        <MaintenanceProvider>
+          <SoundProvider>
+            <PwaProvider>
+              <QueryClientProvider client={queryClientInstance}>
+                <Router>
+                  <ElectronLayout>
+                    <NetworkGuard>
+                      {isInitialLoad ? (
+                        <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
+                      ) : (
+                        <>
+                          <AuthenticatedApp />
+                          <AiSupportWidget />
+                        </>
+                      )}
+                    </NetworkGuard>
+                  </ElectronLayout>
+                  <FpsOverlay />
+                </Router>
+                <Toaster />
+              </QueryClientProvider>
+            </PwaProvider>
+          </SoundProvider>
+        </MaintenanceProvider>
       </AuthProvider>
     </ThemeProvider>
   );

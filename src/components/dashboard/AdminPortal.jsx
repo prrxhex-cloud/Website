@@ -24,6 +24,7 @@ import PanelImagesTab from './PanelImagesTab';
 import FunctionsScreenshotsTab from './FunctionsScreenshotsTab';
 import ReceiptsTab from './ReceiptsTab';
 import DiscordBotManagement from './DiscordBotManagement';
+import MaintenanceTab from './MaintenanceTab';
 
 function UsersTab() {
   const [users, setUsers] = useState([]);
@@ -292,6 +293,7 @@ function AdminPanel({ adminUser, onLogout }) {
 
   const tabs = [
     { key: 'overview',   label: 'Overview',   icon: Activity },
+    { key: 'maintenance', label: 'Kill Switch', icon: ShieldAlert },
     { key: 'accrequests', label: 'Acc Requests', icon: UserPlus },
     { key: 'receipts',   label: 'Receipts',   icon: Clock },
     { key: 'resellers',  label: 'Resellers',  icon: Store },
@@ -382,6 +384,7 @@ function AdminPanel({ adminUser, onLogout }) {
       {/* Content - Instant Keep-Alive rendering with responsive padding */}
       <div className="rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl p-3 sm:p-8 overflow-x-auto" style={{ minHeight: '550px' }}>
         {visitedTabs.has('overview') && <div style={{ display: tab === 'overview' ? 'block' : 'none' }}><AdminOverviewTab /></div>}
+        {visitedTabs.has('maintenance') && <div style={{ display: tab === 'maintenance' ? 'block' : 'none' }}><MaintenanceTab adminUser={adminUser} /></div>}
         {visitedTabs.has('accrequests') && <div style={{ display: tab === 'accrequests' ? 'block' : 'none' }}><AccountRequestsTab adminUser={adminUser} /></div>}
         {visitedTabs.has('receipts') && <div style={{ display: tab === 'receipts' ? 'block' : 'none' }}><ReceiptsTab /></div>}
         {visitedTabs.has('resellers') && <div style={{ display: tab === 'resellers' ? 'block' : 'none' }}><ResellersTab /></div>}

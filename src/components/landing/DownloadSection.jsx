@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ScrollReveal from '@/components/effects/ScrollReveal';
-import { Download, Shield, Zap, CheckCircle } from 'lucide-react';
+import { Download, Shield, Zap, CheckCircle, Lock, AlertTriangle } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useMaintenance } from '@/context/MaintenanceContext';
 
 const FALLBACK_EXTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
 const FALLBACK_INTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
@@ -20,6 +21,9 @@ export default function DownloadSection() {
   const [internalUrl, setInternalUrl] = useState(FALLBACK_INTERNAL);
   const [externalLabel, setExternalLabel] = useState('⚡ DOWNLOAD EXTERNAL PANEL');
   const [internalLabel, setInternalLabel] = useState('🔥 DOWNLOAD INTERNAL PANEL');
+  const { isPageInMaintenance, isAdminBypassed } = useMaintenance();
+
+  const isDownloadsLocked = isPageInMaintenance('downloads') && !isAdminBypassed;
 
   useEffect(() => {
     getDocs(query(collection(db, 'download_links'), where('active', '==', true))).then(snapshot => {
@@ -69,19 +73,36 @@ export default function DownloadSection() {
             </div>
 
             <div className="space-y-4 flex flex-col justify-center">
-              <a
-                href={externalUrl}
-                className="btn-primary-cyan btn-glow py-4 px-6 rounded-2xl font-inter font-bold text-xs flex items-center justify-center gap-3 shadow-md w-full"
-              >
-                <Download className="w-5 h-5" /> <span>{externalLabel}</span>
-              </a>
+              {isDownloadsLocked ? (
+                <div className="p-6 rounded-2xl bg-rose-950/30 border border-rose-500/30 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-400 mx-auto flex items-center justify-center">
+                    <Lock className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <div>
+                    <h4 className="font-orbitron font-bold text-sm text-white">DOWNLOADS TEMPORARILY PAUSED</h4>
+                    <p className="text-xs text-slate-400 mt-1">APK file links are currently undergoing anti-cheat hash re-signing and scheduled maintenance.</p>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-[10px] font-orbitron font-bold text-rose-400 uppercase">
+                    <AlertTriangle className="w-3 h-3" /> RESTRICTED MAINTENANCE MODE
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <a
+                    href={externalUrl}
+                    className="btn-primary-cyan btn-glow py-4 px-6 rounded-2xl font-inter font-bold text-xs flex items-center justify-center gap-3 shadow-md w-full"
+                  >
+                    <Download className="w-5 h-5" /> <span>{externalLabel}</span>
+                  </a>
 
-              <a
-                href={internalUrl}
-                className="py-4 px-6 rounded-2xl font-inter font-bold text-xs flex items-center justify-center gap-3 bg-violet-600 hover:bg-violet-500 text-white shadow-md w-full transition-colors"
-              >
-                <Download className="w-5 h-5" /> <span>{internalLabel}</span>
-              </a>
+                  <a
+                    href={internalUrl}
+                    className="py-4 px-6 rounded-2xl font-inter font-bold text-xs flex items-center justify-center gap-3 bg-violet-600 hover:bg-violet-500 text-white shadow-md w-full transition-colors"
+                  >
+                    <Download className="w-5 h-5" /> <span>{internalLabel}</span>
+                  </a>
+                </>
+              )}
 
               <div className="flex items-center justify-center gap-6 pt-4 text-xs font-inter text-[var(--text-muted)] font-bold border-t border-[var(--border-color)]">
                 <span className="flex items-center gap-1 text-emerald-500"><Shield className="w-4 h-4" /> 100% Undetected</span>

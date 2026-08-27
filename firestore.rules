@@ -151,6 +151,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // 🛑 SYSTEM CONFIG & EMERGENCY MAINTENANCE KILL SWITCH
+    match /system_config/{configId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /panel_images/{imgId} {
       allow read: if true;
       allow write: if isAdmin();
