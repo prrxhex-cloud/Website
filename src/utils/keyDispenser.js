@@ -8,7 +8,32 @@ export async function dispenseLicenseKey({ productType, duration, customerEmail,
   try {
     const normDuration = normalizeDurationKey(duration);
     
-    // Query available keys
+    // 1. Primary: Use secure atomic PostgreSQL RPC function (Immune to race conditions and RLS restrictions)
+    const { data: rpcResult, error: rpcError } = await supabase.rpc('dispense_license_key', {
+      p_product_type: productType || 'external',
+      p_duration: duration || '1 Month',
+      p_customer_email: customerEmail || 'VIP Customer',
+      p_transaction_id: transactionId || '',
+      p_receipt_id: receiptId || ''
+    });
+
+    if (!rpcError && rpcResult) {
+      if (rpcResult.success) {
+        return {
+          success: true,
+          licenseKey: rpcResult.licenseKey,
+          keyData: { id: rpcResult.keyId, license_key: rpcResult.licenseKey }
+        };
+      } else {
+        return {
+          success: false,
+          outOfStock: true,
+          message: rpcResult.message || `No available keys for duration: ${duration}`
+        };
+      }
+    }
+
+    // 2. Fallback: Direct query (Used by Admins or legacy fallback)
     const { data: keys, error } = await supabase
       .from('license_keys')
       .select('*')
@@ -21,7 +46,6 @@ export async function dispenseLicenseKey({ productType, duration, customerEmail,
       return { success: false, outOfStock: true, message: 'No keys available in Key Bank.' };
     }
 
-    // Find first matching key by product type and duration
     const match = keys.find(k => {
       const matchProduct = !k.product_type || k.product_type === productType || k.product_type === 'both' || k.panel_type === productType;
       const matchDuration = normalizeDurationKey(k.duration || k.duration_normalized) === normDuration;
@@ -32,12 +56,12 @@ export async function dispenseLicenseKey({ productType, duration, customerEmail,
       return { success: false, outOfStock: true, message: `No available keys for duration: ${duration}` };
     }
 
-    // Mark key as used in Key Bank
     const { error: updateError } = await supabase
       .from('license_keys')
       .update({
         status: 'used',
         used_by: customerEmail || 'VIP Customer',
+        buyer_email: customerEmail || 'VIP Customer',
         transaction_id: transactionId || '',
         receipt_id: receiptId || '',
         sold_date: new Date().toISOString(),

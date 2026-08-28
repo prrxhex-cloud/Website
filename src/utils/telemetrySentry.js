@@ -1,4 +1,4 @@
-const SENTRY_WEBHOOK_URL = 'https://ptb.discord.com/api/webhooks/1522773386483466331/XQuU4n2bP7NbJdhFe2tG-K74q-EkcbMaudmabGePF-r6Z_TWqT5FENC8HYt7gTprxpZz';
+const SENTRY_WEBHOOK_URL = import.meta.env.VITE_SENTRY_WEBHOOK_URL || '';
 
 /**
  * PRRX DISTRIBUTED TELEMETRY & ZERO-COST DISCORD SENTRY

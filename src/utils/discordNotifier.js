@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
-const DEFAULT_RECEIPT_WEBHOOK = 'https://ptb.discord.com/api/webhooks/1522773386483466331/XQuU4n2bP7NbJdhFe2tG-K74q-EkcbMaudmabGePF-r6Z_TWqT5FENC8HYt7gTprxpZz';
+const DEFAULT_RECEIPT_WEBHOOK = import.meta.env.VITE_DISCORD_RECEIPT_WEBHOOK || '';
 
 let cachedConfig = null;
 
