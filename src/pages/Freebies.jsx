@@ -95,12 +95,12 @@ export default function Freebies() {
     // Instant background sync without blocking rendering
     Promise.all([
       supabase.from('free_panels').select('*'),
-      supabase.from('v7a_apk_links').select('*').eq('active', true),
-      supabase.from('download_links').select('*').eq('active', true),
+      supabase.from('v7a_apk_links').select('*'),
+      supabase.from('download_links').select('*'),
     ]).then(([panelRes, linkRes, dlRes]) => {
       const panelData = panelRes.data;
-      const linkData = linkRes.data;
-      const dlLinks = dlRes.data || [];
+      const linkData = (linkRes.data || []).filter(l => l.active !== false && l.is_active !== false);
+      const dlLinks = (dlRes.data || []).filter(l => l.active !== false && l.is_active !== false);
 
       if (panelData?.length) {
         const panelMap = {};

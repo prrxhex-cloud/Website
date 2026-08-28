@@ -22,11 +22,11 @@ export default function DownloadModal({ open, onClose }) {
     setLoading(true);
 
     Promise.allSettled([
-      supabase.from('download_links').select('*').eq('active', true),
+      supabase.from('download_links').select('*'),
       downloadMesh.getFastestMirror()
     ]).then(([resResult, mirrorResult]) => {
       if (resResult.status === 'fulfilled' && resResult.value?.data) {
-        const links = resResult.value.data;
+        const links = resResult.value.data.filter(l => l.active !== false && l.is_active !== false);
         const ext = links.find(l => l.type === 'external' || l.panel_type === 'external');
         const int_ = links.find(l => l.type === 'internal' || l.panel_type === 'internal');
         const laun = links.find(l => l.type === 'launcher' || l.panel_type === 'launcher');

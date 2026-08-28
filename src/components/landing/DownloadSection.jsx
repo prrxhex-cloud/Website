@@ -25,10 +25,11 @@ export default function DownloadSection() {
   const isDownloadsLocked = isPageInMaintenance('downloads') && !isAdminBypassed;
 
   useEffect(() => {
-    supabase.from('download_links').select('*').eq('active', true).then(({ data: links }) => {
+    supabase.from('download_links').select('*').then(({ data: links }) => {
       if (links && links.length > 0) {
-        const ext = links.find(l => l.type === 'external' || l.panel_type === 'external');
-        const int_ = links.find(l => l.type === 'internal' || l.panel_type === 'internal');
+        const activeLinks = links.filter(l => l.active !== false && l.is_active !== false);
+        const ext = activeLinks.find(l => l.type === 'external' || l.panel_type === 'external');
+        const int_ = activeLinks.find(l => l.type === 'internal' || l.panel_type === 'internal');
         if (ext) { setExternalUrl(ext.url); if (ext.label || ext.title) setExternalLabel(ext.label || ext.title); }
         if (int_) { setInternalUrl(int_.url); if (int_.label || int_.title) setInternalLabel(int_.label || int_.title); }
       }
