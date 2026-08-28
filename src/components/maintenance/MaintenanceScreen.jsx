@@ -35,21 +35,30 @@ export default function MaintenanceScreen({
     }
 
     const calculateTime = () => {
-      const targetTime = new Date(effectiveTimerEnd).getTime();
-      const now = Date.now();
-      const difference = targetTime - now;
+      try {
+        const dateObj = new Date(effectiveTimerEnd);
+        const targetTime = dateObj.getTime();
+        if (isNaN(targetTime)) {
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
+          return;
+        }
+        const now = Date.now();
+        const difference = targetTime - now;
 
-      if (difference <= 0) {
+        if (difference <= 0) {
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
+          return;
+        }
+
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        setTimeLeft({ days, hours, minutes, seconds, isExpired: false });
+      } catch {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
-        return;
       }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-      setTimeLeft({ days, hours, minutes, seconds, isExpired: false });
     };
 
     calculateTime();

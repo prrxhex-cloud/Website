@@ -23,6 +23,7 @@ import AdminMaintenanceBanner from '@/components/maintenance/AdminMaintenanceBan
 import PageMaintenanceGuard from '@/components/maintenance/PageMaintenanceGuard';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { useLocation } from 'react-router-dom';
 
 // Lazy load other heavy components
@@ -190,19 +191,21 @@ function App() {
             <PwaProvider>
               <QueryClientProvider client={queryClientInstance}>
                 <Router>
-                  <ElectronLayout>
-                    <NetworkGuard>
-                      {isInitialLoad ? (
-                        <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
-                      ) : (
-                        <>
-                          <AuthenticatedApp />
-                          <AiSupportWidget />
-                        </>
-                      )}
-                    </NetworkGuard>
-                  </ElectronLayout>
-                  <FpsOverlay />
+                  <ErrorBoundary>
+                    <ElectronLayout>
+                      <NetworkGuard>
+                        {isInitialLoad ? (
+                          <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
+                        ) : (
+                          <>
+                            <AuthenticatedApp />
+                            <AiSupportWidget />
+                          </>
+                        )}
+                      </NetworkGuard>
+                    </ElectronLayout>
+                    <FpsOverlay />
+                  </ErrorBoundary>
                 </Router>
                 <Toaster />
               </QueryClientProvider>
