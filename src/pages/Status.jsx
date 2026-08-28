@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import { 
-  Globe, 
   Cpu, 
   Activity, 
   CheckCircle2, 
@@ -13,15 +12,11 @@ import {
   RefreshCw, 
   ShieldCheck, 
   Radio, 
-  Zap, 
   Lock, 
-  Server, 
   Bell,
   Smartphone,
-  Monitor,
-  Apple,
-  ChevronRight,
-  ExternalLink
+  Layers,
+  Globe
 } from 'lucide-react';
 
 const STATUS_CONFIG = {
@@ -54,89 +49,38 @@ const STATUS_CONFIG = {
   },
 };
 
-const DEFAULT_PLATFORM_NODES = [
+// Default only to the user's authentic PRRX panels
+const DEFAULT_USER_PANELS = [
   {
-    id: 'ff_android_v7a',
-    name: 'Free Fire Android (v7a 32-bit)',
+    id: 'prrx_external',
+    name: 'PRRX EXTERNAL PANEL',
     category: 'panel',
-    platform: 'Android APK',
+    platform: 'Android APK / Non-Root',
     icon: Smartphone,
     status: 'online',
-    patch: 'Garena FF OB46 / OB47',
-    latency: '18ms',
+    patch: 'Free Fire OB46 / OB47',
+    latency: '14ms',
     uptime_elapsed: '99.99%',
     risk_level: '0% Ban Risk (Safe)',
-    description: 'Direct APK injection with internal bytecode obfuscation.'
+    description: 'External floating overlay bypass with real-time memory aimbot and ESP vision.'
   },
   {
-    id: 'ff_android_v8a',
-    name: 'Free Fire MAX (v8a 64-bit)',
+    id: 'prrx_internal',
+    name: 'PRRX INTERNAL PANEL',
     category: 'panel',
-    platform: 'Android 64-Bit',
-    icon: Smartphone,
+    platform: 'Android APK / VIP Injected',
+    icon: Cpu,
     status: 'online',
-    patch: 'Garena FF MAX OB47',
-    latency: '24ms',
-    uptime_elapsed: '100%',
-    risk_level: '0% Ban Risk (Safe)',
-    description: 'High-definition 120FPS bypass with memory hook shield.'
-  },
-  {
-    id: 'ff_ios_ipa',
-    name: 'iOS VIP Menu (IPA Direct)',
-    category: 'panel',
-    platform: 'iOS / iPadOS',
-    icon: Apple,
-    status: 'online',
-    patch: 'iOS 15 - 18.2 Compatible',
-    latency: '31ms',
-    uptime_elapsed: '99.95%',
-    risk_level: '0% Ban Risk (Safe)',
-    description: 'Enterprise signed DNS proxy with no jailbreak requirement.'
-  },
-  {
-    id: 'ff_pc_emulator',
-    name: 'PC Gameloop & LDPlayer Bypass',
-    category: 'panel',
-    platform: 'Windows PC',
-    icon: Monitor,
-    status: 'online',
-    patch: 'Smart 2.0 & Gameloop 7.1',
-    latency: '12ms',
+    patch: 'Free Fire OB46 / OB47',
+    latency: '16ms',
     uptime_elapsed: '99.98%',
     risk_level: '0% Ban Risk (Safe)',
-    description: 'Virtual machine hypervisor hook with HWID protection.'
-  },
-  {
-    id: 'key_dispenser_cluster',
-    name: 'Automated Key Dispenser Node',
-    category: 'website',
-    platform: 'Cloud Cluster',
-    icon: Server,
-    status: 'online',
-    patch: 'PostgreSQL RPC v2',
-    latency: '8ms',
-    uptime_elapsed: '100%',
-    risk_level: 'Instant Provisioning',
-    description: 'Sub-second cryptographic license dispensing engine.'
-  },
-  {
-    id: 'hwid_spoof_gateway',
-    name: 'Hardware ID Spoofing Gateway',
-    category: 'website',
-    platform: 'Security Proxy',
-    icon: Lock,
-    status: 'online',
-    patch: 'Kernel Filter Driver',
-    latency: '15ms',
-    uptime_elapsed: '99.99%',
-    risk_level: 'Zero Ban History',
-    description: 'Dynamic MAC and IMEI virtualizer preventing device flags.'
+    description: 'Direct APK bytecode injection with automated kernel cloaking and silent aim.'
   }
 ];
 
 export default function Status() {
-  const [services, setServices] = useState(DEFAULT_PLATFORM_NODES);
+  const [services, setServices] = useState(DEFAULT_USER_PANELS);
   const [isPinging, setIsPinging] = useState(false);
   const [lastPingTime, setLastPingTime] = useState('Just now');
   const [radarRotation, setRadarRotation] = useState(0);
@@ -150,15 +94,25 @@ export default function Status() {
         .limit(50);
 
       if (data && data.length > 0 && !error) {
-        // Merge Supabase services with default architecture nodes
-        const merged = DEFAULT_PLATFORM_NODES.map(def => {
-          const matched = data.find(d => d.name?.toLowerCase().includes(def.id) || d.id === def.id);
-          return matched ? { ...def, ...matched } : def;
-        });
-        setServices(merged);
+        // Display ONLY the user's database records
+        setServices(data.map(d => ({
+          id: d.id,
+          name: d.name || d.service_name || 'PRRX VIP Panel',
+          category: d.category || 'panel',
+          platform: d.category === 'website' ? 'Cloud Server' : 'Android APK',
+          icon: d.category === 'website' ? Globe : (d.name?.toLowerCase().includes('internal') ? Cpu : Smartphone),
+          status: d.status || 'online',
+          patch: d.uptime_elapsed || 'Free Fire OB46 / OB47',
+          latency: '14ms',
+          uptime_elapsed: d.uptime_elapsed || '99.99%',
+          risk_level: d.status === 'online' ? '0% Ban Risk (Safe)' : 'Updating',
+          description: d.description || 'Verified undetected build with anti-ban hook encryption.'
+        })));
+      } else {
+        setServices(DEFAULT_USER_PANELS);
       }
     } catch (e) {
-      console.warn('Status telemetry using local cached nodes:', e);
+      setServices(DEFAULT_USER_PANELS);
     }
   };
 
@@ -176,12 +130,12 @@ export default function Status() {
       setIsPinging(false);
       setLastPingTime(new Date().toLocaleTimeString());
       loadStatusData();
-    }, 900);
+    }, 800);
   };
 
   const undetectedCount = services.filter(s => s.status === 'online').length;
   const totalCount = services.length;
-  const securityHealthScore = Math.round((undetectedCount / totalCount) * 100);
+  const securityHealthScore = totalCount > 0 ? Math.round((undetectedCount / totalCount) * 100) : 100;
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter selection:bg-cyan-500/30">
@@ -261,11 +215,6 @@ export default function Status() {
                 transition={{ duration: 2.4, repeat: Infinity, delay: 0.5 }}
                 className="absolute bottom-20 right-16 w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]"
               />
-              <motion.div 
-                animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0.8, 0.4] }}
-                transition={{ duration: 1.8, repeat: Infinity, delay: 1 }}
-                className="absolute top-24 right-20 w-2 h-2 rounded-full bg-teal-400 shadow-[0_0_8px_#2dd4bf]"
-              />
 
               {/* Radar Center Status Badge */}
               <div className="relative z-10 text-center space-y-1 p-3 rounded-2xl bg-slate-900/90 border border-cyan-500/40 backdrop-blur-md shadow-lg">
@@ -317,22 +266,22 @@ export default function Status() {
           </div>
         </div>
 
-        {/* Platform Node Architecture Grid */}
+        {/* User's PRRX Panels List */}
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
             <div className="flex items-center gap-2">
-              <Cpu className="w-5 h-5 text-cyan-400" />
+              <Layers className="w-5 h-5 text-cyan-400" />
               <h2 className="font-outfit font-extrabold text-xl text-[var(--text-heading)] uppercase tracking-tight">
-                FREE FIRE INJECTOR & BYPASS NODES
+                PRRX CHEAT PANELS ({services.length})
               </h2>
             </div>
             <span className="text-xs font-inter text-[var(--text-muted)] font-medium">Real-time Signature Telemetry</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {services.map((service, idx) => {
               const cfg = STATUS_CONFIG[service.status] || STATUS_CONFIG.online;
-              const IconComp = service.icon || (service.category === 'website' ? Globe : Cpu);
+              const IconComp = service.icon || Cpu;
 
               return (
                 <motion.div
@@ -340,10 +289,10 @@ export default function Status() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className={`relative p-6 rounded-3xl bg-[var(--bg-card)] border ${cfg.border} shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group`}
+                  className={`relative p-6 sm:p-8 rounded-3xl bg-[var(--bg-card)] border ${cfg.border} shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group`}
                 >
                   {/* Subtle Corner Glow Accent */}
-                  <div className={`absolute top-0 right-0 w-24 h-24 ${cfg.bg} rounded-full blur-2xl pointer-events-none`} />
+                  <div className={`absolute top-0 right-0 w-32 h-32 ${cfg.bg} rounded-full blur-2xl pointer-events-none`} />
 
                   <div className="space-y-4">
                     {/* Top Header */}
@@ -353,17 +302,17 @@ export default function Status() {
                           <IconComp className="w-6 h-6" />
                         </div>
                         <div>
-                          <h3 className="font-outfit font-black text-base text-[var(--text-heading)] tracking-tight">
+                          <h3 className="font-outfit font-black text-lg text-[var(--text-heading)] tracking-tight">
                             {service.name}
                           </h3>
-                          <span className="text-[11px] font-mono text-[var(--text-muted)] font-bold">
-                            {service.platform || 'Cross-Platform Node'}
+                          <span className="text-xs font-mono text-[var(--text-muted)] font-bold">
+                            {service.platform || 'Android APK'}
                           </span>
                         </div>
                       </div>
 
                       {/* Status Pill */}
-                      <div className={`px-3 py-1 rounded-full border ${cfg.bg} ${cfg.text} ${cfg.border} font-outfit font-black text-[10px] tracking-wider uppercase flex items-center gap-1.5 shadow-sm`}>
+                      <div className={`px-3 py-1 rounded-full border ${cfg.bg} ${cfg.text} ${cfg.border} font-outfit font-black text-[11px] tracking-wider uppercase flex items-center gap-1.5 shadow-sm`}>
                         <span className={`w-2 h-2 rounded-full ${cfg.badgeColor} animate-pulse`} />
                         <span>{cfg.label}</span>
                       </div>
@@ -375,14 +324,14 @@ export default function Status() {
                   </div>
 
                   {/* Node Diagnostic Specs */}
-                  <div className="pt-4 mt-4 border-t border-[var(--border-color)] grid grid-cols-2 gap-2 text-xs font-inter">
+                  <div className="pt-4 mt-6 border-t border-[var(--border-color)] grid grid-cols-2 gap-3 text-xs font-inter">
                     <div>
                       <span className="text-[var(--text-muted)] block text-[10px] font-bold uppercase tracking-wider">Patch Version</span>
-                      <span className="font-semibold text-[var(--text-heading)] font-mono text-[11px]">{service.patch || 'OB46 / OB47'}</span>
+                      <span className="font-semibold text-[var(--text-heading)] font-mono text-xs">{service.patch || 'Free Fire OB46 / OB47'}</span>
                     </div>
                     <div>
                       <span className="text-[var(--text-muted)] block text-[10px] font-bold uppercase tracking-wider">Security State</span>
-                      <span className="font-semibold text-emerald-400 font-mono text-[11px]">{service.risk_level || '0% Risk'}</span>
+                      <span className="font-semibold text-emerald-400 font-mono text-xs">{service.risk_level || '0% Ban Risk (Safe)'}</span>
                     </div>
                   </div>
                 </motion.div>
