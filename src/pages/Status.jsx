@@ -14,7 +14,7 @@ import {
   Radio, 
   Lock, 
   Bell,
-  Smartphone,
+  Monitor,
   Layers,
   Globe
 } from 'lucide-react';
@@ -49,33 +49,33 @@ const STATUS_CONFIG = {
   },
 };
 
-// Default only to the user's authentic PRRX panels
+// Configured strictly for Windows 10/11 - Emulator - v7a APK
 const DEFAULT_USER_PANELS = [
   {
     id: 'prrx_external',
     name: 'PRRX EXTERNAL PANEL',
     category: 'panel',
-    platform: 'Android APK / Non-Root',
-    icon: Smartphone,
+    platform: 'Windows 10/11 — Emulator (v7a APK)',
+    icon: Monitor,
     status: 'online',
-    patch: 'Free Fire OB46 / OB47',
-    latency: '14ms',
+    patch: 'Free Fire OB46 / OB47 (v7a 32-Bit)',
+    latency: '12ms',
     uptime_elapsed: '99.99%',
     risk_level: '0% Ban Risk (Safe)',
-    description: 'External floating overlay bypass with real-time memory aimbot and ESP vision.'
+    description: 'External Windows 10/11 bypass tailored for SmartGaaga / LDPlayer / Bluestacks running Free Fire v7a 32-bit APK.'
   },
   {
     id: 'prrx_internal',
     name: 'PRRX INTERNAL PANEL',
     category: 'panel',
-    platform: 'Android APK / VIP Injected',
+    platform: 'Windows 10/11 — Emulator (v7a APK)',
     icon: Cpu,
     status: 'online',
-    patch: 'Free Fire OB46 / OB47',
-    latency: '16ms',
+    patch: 'Free Fire OB46 / OB47 (v7a 32-Bit)',
+    latency: '15ms',
     uptime_elapsed: '99.98%',
     risk_level: '0% Ban Risk (Safe)',
-    description: 'Direct APK bytecode injection with automated kernel cloaking and silent aim.'
+    description: 'Internal emulator memory injector with silent aim, streamproof ESP, and automated v7a game hook cloaking.'
   }
 ];
 
@@ -94,19 +94,18 @@ export default function Status() {
         .limit(50);
 
       if (data && data.length > 0 && !error) {
-        // Display ONLY the user's database records
         setServices(data.map(d => ({
           id: d.id,
           name: d.name || d.service_name || 'PRRX VIP Panel',
           category: d.category || 'panel',
-          platform: d.category === 'website' ? 'Cloud Server' : 'Android APK',
-          icon: d.category === 'website' ? Globe : (d.name?.toLowerCase().includes('internal') ? Cpu : Smartphone),
+          platform: 'Windows 10/11 — Emulator (v7a APK)',
+          icon: d.name?.toLowerCase().includes('internal') ? Cpu : Monitor,
           status: d.status || 'online',
-          patch: d.uptime_elapsed || 'Free Fire OB46 / OB47',
-          latency: '14ms',
+          patch: d.uptime_elapsed || 'Free Fire OB46 / OB47 (v7a)',
+          latency: '12ms',
           uptime_elapsed: d.uptime_elapsed || '99.99%',
           risk_level: d.status === 'online' ? '0% Ban Risk (Safe)' : 'Updating',
-          description: d.description || 'Verified undetected build with anti-ban hook encryption.'
+          description: d.description || 'Dedicated Windows 10/11 emulator v7a build with anti-ban memory hook encryption.'
         })));
       } else {
         setServices(DEFAULT_USER_PANELS);
@@ -153,13 +152,13 @@ export default function Status() {
             <div className="space-y-4 text-center lg:text-left flex-1">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-outfit font-extrabold uppercase tracking-wider">
                 <Radio className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
-                <span>LIVE ANTI-CHEAT RADAR & SENTINEL</span>
+                <span>WINDOWS 10/11 EMULATOR (V7A APK) RADAR</span>
               </div>
               <h1 className="font-outfit font-black text-3xl sm:text-5xl text-[var(--text-heading)] tracking-tight leading-none uppercase">
-                GARENA PATCH <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400">INTEGRITY RADAR</span>
+                EMULATOR PATCH <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400">INTEGRITY RADAR</span>
               </h1>
               <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl leading-relaxed">
-                Autonomous continuous probing engine inspecting Garena Free Fire memory signatures, bytecode hashes, and server-side heuristic filters every 30 seconds.
+                Autonomous continuous probing engine inspecting Windows 10/11 emulator hooks, Free Fire v7a 32-bit memory signatures, and Garena heuristic bypass filters every 30 seconds.
               </p>
 
               {/* Action Buttons */}
@@ -170,7 +169,7 @@ export default function Status() {
                   className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-outfit font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
                 >
                   <RefreshCw className={`w-4 h-4 ${isPinging ? 'animate-spin' : ''}`} />
-                  <span>{isPinging ? 'PROBING SERVER NODES...' : 'PROBE SIGNATURES NOW'}</span>
+                  <span>{isPinging ? 'PROBING EMULATOR NODES...' : 'PROBE SIGNATURES NOW'}</span>
                 </button>
 
                 <a
@@ -240,23 +239,23 @@ export default function Status() {
         {/* Global Metric Indicators */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm space-y-1">
-            <span className="text-[var(--text-muted)] text-xs font-bold uppercase tracking-wider block">CURRENT GAME PATCH</span>
-            <div className="font-outfit font-black text-xl sm:text-2xl text-cyan-400">OB46 / OB47</div>
+            <span className="text-[var(--text-muted)] text-xs font-bold uppercase tracking-wider block">TARGET ARCHITECTURE</span>
+            <div className="font-outfit font-black text-xl sm:text-2xl text-cyan-400">WIN 10/11 (V7A)</div>
             <span className="text-emerald-400 text-[11px] font-semibold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Verified Safe
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Verified Undetected
             </span>
           </div>
 
           <div className="p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm space-y-1">
             <span className="text-[var(--text-muted)] text-xs font-bold uppercase tracking-wider block">DETECTION DEFENSE</span>
             <div className="font-outfit font-black text-xl sm:text-2xl text-emerald-400">{undetectedCount} / {totalCount} Online</div>
-            <span className="text-[var(--text-muted)] text-[11px]">0 Active Flagged Nodes</span>
+            <span className="text-[var(--text-muted)] text-[11px]">0 Flagged Emulator Builds</span>
           </div>
 
           <div className="p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm space-y-1">
             <span className="text-[var(--text-muted)] text-xs font-bold uppercase tracking-wider block">30-DAY UPTIME RATIO</span>
             <div className="font-outfit font-black text-xl sm:text-2xl text-[var(--text-heading)]">99.98%</div>
-            <span className="text-cyan-400 text-[11px]">Sub-20ms Probe Ping</span>
+            <span className="text-cyan-400 text-[11px]">Sub-15ms Hook Latency</span>
           </div>
 
           <div className="p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm space-y-1">
@@ -272,16 +271,16 @@ export default function Status() {
             <div className="flex items-center gap-2">
               <Layers className="w-5 h-5 text-cyan-400" />
               <h2 className="font-outfit font-extrabold text-xl text-[var(--text-heading)] uppercase tracking-tight">
-                PRRX CHEAT PANELS ({services.length})
+                PRRX WINDOWS EMULATOR PANELS ({services.length})
               </h2>
             </div>
-            <span className="text-xs font-inter text-[var(--text-muted)] font-medium">Real-time Signature Telemetry</span>
+            <span className="text-xs font-inter text-[var(--text-muted)] font-medium">Windows 10/11 & v7a APK Telemetry</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {services.map((service, idx) => {
               const cfg = STATUS_CONFIG[service.status] || STATUS_CONFIG.online;
-              const IconComp = service.icon || Cpu;
+              const IconComp = service.icon || Monitor;
 
               return (
                 <motion.div
@@ -306,7 +305,7 @@ export default function Status() {
                             {service.name}
                           </h3>
                           <span className="text-xs font-mono text-[var(--text-muted)] font-bold">
-                            {service.platform || 'Android APK'}
+                            {service.platform || 'Windows 10/11 — Emulator (v7a APK)'}
                           </span>
                         </div>
                       </div>
@@ -327,7 +326,7 @@ export default function Status() {
                   <div className="pt-4 mt-6 border-t border-[var(--border-color)] grid grid-cols-2 gap-3 text-xs font-inter">
                     <div>
                       <span className="text-[var(--text-muted)] block text-[10px] font-bold uppercase tracking-wider">Patch Version</span>
-                      <span className="font-semibold text-[var(--text-heading)] font-mono text-xs">{service.patch || 'Free Fire OB46 / OB47'}</span>
+                      <span className="font-semibold text-[var(--text-heading)] font-mono text-xs">{service.patch || 'Free Fire OB46 / OB47 (v7a)'}</span>
                     </div>
                     <div>
                       <span className="text-[var(--text-muted)] block text-[10px] font-bold uppercase tracking-wider">Security State</span>
@@ -348,10 +347,10 @@ export default function Status() {
             </div>
             <div>
               <h3 className="font-outfit font-black text-xl uppercase tracking-tight text-white">
-                PRRX 3-STAGE ANTI-DETECTION PROTOCOL
+                WINDOWS 10/11 EMULATOR (V7A) ANTI-DETECTION PROTOCOL
               </h3>
               <p className="text-slate-400 text-xs font-inter">
-                How our cloud infrastructure guarantees account safety across all Free Fire ranked seasons.
+                Engineered specifically for Windows 10 & 11 running Free Fire v7a 32-Bit APKs on SmartGaaga, LDPlayer 9, and Bluestacks.
               </p>
             </div>
           </div>
@@ -360,30 +359,30 @@ export default function Status() {
             <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/5 space-y-2">
               <div className="font-outfit font-bold text-sm text-cyan-400 flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs">1</span>
-                <span>Dynamic Bytecode Mutation</span>
+                <span>V7a 32-Bit Memory Obfuscation</span>
               </div>
               <p className="text-slate-400 text-xs leading-relaxed font-inter">
-                Every generated APK uses a distinct binary polymorphism algorithm, making signature-based antivirus scanners incapable of fingerprinting.
+                Custom assembly hooks compiled exclusively for the ARMv7-A 32-bit architecture to ensure memory addresses remain undetectable.
               </p>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/5 space-y-2">
               <div className="font-outfit font-bold text-sm text-cyan-400 flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs">2</span>
-                <span>Kernel-Level Memory Cloaking</span>
+                <span>Windows 10/11 Kernel Isolation</span>
               </div>
               <p className="text-slate-400 text-xs leading-relaxed font-inter">
-                Our injectors execute outside of Garena's userland memory space, concealing all aimbot and ESP hooks from the game process.
+                Communicates through external Windows API handles outside the emulator's virtual sandbox, preventing in-game memory scans.
               </p>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/5 space-y-2">
               <div className="font-outfit font-bold text-sm text-cyan-400 flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs">3</span>
-                <span>Instant Kill-Switch Sentinel</span>
+                <span>Instant Patch Sentinel</span>
               </div>
               <p className="text-slate-400 text-xs leading-relaxed font-inter">
-                If Garena releases a silent server-side security update, our radar automatically marks the node as maintenance, preventing users from opening the panel.
+                Automatically monitors Free Fire v7a game updates, verifying that offsets match before panel activation to guarantee zero bans.
               </p>
             </div>
           </div>
