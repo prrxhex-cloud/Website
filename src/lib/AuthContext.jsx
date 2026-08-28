@@ -1,14 +1,13 @@
-﻿import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from './supabase';
 import { secureStorage } from '@/utils/secureStorage';
 
 const AuthContext = createContext();
 
-const ADMIN_EMAILS = [
-  'sayurujayani123@gmail.com',
-  'admin@prrxhex.com',
-  'sayuru@prrxhex.com'
-];
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
+  .split(',')
+  .map(e => e.trim().toLowerCase())
+  .filter(Boolean);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

@@ -11,8 +11,8 @@ const FALLBACK_EXTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main
 const FALLBACK_INTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
 
 const DEFAULT_PANELS = {
-  external: { start_day: '2026-08-01', end_day: '2026-08-31', username: 'FREE-PRRX-EXT', password: 'PASSWORD123' },
-  internal: { start_day: '2026-08-01', end_day: '2026-08-31', username: 'FREE-PRRX-INT', password: 'PASSWORD123' }
+  external: null,
+  internal: null
 };
 
 function FreePanelCard({ panel, label, downloadUrl, index }) {

@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -23,11 +23,10 @@ export const DEFAULT_MAINTENANCE_CONFIG = {
   updated_by: null,
 };
 
-const KNOWN_ADMIN_EMAILS = [
-  'sayurujayani123@gmail.com',
-  'admin@prrxhex.com',
-  'sayuru@prrxhex.com'
-];
+const KNOWN_ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
+  .split(',')
+  .map(e => e.trim().toLowerCase())
+  .filter(Boolean);
 
 export const ROUTE_KEY_MAP = {
   '/': 'home',
