@@ -229,7 +229,21 @@ export const MaintenanceProvider = ({ children }) => {
 export const useMaintenance = () => {
   const context = useContext(MaintenanceContext);
   if (!context) {
-    throw new Error('useMaintenance must be used within a MaintenanceProvider');
+    return {
+      maintenanceConfig: DEFAULT_MAINTENANCE_CONFIG,
+      isLoadingMaintenance: false,
+      isGlobalMaintenance: false,
+      allowAdminBypass: true,
+      isAdminBypassed: true,
+      isAdminUser: false,
+      reason: DEFAULT_MAINTENANCE_CONFIG.reason,
+      timerEnd: null,
+      pageMaintenance: {},
+      isPageInMaintenance: () => false,
+      updateMaintenanceConfig: async () => ({}),
+      toggleGlobalMaintenance: async () => ({}),
+      togglePageMaintenance: async () => ({}),
+    };
   }
   return context;
 };

@@ -17,6 +17,7 @@ import AiSupportWidget from '@/components/support/AiSupportWidget';
 import { telemetrySentry } from '@/utils/telemetrySentry';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useLocation } from 'react-router-dom';
+import { MaintenanceProvider } from '@/context/MaintenanceContext';
 
 import DesktopLauncher from '@/pages/DesktopLauncher';
 
@@ -152,30 +153,32 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <SoundProvider>
-          <PwaProvider>
-            <QueryClientProvider client={queryClientInstance}>
-              <Router>
-                <ErrorBoundary>
-                  <ElectronLayout>
-                    <NetworkGuard>
-                      {isInitialLoad ? (
-                        <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
-                      ) : (
-                        <>
-                          <AuthenticatedApp />
-                          <AiSupportWidget />
-                        </>
-                      )}
-                    </NetworkGuard>
-                  </ElectronLayout>
-                  <FpsOverlay />
-                </ErrorBoundary>
-              </Router>
-              <Toaster />
-            </QueryClientProvider>
-          </PwaProvider>
-        </SoundProvider>
+        <MaintenanceProvider>
+          <SoundProvider>
+            <PwaProvider>
+              <QueryClientProvider client={queryClientInstance}>
+                <Router>
+                  <ErrorBoundary>
+                    <ElectronLayout>
+                      <NetworkGuard>
+                        {isInitialLoad ? (
+                          <LiquidLoader onComplete={() => setIsInitialLoad(false)} />
+                        ) : (
+                          <>
+                            <AuthenticatedApp />
+                            <AiSupportWidget />
+                          </>
+                        )}
+                      </NetworkGuard>
+                    </ElectronLayout>
+                    <FpsOverlay />
+                  </ErrorBoundary>
+                </Router>
+                <Toaster />
+              </QueryClientProvider>
+            </PwaProvider>
+          </SoundProvider>
+        </MaintenanceProvider>
       </AuthProvider>
     </ThemeProvider>
   );
