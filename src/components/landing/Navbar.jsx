@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShieldCheck, Volume2, VolumeX, ChevronRight, Zap, Sun, Moon, ChevronDown, Smartphone } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { useSound } from '../../context/SoundContext';
+import { useSound } from '@/context/SoundContext';
 import { useTheme } from '@/lib/ThemeContext';
 import { usePwa } from '@/context/PwaContext';
 import { useAuth } from '@/lib/AuthContext';
-import { isDiscountActive } from '@/pages/Prices';
+import { isDiscountActive } from '@/utils/discountUtils';
 import logoImg from '@/assets/logo.jpeg';
 
 const navLinks = [

@@ -12,43 +12,9 @@ import { normalizeDurationKey } from '@/components/dashboard/KeyBankTab';
 import { Crown, Zap, Star, MessageCircle, Tag, Check, LayoutGrid, Settings, Sparkles, Copy, Clock, Flame, LogIn, UserCheck, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Helper to check if a discount is currently active and not expired
-export function isDiscountActive(d) {
-  if (!d || !d.active) return false;
-  if (!d.expires_at) return true;
-  let expiryDate = new Date(d.expires_at);
-  if (typeof d.expires_at === 'string' && d.expires_at.length === 10) {
-    expiryDate = new Date(`${d.expires_at}T23:59:59`);
-  }
-  return !isNaN(expiryDate.getTime()) && expiryDate.getTime() > Date.now();
-}
+import { isDiscountActive, getDiscountExpiryDate, applyDiscount } from '@/utils/discountUtils';
+export { isDiscountActive, getDiscountExpiryDate, applyDiscount };
 
-export function getDiscountExpiryDate(d) {
-  if (!d?.expires_at) return null;
-  if (typeof d.expires_at === 'string' && d.expires_at.length === 10) {
-    return new Date(`${d.expires_at}T23:59:59`);
-  }
-  const date = new Date(d.expires_at);
-  return isNaN(date.getTime()) ? null : date;
-}
-
-function applyDiscount(plan, discounts, panelType) {
-  if (!plan) return { label: 'VIP Plan', lkr: 0, days: 'Access', popular: false, crown: false };
-  const discList = Array.isArray(discounts) ? discounts : [];
-  const match = discList.find(d => {
-    if (!isDiscountActive(d)) return false;
-    const panelMatch = !d.panel_type || d.panel_type === 'both' || d.panel_type === panelType;
-    const labelMatch = !d.plan_label || d.plan_label.toLowerCase() === plan.label?.toLowerCase();
-    return panelMatch && labelMatch;
-  });
-  if (!match) return { ...plan, discount: null };
-  const originalLkr = Number(plan.lkr) || 0;
-  const val = Number(match.discount_value) || 0;
-  const discountedLkr = match.discount_type === 'percentage'
-    ? Math.round(originalLkr * (1 - val / 100))
-    : Math.max(0, originalLkr - val);
-  return { ...plan, originalLkr, lkr: discountedLkr, discount: match };
-}
 
 const DEFAULT_PLANS = {
   external: [
