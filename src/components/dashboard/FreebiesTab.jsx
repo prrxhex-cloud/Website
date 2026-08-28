@@ -160,10 +160,13 @@ function V7aApkEditor() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'v7a_apk_links'), where('active', '==', true));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (data.length > 0) {
+      const { data, error } = await supabase
+        .from('v7a_apk_links')
+        .select('*')
+        .eq('active', true)
+        .limit(1);
+      if (error) throw error;
+      if (data && data.length > 0) {
         setRecord(data[0]);
         setUrl(data[0].url || '');
       }
@@ -181,9 +184,16 @@ function V7aApkEditor() {
     setSaving(true);
     try {
       if (record) {
-        await updateDoc(doc(db, 'v7a_apk_links', record.id), { url });
+        const { error } = await supabase
+          .from('v7a_apk_links')
+          .update({ url, updated_at: new Date().toISOString() })
+          .eq('id', record.id);
+        if (error) throw error;
       } else {
-        await addDoc(collection(db, 'v7a_apk_links'), { url, active: true, created_date: Date.now() });
+        const { error } = await supabase
+          .from('v7a_apk_links')
+          .insert({ url, active: true, created_at: new Date().toISOString() });
+        if (error) throw error;
       }
       toast.success('V7a Apk download link saved');
       load();
