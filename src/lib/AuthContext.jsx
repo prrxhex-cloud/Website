@@ -4,7 +4,7 @@ import { secureStorage } from '@/utils/secureStorage';
 
 const AuthContext = createContext();
 
-const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || 'sayurujayani123@gmail.com,admin@prrxhex.com,sayuru@prrxhex.com')
   .split(',')
   .map(e => e.trim().toLowerCase())
   .filter(Boolean);

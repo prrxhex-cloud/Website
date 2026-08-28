@@ -34,6 +34,10 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://jmizghxphvyzsubovliw.supabase.co
+          VITE_SUPABASE_ANON_KEY: sb_publishable_XVaiBBbdxK6vPitIrJnxPw_X39Lmihb
+          VITE_ADMIN_EMAILS: sayurujayani123@gmail.com,admin@prrxhex.com,sayuru@prrxhex.com
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
