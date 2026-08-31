@@ -1,6 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ExternalLink, ShieldCheck, ChevronRight, MessageCircle, PhoneCall, Crown } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ExternalLink, ShieldCheck, ChevronRight, MessageCircle, PhoneCall, Crown, Shield, Globe, Lock } from 'lucide-react';
 import logoImg from '@/assets/logo.jpeg';
 
 export default function Footer() {
@@ -10,17 +10,17 @@ export default function Footer() {
     <footer className="bg-[var(--bg-main)] border-t border-[var(--border-color)] py-16 font-inter text-[var(--text-primary)] transition-colors duration-300">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-12">
 
-        {/* Main 4-Column Footer Grid (Matching Photo 2) */}
+        {/* Main 4-Column Footer Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 items-start">
           
           {/* Column 1: Brand & About (4 cols) */}
           <div className="lg:col-span-4 space-y-4 text-left">
-            <div 
-              className="flex items-center gap-3 cursor-pointer select-none group"
-              onClick={() => navigate('/')}
+            <Link 
+              to="/"
+              className="flex items-center gap-3 select-none group inline-flex"
             >
               <div className="w-12 h-12 rounded-2xl bg-slate-900/60 border border-cyan-500/40 p-1 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-transform group-hover:scale-105">
-                <img src={logoImg} alt="PRRX Logo" className="w-full h-full object-contain rounded-xl" />
+                <img src={logoImg} alt="PRRX HEX Logo — Premium Undetected Free Fire VIP Cheats" className="w-full h-full object-contain rounded-xl" />
               </div>
               <div className="flex flex-col">
                 <span className="font-outfit font-black text-2xl tracking-tight leading-none text-[var(--text-heading)]">
@@ -30,10 +30,10 @@ export default function Footer() {
                   PREMIUM FF CHEATS
                 </span>
               </div>
-            </div>
+            </Link>
 
             <p className="font-inter text-xs text-[var(--text-muted)] leading-relaxed max-w-sm">
-              The premier destination for undetected Free Fire VIP cheats, aimbot injectors, location ESP, and emulator bypasses.
+              The premier destination for undetected Free Fire VIP cheats, aimbot injectors, location ESP, and Windows 10/11 emulator bypasses.
             </p>
 
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold font-inter">
@@ -45,34 +45,34 @@ export default function Footer() {
           {/* Column 2: Quick Links (3 cols) */}
           <div className="lg:col-span-3 space-y-3 text-left">
             <h4 className="font-outfit font-extrabold text-sm text-[var(--text-heading)] uppercase tracking-wider border-b border-[var(--border-color)] pb-2">
-              Quick Links
+              Navigation & Systems
             </h4>
             <ul className="space-y-2 text-xs font-medium">
               {[
-                { label: 'Home', path: '/' },
-                { label: 'Safe Status', path: '/status' },
-                { label: 'Live Demo Engine', path: '/live-demo' },
-                { label: 'Functions', path: '/functions' },
-                { label: 'Prices & VIP Bundles', path: '/prices' },
-                { label: 'Resellers Portal', path: '/resellers' },
-                { label: 'Freebies & Trials', path: '/freebies' },
-                { label: 'User Dashboard', path: '/dashboard' },
+                { label: 'Storefront Home', path: '/' },
+                { label: 'Live Anti-Cheat Radar', path: '/status' },
+                { label: 'VIP Prices & Key Store', path: '/prices' },
+                { label: 'Panel Functions & ESP', path: '/functions' },
+                { label: 'Free Trial Panels', path: '/freebies' },
+                { label: 'Resellers Network', path: '/resellers' },
+                { label: 'Global Server Nodes', path: '/about' },
+                { label: 'Privacy Policy & Terms', path: '/privacy' },
               ]
                 .filter(link => {
                   if (window.electronAPI) {
-                    return !['/live-demo', '/functions', '/resellers'].includes(link.path);
+                    return !['/functions', '/resellers'].includes(link.path);
                   }
                   return true;
                 })
                 .map(link => (
                 <li key={link.label}>
-                  <button
-                    onClick={() => navigate(link.path)}
+                  <Link
+                    to={link.path}
                     className="hover:text-[#06b6d4] transition-colors flex items-center gap-1.5 group text-[var(--text-muted)] hover:text-[var(--text-heading)]"
                   >
                     <ChevronRight className="w-3 h-3 text-[#06b6d4] group-hover:translate-x-0.5 transition-transform" />
                     <span>{link.label}</span>
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -81,52 +81,52 @@ export default function Footer() {
           {/* Column 3: Cheat Products (2 cols) */}
           <div className="lg:col-span-2 space-y-3 text-left">
             <h4 className="font-outfit font-extrabold text-sm text-[var(--text-heading)] uppercase tracking-wider border-b border-[var(--border-color)] pb-2">
-              Products
+              Emulator Panels
             </h4>
             <ul className="space-y-2.5 text-xs font-medium">
               <li>
-                <button
-                  onClick={() => navigate('/prices')}
-                  className="w-full text-left p-2.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-[#06b6d4] transition-all group"
+                <Link
+                  to="/prices"
+                  className="block w-full text-left p-2.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-[#06b6d4] transition-all group"
                 >
                   <div className="font-outfit font-bold text-xs text-[var(--text-heading)] group-hover:text-[#06b6d4]">
-                    Internal Panel
-                  </div>
-                  <div className="font-inter text-[10px] text-[var(--text-muted)] mt-0.5">
-                    Non Root Apk Injection
-                  </div>
-                </button>
-              </li>
-
-              <li>
-                <button
-                  onClick={() => navigate('/prices')}
-                  className="w-full text-left p-2.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-violet-500 transition-all group"
-                >
-                  <div className="font-outfit font-bold text-xs text-[var(--text-heading)] group-hover:text-violet-400">
                     External Panel
                   </div>
                   <div className="font-inter text-[10px] text-[var(--text-muted)] mt-0.5">
-                    100% Safer Gameplay
+                    Windows Overlay Bypass
                   </div>
-                </button>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to="/prices"
+                  className="block w-full text-left p-2.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-violet-500 transition-all group"
+                >
+                  <div className="font-outfit font-bold text-xs text-[var(--text-heading)] group-hover:text-violet-400">
+                    Internal Panel
+                  </div>
+                  <div className="font-inter text-[10px] text-[var(--text-muted)] mt-0.5">
+                    Bytecode Memory Cloak
+                  </div>
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 4: Payment Methods (3 cols) */}
+          {/* Column 4: Payment Methods & WhatsApp (3 cols) */}
           <div className="lg:col-span-3 space-y-3 text-left">
             <h4 className="font-outfit font-extrabold text-sm text-[var(--text-heading)] uppercase tracking-wider border-b border-[var(--border-color)] pb-2">
-              Payment Methods
+              Verified Key Dispenser
             </h4>
             <div className="space-y-3">
               <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-2">
                 <div className="flex items-center gap-2 text-emerald-500 font-outfit font-bold text-xs">
                   <PhoneCall className="w-4 h-4 animate-pulse" />
-                  <span>Receipt to WhatsApp only</span>
+                  <span>Sub-10s Automated Delivery</span>
                 </div>
                 <p className="font-inter text-[11px] text-[var(--text-muted)] leading-relaxed">
-                  Send your payment screenshot / receipt directly to WhatsApp for 10-second instant key delivery!
+                  Fast automated slip verification and instant license key unlocking 24/7 on website and WhatsApp.
                 </p>
               </div>
 
@@ -181,15 +181,17 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Legal Bar */}
         <div className="pt-6 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)] font-inter">
-          <p>© 2026 PRRX CHEATS. All rights reserved. Designed for educational & research purposes only.</p>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/status')} className="hover:text-[var(--text-heading)] transition-colors">Safe Status</button>
+          <p>© 2026 PRRX CHEATS. All rights reserved. Designed for Windows 10/11 emulator research.</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link to="/privacy" className="hover:text-[var(--text-heading)] transition-colors">Privacy Policy</Link>
             <span>•</span>
-            <button onClick={() => navigate('/prices')} className="hover:text-[var(--text-heading)] transition-colors">VIP Bundles</button>
+            <Link to="/status" className="hover:text-[var(--text-heading)] transition-colors">Anti-Cheat Radar</Link>
             <span>•</span>
-            <button onClick={() => navigate('/admin')} className="hover:text-[var(--text-heading)] transition-colors">Staff Portal</button>
+            <Link to="/prices" className="hover:text-[var(--text-heading)] transition-colors">VIP Bundles</Link>
+            <span>•</span>
+            <Link to="/about" className="hover:text-[var(--text-heading)] transition-colors">Server Nodes</Link>
           </div>
         </div>
 

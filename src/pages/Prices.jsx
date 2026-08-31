@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import ScrollReveal from '@/components/effects/ScrollReveal';
 import BuyModal from '@/components/pricing/BuyModal';
 import { getFormattedPrices } from '@/lib/currency';
@@ -326,8 +327,11 @@ export default function Prices() {
       <Navbar />
 
       {/* Header */}
-      <section className="pt-14 pb-10 text-center bg-[var(--bg-glass-card)] backdrop-blur-xl border-b border-[var(--border-color)]">
+      <section className="pt-10 pb-10 text-center bg-[var(--bg-glass-card)] backdrop-blur-xl border-b border-[var(--border-color)]">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-4">
+          <div className="text-left">
+            <Breadcrumbs items={[{ label: 'VIP Prices & Key Store', path: '/prices' }]} />
+          </div>
           <div className="sub-heading">PRICING BUNDLES & SPECIAL OFFERS</div>
           <h1 className="font-outfit font-extrabold text-4xl sm:text-5xl text-[var(--text-heading)] tracking-tight">
             VIP CHEATS CATALOG & <span className="text-[#06b6d4]">DISCOUNTS</span>

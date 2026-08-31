@@ -7,6 +7,7 @@ import ResellerProfitTable from '@/components/resellers/ResellerProfitTable';
 import ResellerLogin from '@/components/resellers/ResellerLogin';
 import ResellerPortal from '@/components/resellers/ResellerPortal';
 import SessionWatcher from '@/components/security/SessionWatcher';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import { ShieldCheck, TrendingUp, Sparkles, MessageCircle, Lock, Store, ArrowLeft, LogIn } from 'lucide-react';
 
 const SESSION_KEY = 'prrx_reseller_logged_in';
@@ -49,7 +50,8 @@ Please provide me with reseller onboarding details, bulk key packages, and porta
       <Navbar />
 
       {/* Main Page Container */}
-      <div className="flex-1 relative z-10 pt-10 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full space-y-16">
+      <div className="flex-1 relative z-10 pt-8 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full space-y-8">
+        <Breadcrumbs items={[{ label: 'Resellers Portal & Wholesale Key Packages', path: '/resellers' }]} />
         <AnimatePresence mode="wait">
           {!resellerUser ? (
             <motion.div

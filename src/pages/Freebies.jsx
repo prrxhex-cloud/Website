@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import { Download, XCircle, Calendar, User, Lock, Smartphone, Gift, ShieldCheck, LogIn, KeyRound } from 'lucide-react';
 
 const FALLBACK_EXTERNAL = 'https://github.com/AhmadhZahidh/panel-update/raw/main/PRRX%20HEX.rar';
@@ -132,8 +133,11 @@ export default function Freebies() {
       <Navbar />
 
       {/* Header */}
-      <section className="pt-16 pb-12 text-center bg-[var(--bg-glass-card)] backdrop-blur-xl border-b border-[var(--border-color)]">
+      <section className="pt-10 pb-12 text-center bg-[var(--bg-glass-card)] backdrop-blur-xl border-b border-[var(--border-color)]">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-4">
+          <div className="text-left">
+            <Breadcrumbs items={[{ label: 'Free Trial Panels & V7a APK', path: '/freebies' }]} />
+          </div>
           <div className="sub-heading">
             <Gift className="w-3.5 h-3.5" /> FREEBIES & DEMO KEYS
           </div>

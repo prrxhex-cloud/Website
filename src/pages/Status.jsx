@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import { 
   Cpu, 
   Activity, 
@@ -145,7 +146,8 @@ export default function Status() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none -z-10 animate-pulse" />
         <div className="absolute top-1/3 right-10 w-[300px] h-[300px] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
 
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-6">
+          <Breadcrumbs items={[{ label: 'Anti-Cheat Radar & Sentinel', path: '/status' }]} />
           <div className="flex flex-col lg:flex-row items-center justify-between gap-10">
             
             {/* Header Text & Badges */}

@@ -14,6 +14,8 @@ import React, { Suspense } from 'react';
 import TitleBar from '@/components/TitleBar';
 import FpsOverlay from '@/components/ui/FpsOverlay';
 import AiSupportWidget from '@/components/support/AiSupportWidget';
+import StickyMobileCta from '@/components/landing/StickyMobileCta';
+import PageMeta from '@/components/seo/PageMeta';
 import { telemetrySentry } from '@/utils/telemetrySentry';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useLocation } from 'react-router-dom';
@@ -33,6 +35,7 @@ const Freebies = React.lazy(() => import('@/pages/Freebies'));
 const Login = React.lazy(() => import('@/pages/Login'));
 const LiveDemo = React.lazy(() => import('@/pages/LiveDemo'));
 const About = React.lazy(() => import('@/pages/About'));
+const PrivacyPolicy = React.lazy(() => import('@/pages/PrivacyPolicy'));
 const AppLauncher = React.lazy(() => import('@/pages/AppLauncher'));
 
 // Protected Route Wrapper Component
@@ -104,6 +107,7 @@ const AuthenticatedApp = () => {
         <Route path="/resellers" element={<DesktopRestrictedRoute><Resellers /></DesktopRestrictedRoute>} />
         <Route path="/freebies" element={<Freebies />} />
         <Route path="/about" element={<About />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/login" element={<Login />} />
         <Route path="/launcher" element={<DesktopLauncher />} />
 
@@ -158,6 +162,7 @@ function App() {
             <PwaProvider>
               <QueryClientProvider client={queryClientInstance}>
                 <Router>
+                  <PageMeta />
                   <ErrorBoundary>
                     <ElectronLayout>
                       <NetworkGuard>
@@ -167,6 +172,7 @@ function App() {
                           <>
                             <AuthenticatedApp />
                             <AiSupportWidget />
+                            <StickyMobileCta />
                           </>
                         )}
                       </NetworkGuard>

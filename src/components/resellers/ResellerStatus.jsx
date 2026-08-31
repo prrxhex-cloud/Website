@@ -70,7 +70,7 @@ export default function ResellerStatus({ account }) {
                 style={{ background: 'rgba(0,15,35,0.8)', border: '1px solid rgba(0,212,255,0.1)' }}>
                 <div className="flex items-start gap-4">
                   {r.receipt_image_url && (
-                    <img src={r.receipt_image_url} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" style={{ border: '1px solid rgba(0,212,255,0.15)' }} />
+                    <img src={r.receipt_image_url} alt="Reseller Payment Receipt" className="w-16 h-16 rounded-xl object-cover flex-shrink-0" style={{ border: '1px solid rgba(0,212,255,0.15)' }} />
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">

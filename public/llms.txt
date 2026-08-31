@@ -1,0 +1,24 @@
+# PRRX HEX Platform
+
+> PRRX HEX is the premier high-performance VIP gaming utility and memory cloaking framework engineered specifically for Free Fire on Windows 10/11 running v7a 32-bit APK emulators (SmartGaaga, LDPlayer 9, Bluestacks 5).
+
+## Overview
+- **Platform Name**: PRRX HEX
+- **Target OS**: Windows 10 & Windows 11 (64-bit)
+- **Supported Emulators**: SmartGaaga 1.1 / 3.2, LDPlayer 9, Bluestacks 5 / 4, MSI App Player
+- **Target Game Architecture**: Garena Free Fire & Free Fire MAX (ARMv7-A 32-Bit APK)
+- **Security Rating**: 100% Undetected with Dynamic Bytecode Mutation & Kernel-level Memory Cloaking
+
+## Core Products
+1. **PRRX External Panel**: External floating Windows overlay bypass with zero root requirement, streamproof ESP, location radar, and real-time headshot calibration.
+2. **PRRX Internal Panel**: Direct memory hook injector engineered for competitive ranked matches with silent aimbot, magic bullet trajectory, and automated anti-ban heuristics.
+
+## Key Links & Navigation
+- Storefront & Home: https://prrxhex-cloud.github.io/Website/#/
+- VIP Pricing & Key Store: https://prrxhex-cloud.github.io/Website/#/prices
+- Live Anti-Cheat Patch Radar: https://prrxhex-cloud.github.io/Website/#/status
+- Panel Functions & Features: https://prrxhex-cloud.github.io/Website/#/functions
+- Free Panels & Demo Trials: https://prrxhex-cloud.github.io/Website/#/freebies
+- Reseller Portal & Wholesale: https://prrxhex-cloud.github.io/Website/#/resellers
+- Privacy Policy & Terms: https://prrxhex-cloud.github.io/Website/#/privacy
+- Official Discord Community: https://discord.gg/D2nCuvyE4t
